@@ -69,9 +69,19 @@ src/
 │   ├── layout/      # Layout, Navbar, Footer
 │   └── alerts/      # AlertsManager
 ├── pages/           # Dashboard, Index, Alerts, About, NotFound
-├── hooks/           # use-mobile, use-toast
-├── lib/             # utils.ts
-└── data/            # mockData.ts (fonte de dados atual)
+├── hooks/           # use-mobile, use-toast, useAlerts, useAlertPoller,
+│                    # useLastUpdateTime, useMarketItems, useTopProfitable
+├── services/        # Camada de serviços (market.service.ts, market.api.ts,
+│                    # market.api.types.ts, market.mock.ts, alert.engine.ts,
+│                    # alert.storage.ts, index.ts)
+├── lib/             # utils.ts, schemas.ts
+├── data/            # mockData.ts, types.ts, constants.ts
+└── test/            # Setup e testes unitários (Vitest)
+
+e2e/                 # Testes E2E com Playwright
+├── alerts.spec.ts
+├── dashboard.spec.ts
+└── navigation.spec.ts
 ```
 
 ### Rotas
@@ -87,10 +97,14 @@ src/
 
 ## Estado Atual (2026-03)
 
-- Projeto gerado pelo Lovable com estrutura base funcional
-- Dados ainda em modo mock (`src/data/mockData.ts`)
-- Fase de refatoração iniciada — reescrita seguindo princípios de arquitetura mais sólidos
-- Integração com API real do Albion Online planejada para fase posterior
+- Estrutura de governança importada do AIgnt-OS (CLAUDE.md, CONTEXT.md, AGENTS.md, `.claude/`)
+- Camada de serviços implementada (`src/services/`) — abstrai API real e mock data
+- Hooks customizados extraídos dos componentes (`src/hooks/`)
+- Sistema de alertas com engine de polling e persistência em localStorage
+- Testes E2E com Playwright (13 testes passando)
+- `market.api.ts` integrado com a API real (`west.albion-online-data.com`)
+- Seletor de fonte de dados: variável de ambiente `VITE_USE_REAL_API=true` ativa a API real (default: mock)
+- Próximo passo: SPEC formal da integração API e expansão do catálogo de itens
 
 ---
 
@@ -103,6 +117,9 @@ src/
 | Estilos | Tailwind CSS | Consistência com design system |
 | Dados | Mock → API Albion | Desenvolvimento offline primeiro |
 | TypeScript | Sem strict mode | Migração gradual do código Lovable |
+| Camada de serviços | Interface `MarketService` | Desacopla componentes da fonte de dados |
+| Persistência de alertas | localStorage via `AlertStorageService` | Sem backend necessário no MVP |
+| Testes E2E | Playwright | Cobertura de fluxos críticos no browser real |
 
 ---
 
