@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Bell,
   Plus,
@@ -13,10 +15,18 @@ import {
 } from 'lucide-react';
 import type { Alert, MarketItem } from '@/data/types';
 import { cities } from '@/data/constants';
+import { alertFormSchema, type AlertFormValues } from '@/lib/schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -45,13 +55,20 @@ interface AlertsManagerProps {
 
 export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState('');
-  const [selectedCity, setSelectedCity] = useState('all');
-  const [alertType, setAlertType] = useState<'below' | 'above' | 'change'>('below');
-  const [threshold, setThreshold] = useState('');
-  const [inAppNotification, setInAppNotification] = useState(true);
-  const [emailNotification, setEmailNotification] = useState(false);
   const { toast } = useToast();
+
+  const form = useForm<AlertFormValues>({
+    resolver: zodResolver(alertFormSchema),
+    defaultValues: {
+      itemId: '',
+      city: 'all',
+      condition: 'below',
+      threshold: undefined,
+      notifications: { inApp: true, email: false },
+    },
+  });
+
+  const alertType = form.watch('condition');
 
   const toggleAlert = (alert: Alert) => {
     onSaveAlert({ ...alert, isActive: !alert.isActive });
@@ -70,49 +87,31 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
     });
   };
 
-  const createAlert = () => {
-    if (!selectedItem || !threshold) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const item = availableItems.find(i => i.itemId === selectedItem);
+  const onSubmit = (values: AlertFormValues) => {
+    const item = availableItems.find(i => i.itemId === values.itemId);
     const newAlert: Alert = {
       id: Date.now().toString(),
-      itemId: selectedItem,
+      itemId: values.itemId,
       itemName: item?.itemName || 'Unknown Item',
-      city: selectedCity === 'all' ? 'All Cities' : selectedCity,
-      condition: alertType,
-      threshold: parseFloat(threshold),
+      city: values.city === 'all' ? 'All Cities' : values.city,
+      condition: values.condition,
+      threshold: values.threshold,
       isActive: true,
       createdAt: new Date().toISOString(),
-      notifications: {
-        inApp: inAppNotification,
-        email: emailNotification,
-      },
+      notifications: values.notifications,
     };
 
     onSaveAlert(newAlert);
     setIsDialogOpen(false);
-    resetForm();
+    form.reset();
 
     toast({
       title: 'Alert created!',
-      description: `You'll be notified when ${item?.itemName} price ${alertType === 'below' ? 'drops below' : alertType === 'above' ? 'goes above' : 'changes by'} ${threshold}${alertType === 'change' ? '%' : ''}.`,
+      description: `You'll be notified when ${item?.itemName} price ${
+        values.condition === 'below' ? 'drops below' :
+        values.condition === 'above' ? 'goes above' : 'changes by'
+      } ${values.threshold}${values.condition === 'change' ? '%' : ''}.`,
     });
-  };
-
-  const resetForm = () => {
-    setSelectedItem('');
-    setSelectedCity('all');
-    setAlertType('below');
-    setThreshold('');
-    setInAppNotification(true);
-    setEmailNotification(false);
   };
 
   const getConditionIcon = (condition: string) => {
@@ -147,7 +146,10 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
           </p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) form.reset();
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-gold-gradient text-primary-foreground hover:opacity-90 gold-glow">
               <Plus className="h-4 w-4 mr-2" />
@@ -162,138 +164,188 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
-              {/* Item Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="item">Item</Label>
-                <Select value={selectedItem} onValueChange={setSelectedItem}>
-                  <SelectTrigger className="bg-muted/50 border-border">
-                    <SelectValue placeholder="Select an item..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {uniqueItems.map(item => (
-                      <SelectItem key={item.itemId} value={item.itemId}>
-                        <span className="flex items-center gap-2">
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                            {item.tier}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+
+                {/* Item Selector */}
+                <FormField
+                  control={form.control}
+                  name="itemId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Item</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="bg-muted/50 border-border">
+                            <SelectValue placeholder="Select an item..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {uniqueItems.map(item => (
+                            <SelectItem key={item.itemId} value={item.itemId}>
+                              <span className="flex items-center gap-2">
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                  {item.tier}
+                                </span>
+                                {item.itemName}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* City Selector */}
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="bg-muted/50 border-border">
+                            <SelectValue placeholder="Select city..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="all">All Cities</SelectItem>
+                          {cities.map(city => (
+                            <SelectItem key={city} value={city}>{city}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Alert Type */}
+                <FormField
+                  control={form.control}
+                  name="condition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alert Type</FormLabel>
+                      <FormControl>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            type="button"
+                            variant={field.value === 'below' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => field.onChange('below')}
+                            className={cn(field.value === 'below' && 'bg-success text-success-foreground')}
+                          >
+                            <ArrowDown className="h-3 w-3 mr-1" />
+                            Below
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={field.value === 'above' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => field.onChange('above')}
+                            className={cn(field.value === 'above' && 'bg-destructive text-destructive-foreground')}
+                          >
+                            <ArrowUp className="h-3 w-3 mr-1" />
+                            Above
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={field.value === 'change' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => field.onChange('change')}
+                            className={cn(field.value === 'change' && 'bg-primary text-primary-foreground')}
+                          >
+                            <Percent className="h-3 w-3 mr-1" />
+                            Change
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Threshold */}
+                <FormField
+                  control={form.control}
+                  name="threshold"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {alertType === 'change' ? 'Percentage Change' : 'Price Threshold'}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            placeholder={alertType === 'change' ? 'e.g., 15' : 'e.g., 50000'}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                            className="bg-muted/50 border-border pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                            {alertType === 'change' ? '%' : ''}
                           </span>
-                          {item.itemName}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* City Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="bg-muted/50 border-border">
-                    <SelectValue placeholder="Select city..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {cities.map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Alert Type */}
-              <div className="space-y-2">
-                <Label>Alert Type</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    type="button"
-                    variant={alertType === 'below' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAlertType('below')}
-                    className={cn(alertType === 'below' && 'bg-success text-success-foreground')}
-                  >
-                    <ArrowDown className="h-3 w-3 mr-1" />
-                    Below
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={alertType === 'above' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAlertType('above')}
-                    className={cn(alertType === 'above' && 'bg-destructive text-destructive-foreground')}
-                  >
-                    <ArrowUp className="h-3 w-3 mr-1" />
-                    Above
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={alertType === 'change' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setAlertType('change')}
-                    className={cn(alertType === 'change' && 'bg-primary text-primary-foreground')}
-                  >
-                    <Percent className="h-3 w-3 mr-1" />
-                    Change
-                  </Button>
-                </div>
-              </div>
-
-              {/* Threshold */}
-              <div className="space-y-2">
-                <Label htmlFor="threshold">
-                  {alertType === 'change' ? 'Percentage Change' : 'Price Threshold'}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="threshold"
-                    type="number"
-                    placeholder={alertType === 'change' ? 'e.g., 15' : 'e.g., 50000'}
-                    value={threshold}
-                    onChange={(e) => setThreshold(e.target.value)}
-                    className="bg-muted/50 border-border pr-8"
+                {/* Notifications */}
+                <div className="space-y-3">
+                  <FormLabel>Notifications</FormLabel>
+                  <Controller
+                    control={form.control}
+                    name="notifications.inApp"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="inApp"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <label htmlFor="inApp" className="text-sm flex items-center gap-2 cursor-pointer">
+                          <BellRing className="h-4 w-4 text-muted-foreground" />
+                          In-app notification
+                        </label>
+                      </div>
+                    )}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                    {alertType === 'change' ? '%' : ''}
-                  </span>
-                </div>
-              </div>
-
-              {/* Notifications */}
-              <div className="space-y-3">
-                <Label>Notifications</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="inApp"
-                    checked={inAppNotification}
-                    onCheckedChange={(checked) => setInAppNotification(checked as boolean)}
+                  <Controller
+                    control={form.control}
+                    name="notifications.email"
+                    render={({ field }) => (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="email"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <label htmlFor="email" className="text-sm flex items-center gap-2 cursor-pointer">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          Email notification
+                        </label>
+                      </div>
+                    )}
                   />
-                  <label htmlFor="inApp" className="text-sm flex items-center gap-2 cursor-pointer">
-                    <BellRing className="h-4 w-4 text-muted-foreground" />
-                    In-app notification
-                  </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="email"
-                    checked={emailNotification}
-                    onCheckedChange={(checked) => setEmailNotification(checked as boolean)}
-                  />
-                  <label htmlFor="email" className="text-sm flex items-center gap-2 cursor-pointer">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    Email notification
-                  </label>
-                </div>
-              </div>
-            </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={createAlert} className="bg-gold-gradient text-primary-foreground">
-                Create Alert
-              </Button>
-            </DialogFooter>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-gold-gradient text-primary-foreground">
+                    Create Alert
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
