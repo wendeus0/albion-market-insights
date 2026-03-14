@@ -8,14 +8,21 @@ import Dashboard from "./pages/Dashboard";
 import Alerts from "./pages/Alerts";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import { useAlertPoller } from "@/hooks/useAlertPoller";
 
 const queryClient = new QueryClient();
+
+function AlertPollerMount() {
+  useAlertPoller();
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <AlertPollerMount />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
