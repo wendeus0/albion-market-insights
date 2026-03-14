@@ -1,6 +1,21 @@
 import { z } from 'zod';
 import type { MarketItem } from '@/data/types';
 
+export const AlbionHistoryEntrySchema = z.object({
+  item_count: z.number(),
+  avg_price: z.number(),
+  timestamp: z.string(),
+});
+
+export const AlbionHistoryRecordSchema = z.object({
+  item_id: z.string(),
+  location: z.string(),
+  quality: z.number().int().min(1).max(5),
+  data: z.array(AlbionHistoryEntrySchema),
+});
+
+export type AlbionHistoryRecord = z.infer<typeof AlbionHistoryRecordSchema>;
+
 export const AlbionPriceRecordSchema = z.object({
   item_id: z.string(),
   city: z.string(),
