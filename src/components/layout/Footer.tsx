@@ -1,5 +1,5 @@
 import { TrendingUp, Github, Mail, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 
 export function Footer() {
   return (

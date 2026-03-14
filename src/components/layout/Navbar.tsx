@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useRouterState } from '@tanstack/react-router'
 import { TrendingUp, Bell, Info, LayoutDashboard, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,10 @@ const navLinks = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/alerts', label: 'Alerts', icon: Bell },
   { to: '/about', label: 'About', icon: Info },
-];
+] as const
 
 export function Navbar() {
-  const location = useLocation();
+  const { location } = useRouterState()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -28,7 +28,7 @@ export function Navbar() {
               <div className="absolute inset-0 rounded-lg bg-gold-gradient opacity-0 group-hover:opacity-50 blur-lg transition-opacity" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-display text-lg font-semibold text-foreground">
+              <h1 className="font-display text-lg font--semibold text-foreground">
                 Albion Market
               </h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Tracker</p>
@@ -40,7 +40,7 @@ export function Navbar() {
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = location.pathname === link.to;
-              
+
               return (
                 <Link
                   key={link.to}
@@ -87,7 +87,7 @@ export function Navbar() {
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = location.pathname === link.to;
-                
+
                 return (
                   <Link
                     key={link.to}

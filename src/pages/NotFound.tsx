@@ -1,10 +1,10 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
-  const location = useLocation();
+  const { location } = useRouterState()
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -22,7 +22,7 @@ const NotFound = () => {
             Looks like this trade route leads nowhere. Let's get you back to the marketplace.
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild className="bg-gold-gradient text-primary-foreground">
             <Link to="/">
