@@ -8,7 +8,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { MarketItem, cities, tiers, qualities } from '@/data/mockData';
+import type { MarketItem } from '@/data/types';
+import { cities, tiers, qualities } from '@/data/constants';
 import { Sparkline } from '@/components/ui/sparkline';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,8 +67,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
 
     // Apply sorting
     result.sort((a, b) => {
-      let aVal = a[sortField];
-      let bVal = b[sortField];
+      const aVal = a[sortField];
+      const bVal = b[sortField];
 
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         return sortDirection === 'asc' 

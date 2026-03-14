@@ -1,45 +1,8 @@
-export interface MarketItem {
-  itemId: string;
-  itemName: string;
-  city: string;
-  sellPrice: number;
-  buyPrice: number;
-  spread: number;
-  spreadPercent: number;
-  timestamp: string;
-  tier: string;
-  quality: string;
-  priceHistory: number[];
-}
+import { cities, tiers, qualities } from '@/data/constants';
+import type { MarketItem, Alert } from '@/data/types';
 
-export interface Alert {
-  id: string;
-  itemId: string;
-  itemName: string;
-  city: string;
-  condition: 'below' | 'above' | 'change';
-  threshold: number;
-  isActive: boolean;
-  createdAt: string;
-  notifications: {
-    inApp: boolean;
-    email: boolean;
-  };
-}
-
-export const cities = [
-  'Caerleon',
-  'Bridgewatch',
-  'Fort Sterling',
-  'Lymhurst',
-  'Martlock',
-  'Thetford',
-  'Black Market',
-];
-
-export const tiers = ['T4', 'T5', 'T6', 'T7', 'T8'];
-
-export const qualities = ['Normal', 'Good', 'Outstanding', 'Excellent', 'Masterpiece'];
+export { cities, tiers, qualities };
+export type { MarketItem, Alert };
 
 const itemNames = [
   'Clarent Blade',

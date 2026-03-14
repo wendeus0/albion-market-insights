@@ -1,28 +1,34 @@
 import { Link } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  Bell, 
-  LayoutDashboard, 
-  ArrowRight, 
-  Zap, 
-  Shield, 
+import {
+  TrendingUp,
+  Bell,
+  LayoutDashboard,
+  ArrowRight,
+  Zap,
+  Shield,
   Clock,
-  ChevronRight 
+  ChevronRight,
 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TopItemsPanel } from '@/components/dashboard/TopItemsPanel';
 import { PriceTable } from '@/components/dashboard/PriceTable';
-import { mockItems, topProfitableItems, lastUpdateTime } from '@/data/mockData';
+import { useMarketItems } from '@/hooks/useMarketItems';
+import { useTopProfitable } from '@/hooks/useTopProfitable';
+import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
 
 const Index = () => {
+  const { data: items = [] } = useMarketItems();
+  const { data: topItems = [] } = useTopProfitable(5);
+  const { data: lastUpdate } = useLastUpdateTime();
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true,
     });
   };
 
@@ -50,7 +56,7 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="hero-gradient absolute inset-0 pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        
+
         <div className="container mx-auto px-4 py-20 lg:py-28 relative">
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
@@ -68,14 +74,14 @@ const Index = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              Monitor prices across all cities, analyze profit margins, and set up 
+              Monitor prices across all cities, analyze profit margins, and set up
               price alerts. Make smarter trading decisions with data-driven insights.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <Button 
-                asChild 
-                size="lg" 
+              <Button
+                asChild
+                size="lg"
                 className="bg-gold-gradient text-primary-foreground hover:opacity-90 gold-glow text-base px-8"
               >
                 <Link to="/dashboard">
@@ -83,9 +89,9 @@ const Index = () => {
                   Open Dashboard
                 </Link>
               </Button>
-              <Button 
-                asChild 
-                variant="outline" 
+              <Button
+                asChild
+                variant="outline"
                 size="lg"
                 className="text-base px-8 border-primary/30 hover:bg-primary/10"
               >
@@ -104,7 +110,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={feature.title}
                 className="glass-card p-6 hover:border-primary/30 transition-all duration-300 group"
                 style={{ animationDelay: `${index * 0.1}s` }}
@@ -130,7 +136,7 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard
               title="Total Items Tracked"
-              value={mockItems.length}
+              value={items.length || '...'}
               subtitle="Across all cities"
               icon={TrendingUp}
             />
@@ -149,7 +155,7 @@ const Index = () => {
             />
             <StatsCard
               title="Last Update"
-              value={formatTime(lastUpdateTime)}
+              value={lastUpdate ? formatTime(lastUpdate) : '...'}
               subtitle="Updates every 15 min"
               icon={Clock}
             />
@@ -162,14 +168,14 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Top Items Panel */}
-            <TopItemsPanel items={topProfitableItems} className="lg:col-span-1" />
+            <TopItemsPanel items={topItems} className="lg:col-span-1" />
 
             {/* Quick Stats */}
             <div className="lg:col-span-2 glass-card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-foreground">Market Overview</h3>
-                <Link 
-                  to="/dashboard" 
+                <Link
+                  to="/dashboard"
                   className="text-sm text-primary hover:underline flex items-center gap-1"
                 >
                   View full dashboard
@@ -177,7 +183,7 @@ const Index = () => {
                 </Link>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Real-time price data from all major trading cities in Albion Online. 
+                Real-time price data from all major trading cities in Albion Online.
                 Filter by tier, quality, and city to find the best trading opportunities.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -222,7 +228,7 @@ const Index = () => {
               </Link>
             </Button>
           </div>
-          <PriceTable items={mockItems} />
+          <PriceTable items={items} />
         </div>
       </section>
     </Layout>
