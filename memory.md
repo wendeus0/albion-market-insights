@@ -3,8 +3,8 @@
 ## Estado do Projeto (2026-03-14)
 
 **Plataforma**: Dashboard web React + TypeScript para análise de mercado do Albion Online
-**Status**: Fase de refatoração iniciada — reescrita com arquitetura mais sólida
-**Branch de trabalho**: `claude/copy-config-between-repos-NZJ9E`
+**Status**: Refatoração concluída — arquitetura de serviços, hooks e testes implementados
+**Branch de trabalho**: `claude/plan-restructuring-steps-5rpte`
 
 ---
 
@@ -13,7 +13,11 @@
 | Decisão | Status | Detalhes |
 |---------|--------|---------|
 | Copiar estrutura organizacional do AIgnt-OS | ✅ Concluído | CLAUDE.md, CONTEXT.md, AGENTS.md, agents/, settings.json criados |
-| Dados em modo mock | 🔄 Temporário | `src/data/mockData.ts` — substituir pela API Albion Online |
+| Camada de serviços (`src/services/`) | ✅ Concluído | Interface `MarketService`, implementações API + mock |
+| Hooks customizados | ✅ Concluído | useMarketItems, useTopProfitable, useAlerts, useAlertPoller, useLastUpdateTime |
+| Alert engine + storage | ✅ Concluído | Polling via `alert.engine.ts`, persistência via `alert.storage.ts` (localStorage) |
+| Testes E2E com Playwright | ✅ Concluído | 13 testes passando: dashboard, navigation, alerts |
+| Dados em modo mock | 🔄 Temporário | `src/data/mockData.ts` — substituir via `VITE_USE_REAL_API=true` |
 | shadcn/ui como biblioteca de componentes | ✅ Fixo | 59 componentes disponíveis em `src/components/ui/` |
 | TypeScript sem strict mode | 🔄 Revisitar | Legado do Lovable — migrar gradualmente |
 
@@ -33,23 +37,26 @@ Agentes disponíveis:
 
 ## Próximos Passos
 
-1. Refinar CONTEXT.md, AGENTS.md e CLAUDE.md conforme o projeto evolui
-2. Criar primeira SPEC de feature para a refatoração
-3. Integrar API real do Albion Online (substituir mockData.ts)
-4. Avaliar necessidade de state management global (TanStack Query cobre a maioria)
-5. Adicionar testes (Vitest + Testing Library)
+1. Criar SPEC formal da integração com a API real do Albion Online
+2. Expandir catálogo de itens em `market.api.ts` (atualmente apenas 20 itens)
+3. Adicionar filtros de cidade e tier na UI do dashboard
+4. Avaliar TypeScript strict mode (migração gradual)
+5. Adicionar histórico de preços real (endpoint `/api/v2/stats/history`)
 
 ---
 
 ## Riscos Conhecidos
 
-- Dados em mock não refletem comportamento real da API do Albion Online
+- `market.api.ts` lista apenas 20 itens hardcoded — catálogo limitado para uso real
 - TypeScript sem strict mode pode mascarar erros de tipo
 - Componentes shadcn/ui não devem ser editados diretamente (quebra atualizações)
-- Nenhuma cobertura de testes no projeto original Lovable
+- API do Albion Online sem autenticação, mas sujeita a rate limiting
 
 ---
 
 ## Contexto de Sessões Anteriores
 
-- `2026-03-14`: Estrutura de governança Claude copiada do AIgnt-OS e adaptada para o projeto web
+- `2026-03-14 (sessão 1)`: Estrutura de governança Claude copiada do AIgnt-OS e adaptada para o projeto web
+- `2026-03-14 (sessão 2)`: Camada de serviços, hooks customizados, alert engine, alert storage implementados
+- `2026-03-14 (sessão 3)`: 13 testes E2E com Playwright criados e passando; melhorias no sistema de alertas
+- `2026-03-14 (sessão 4)`: CONTEXT.md e memory.md atualizados para refletir arquitetura atual; SPEC-real-api criada
