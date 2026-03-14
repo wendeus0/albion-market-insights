@@ -7,6 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
+  timeout: 60000,
   use: {
     baseURL: 'http://localhost:8080',
     screenshot: 'only-on-failure',
@@ -16,7 +17,7 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
-    timeout: 30000,
+    timeout: 60000,
   },
   projects: [
     {

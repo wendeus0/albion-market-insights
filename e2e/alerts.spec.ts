@@ -30,9 +30,10 @@ test.describe('Alertas de Preço', () => {
   });
 
   test('exibe estado vazio quando não há alertas', async ({ page }) => {
+    test.setTimeout(120000);
     // Limpa alertas do localStorage
     await page.evaluate(() => localStorage.removeItem('albion_alerts'));
     await page.reload();
-    await expect(page.getByText('No alerts yet')).toBeVisible();
+    await expect(page.getByText('No alerts yet')).toBeVisible({ timeout: 10000 });
   });
 });

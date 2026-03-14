@@ -15,7 +15,7 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, subtitle, icon: Icon, trend, className }: StatsCardProps) {
   return (
-    <div className={cn('glass-card p-5 group hover:border-primary/30 transition-all duration-300', className)}>
+    <div data-testid="stats-card" className={cn('glass-card p-5 group hover:border-primary/30 transition-all duration-300', className)}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
