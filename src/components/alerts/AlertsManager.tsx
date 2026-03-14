@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { 
-  Bell, 
-  Plus, 
-  ToggleLeft, 
-  ToggleRight, 
-  Trash2, 
-  Search,
+import {
+  Bell,
+  Plus,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
   ArrowDown,
   ArrowUp,
   Percent,
   Mail,
-  BellRing
+  BellRing,
 } from 'lucide-react';
-import { Alert, cities, mockItems } from '@/data/mockData';
+import type { Alert, MarketItem } from '@/data/types';
+import { cities } from '@/data/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,11 +37,13 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface AlertsManagerProps {
-  initialAlerts: Alert[];
+  availableItems: MarketItem[];
+  alerts: Alert[];
+  onSaveAlert: (alert: Alert) => void;
+  onDeleteAlert: (id: string) => void;
 }
 
-export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState('');
   const [selectedCity, setSelectedCity] = useState('all');
@@ -51,38 +53,34 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
   const [emailNotification, setEmailNotification] = useState(false);
   const { toast } = useToast();
 
-  const toggleAlert = (id: string) => {
-    setAlerts(prev => 
-      prev.map(alert => 
-        alert.id === id ? { ...alert, isActive: !alert.isActive } : alert
-      )
-    );
+  const toggleAlert = (alert: Alert) => {
+    onSaveAlert({ ...alert, isActive: !alert.isActive });
     toast({
-      title: "Alert updated",
-      description: "Your alert status has been changed.",
+      title: 'Alert updated',
+      description: 'Your alert status has been changed.',
     });
   };
 
   const deleteAlert = (id: string) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== id));
+    onDeleteAlert(id);
     toast({
-      title: "Alert deleted",
-      description: "Your price alert has been removed.",
-      variant: "destructive",
+      title: 'Alert deleted',
+      description: 'Your price alert has been removed.',
+      variant: 'destructive',
     });
   };
 
   const createAlert = () => {
     if (!selectedItem || !threshold) {
       toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
+        title: 'Missing fields',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
       });
       return;
     }
 
-    const item = mockItems.find(i => i.itemId === selectedItem);
+    const item = availableItems.find(i => i.itemId === selectedItem);
     const newAlert: Alert = {
       id: Date.now().toString(),
       itemId: selectedItem,
@@ -98,12 +96,12 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
       },
     };
 
-    setAlerts(prev => [newAlert, ...prev]);
+    onSaveAlert(newAlert);
     setIsDialogOpen(false);
     resetForm();
 
     toast({
-      title: "Alert created!",
+      title: 'Alert created!',
       description: `You'll be notified when ${item?.itemName} price ${alertType === 'below' ? 'drops below' : alertType === 'above' ? 'goes above' : 'changes by'} ${threshold}${alertType === 'change' ? '%' : ''}.`,
     });
   };
@@ -135,7 +133,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
   };
 
   const uniqueItems = Array.from(
-    new Map(mockItems.map(item => [item.itemName, item])).values()
+    new Map(availableItems.map(item => [item.itemName, item])).values()
   ).slice(0, 20);
 
   return (
@@ -212,9 +210,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
                     variant={alertType === 'below' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setAlertType('below')}
-                    className={cn(
-                      alertType === 'below' && 'bg-success text-success-foreground'
-                    )}
+                    className={cn(alertType === 'below' && 'bg-success text-success-foreground')}
                   >
                     <ArrowDown className="h-3 w-3 mr-1" />
                     Below
@@ -224,9 +220,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
                     variant={alertType === 'above' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setAlertType('above')}
-                    className={cn(
-                      alertType === 'above' && 'bg-destructive text-destructive-foreground'
-                    )}
+                    className={cn(alertType === 'above' && 'bg-destructive text-destructive-foreground')}
                   >
                     <ArrowUp className="h-3 w-3 mr-1" />
                     Above
@@ -236,9 +230,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
                     variant={alertType === 'change' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setAlertType('change')}
-                    className={cn(
-                      alertType === 'change' && 'bg-primary text-primary-foreground'
-                    )}
+                    className={cn(alertType === 'change' && 'bg-primary text-primary-foreground')}
                   >
                     <Percent className="h-3 w-3 mr-1" />
                     Change
@@ -310,8 +302,8 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
       <div className="glass-card p-4 border-l-4 border-l-primary">
         <h4 className="font-medium text-foreground mb-1">How Alerts Work</h4>
         <p className="text-sm text-muted-foreground">
-          We check market prices every 15 minutes. When a price matches your alert criteria, 
-          you'll receive a notification through your selected channels. Alerts can be paused 
+          We check market prices every 15 minutes. When a price matches your alert criteria,
+          you'll receive a notification through your selected channels. Alerts can be paused
           or deleted at any time.
         </p>
       </div>
@@ -327,7 +319,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
             <p className="text-sm text-muted-foreground mb-4">
               Create your first price alert to start tracking items.
             </p>
-            <Button 
+            <Button
               onClick={() => setIsDialogOpen(true)}
               className="bg-gold-gradient text-primary-foreground"
             >
@@ -383,7 +375,7 @@ export function AlertsManager({ initialAlerts }: AlertsManagerProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => toggleAlert(alert.id)}
+                    onClick={() => toggleAlert(alert)}
                     className="h-8 w-8"
                   >
                     {alert.isActive ? (

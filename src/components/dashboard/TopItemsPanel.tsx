@@ -1,5 +1,5 @@
 import { TrendingUp, ArrowUpRight } from 'lucide-react';
-import { MarketItem } from '@/data/mockData';
+import type { MarketItem } from '@/data/types';
 import { Sparkline } from '@/components/ui/sparkline';
 import { cn } from '@/lib/utils';
 
