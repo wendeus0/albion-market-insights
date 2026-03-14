@@ -78,18 +78,48 @@ describe('ApiMarketService', () => {
       expect(items.length).toBe(2); // apenas os válidos
     });
 
-    it('propaga erro de rede', async () => {
+    it('retorna mock data em erro de rede', async () => {
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
-      await expect(service.getItems()).rejects.toThrow('Network error');
+      const items = await service.getItems();
+      expect(items.length).toBeGreaterThan(0);
     });
 
-    it('lança erro quando API retorna status != 200', async () => {
+    it('retorna mock data quando API retorna status != 200', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
         json: vi.fn().mockResolvedValue([]),
       }));
-      await expect(service.getItems()).rejects.toThrow('Albion API error: 503');
+      const items = await service.getItems();
+      expect(items.length).toBeGreaterThan(0);
+    });
+
+    it('retorna mock data em timeout (>10s)', async () => {
+      vi.useFakeTimers();
+      vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, options?: RequestInit) => {
+        return new Promise((_resolve, reject) => {
+          const signal = options?.signal as AbortSignal | undefined;
+          if (signal) {
+            signal.addEventListener('abort', () => {
+              reject(new DOMException('The operation was aborted.', 'AbortError'));
+            });
+          }
+        });
+      }));
+      const promise = service.getItems();
+      vi.advanceTimersByTime(10_001);
+      const items = await promise;
+      expect(items.length).toBeGreaterThan(0);
+      vi.useRealTimers();
+    });
+
+    it('aplica nome legível via ITEM_NAMES', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue(validApiResponse),
+      }));
+      const items = await service.getItems();
+      expect(items[0].itemName).toBe('Broadsword T4');
     });
   });
 
