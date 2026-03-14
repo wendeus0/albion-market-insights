@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { AlertsManager } from '@/components/alerts/AlertsManager';
 import type { Alert, MarketItem } from '@/data/types';
 
@@ -105,5 +106,52 @@ describe('AlertsManager', () => {
       />
     );
     expect(screen.getByText('No alerts yet')).toBeDefined();
+  });
+
+  it('exibe erro de validação ao submeter sem selecionar item', async () => {
+    const user = userEvent.setup();
+    render(
+      <AlertsManager
+        availableItems={mockItems}
+        alerts={[]}
+        onSaveAlert={vi.fn()}
+        onDeleteAlert={vi.fn()}
+      />
+    );
+
+    // Abre o dialog
+    await user.click(screen.getAllByRole('button', { name: /create alert/i })[0]);
+
+    // Submete sem preencher item
+    const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
+    await user.click(submitButtons[submitButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Selecione um item')).toBeDefined();
+    });
+  });
+
+  it('não chama onSaveAlert quando formulário é inválido', async () => {
+    const user = userEvent.setup();
+    const onSaveAlert = vi.fn();
+    render(
+      <AlertsManager
+        availableItems={mockItems}
+        alerts={[]}
+        onSaveAlert={onSaveAlert}
+        onDeleteAlert={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getAllByRole('button', { name: /create alert/i })[0]);
+
+    const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
+    await user.click(submitButtons[submitButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Selecione um item')).toBeDefined();
+    });
+
+    expect(onSaveAlert).not.toHaveBeenCalled();
   });
 });
