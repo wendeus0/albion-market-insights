@@ -10,8 +10,30 @@ Este é o **segundo repositório** do ecossistema `wendeus0`, desenvolvido em pa
 
 ## Filosofia de Desenvolvimento
 
+Este projeto adota uma metodologia explícita baseada em quatro pilares. Cada um resolve um problema concreto de qualidade e previsibilidade. A documentação operacional completa está em `docs/architecture/`.
+
+### Spec-Driven Development (SDD)
+Nenhuma linha de código é escrita sem uma SPEC aprovada. A SPEC define *o quê* — comportamento esperado, critérios de aceitação e escopo. O *como* é responsabilidade da implementação.
+
+**Problema que resolve:** evita implementações que resolvem o problema errado ou expandem escopo silenciosamente.
+
+### Test-Driven Development (TDD) com BDD
+Testes escritos *antes* da implementação, a partir dos critérios de aceitação da SPEC. Ciclo: RED → GREEN → REFACTOR. Os critérios usam formato **Given/When/Then** (BDD), tornando cada critério diretamente rastreável a um teste.
+
+**Problema que resolve:** testes escritos após a implementação testam o código como foi escrito, não o comportamento esperado.
+
+### Definition of Done (DoD)
+Uma feature só está concluída quando: SPEC aprovada, testes passando, lint e build limpos, code review sem blockers, security review concluída, ADR criado se necessário, commit e PR abertos. Consulte `docs/architecture/TDD.md` para o DoD completo.
+
+**Problema que resolve:** sem DoD explícito, "pronto" significa coisas diferentes em momentos diferentes.
+
+### Architecture Decision Records (ADR)
+Decisões arquiteturais estáveis são registradas em `docs/adr/`. Cada ADR tem status rastreável e cadência de revisão definida. Consulte `docs/architecture/TDD.md` para critérios e cadência.
+
+---
+
+### Princípios de trabalho
 - **Component-first**: cada feature começa pelo design do componente, não pelo dado
-- **Spec-driven**: escrever SPEC antes de implementar — clareza sobre o quê antes do como
 - **Incremental**: uma feature por vez, entregável a cada ciclo
 - **Pair programming com IA**: Claude atua como co-piloto, não como executor autônomo
 
