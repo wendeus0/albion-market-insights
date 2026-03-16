@@ -10,6 +10,7 @@
 - **ANALYSIS_REPORT.md gerado** (2026-03-16): codebase-analysis completa; relatório em raiz do projeto com 11 débitos classificados (P0/P1/P2).
 - **Catálogo expandido** (2026-03-16): `feat/catalog-expansion` — PR #10 aceito em `main`; 52→450 IDs, 17 categorias, batch loading com concorrência controlada, filtro de categoria no PriceTable. 65/65 testes.
 - **Backoff exponencial** (2026-03-16): `feat/backoff-exponencial` — PR #11 aceito em `main`; `fetchWithRetry` exportado, retry em 429/5xx/network, backoff `500ms * 2^attempt + jitter`, `AbortSignal` respeitado. 79/79 testes. Fecha DEBT-P1-001.
+- **Code-splitting** (2026-03-16): `feat/code-splitting` — PR #13 aceito em `main`; `React.lazy()` + `Suspense` em `src/App.tsx`; bundle principal 523 kB → 393 kB (~25%); `NotFound` mantida estática; 81/81 testes. Fecha DEBT-P1-004.
 
 ## Pendências
 
@@ -22,5 +23,4 @@
 ## Pontos de atenção
 
 - **Performance**: Com a API real, o carregamento inicial pode ser lento devido à busca de histórico para cada item em cada cidade (N itens * 7 cidades). Considerar cache com TTL em localStorage.
-- **Bundle size**: 520KB minificado — Vite avisa sobre chunks grandes. Code-splitting por rota com `React.lazy()` é o próximo passo recomendado (DEBT-P1-004).
-- **TypeScript strict mode desativado**: `noImplicitAny`, `strictNullChecks` e `noUnusedLocals` estão `false`. Migração gradual pendente — começar por `src/services/`.
+- **TypeScript strict mode desativado**: `noImplicitAny`, `strictNullChecks` e `noUnusedLocals` estão `false`. Migração gradual pendente — começar por `src/services/`. **Único P0 restante.**

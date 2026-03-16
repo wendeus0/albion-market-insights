@@ -64,4 +64,10 @@
 - **Ação tomada**: Nova branch `feat/backoff-exponencial` criada a partir de `origin/main`; stash → checkout → stash pop → commit → push → PR #11
 - **Status**: RESOLVIDO
 
-<!-- Sem outros erros nesta sessão -->
+---
+
+### [2026-03-16 05:00] feat/code-splitting — sem erros
+
+- Ciclo completo sem falhas: test-red → green-refactor → quality-gate → commit → PR #13 mergeado
+- Único ajuste necessário: mock de `window.matchMedia` para Sonner em `App.test.tsx` (jsdom não expõe a API)
+- **Status**: SEM ERROS
