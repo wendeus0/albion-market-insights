@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR #11 mergeado; 79/79 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/backoff-exponencial` (#11) — retry com backoff exponencial
+**Status:** Baseline estável — PR #13 mergeado; 81/81 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/code-splitting` (#13) — code-splitting por rota
 **ANALYSIS_REPORT.md:** gerado em 2026-03-16 — 11 débitos classificados (3×P0, 4×P1, 4×P2)
 
 ---
@@ -27,19 +27,19 @@
 | ITEM_CATALOG como fonte de verdade | ✅ Fixo | `ITEM_IDS` e `ITEM_NAMES` derivados de `ITEM_CATALOG`; 17 categorias, 450 IDs únicos (T4-T8) |
 | Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário |
 | Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
+| Code-splitting por rota | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB) |
 
 ---
 
 ## Active fronts
 
-- **TypeScript strict mode:** desativado (`noImplicitAny: false`, `strictNullChecks: false`) — migração gradual pendente; recomendação: começar por `src/services/`
-- **Bundle size:** ~520KB minificado — code-splitting por rota pendente (DEBT-P1-004)
+- **TypeScript strict mode:** desativado (`noImplicitAny: false`, `strictNullChecks: false`) — único P0 restante; migração gradual pendente iniciando por `src/services/`
 
 ---
 
 ## Open decisions
 
-- Migração TypeScript strict mode: quando e em qual escopo iniciar
+- Migração TypeScript strict mode: escopo exato da primeira iteração (apenas `src/services/` ou incluir `src/hooks/`?)
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
 
 ---
@@ -55,15 +55,15 @@
 - Deduplicação por `${item_id}|${city}|${quality}` é obrigatória ao consolidar resultados de múltiplos batches
 - Testes com `fetchWithRetry`: usar `const assertion = expect(promise).rejects...; await vi.runAllTimersAsync(); await assertion` — handler ANTES dos timers para evitar `PromiseRejectionHandledWarning`
 - Quando um PR for mergeado, criar nova branch a partir de `origin/main` — não continuar na branch antiga que divergiu
+- `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
 
 ---
 
 ## Next recommended steps
 
-1. **Code-splitting** — `React.lazy()` nas rotas para reduzir bundle de 520KB (DEBT-P1-004)
-2. **TypeScript strict mode** — migração gradual iniciando por `src/services/` (DEBT-P0)
-3. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
-4. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo
+1. **TypeScript strict mode** — migração gradual iniciando por `src/services/` (único DEBT-P0 restante)
+2. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
+3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (P2)
 
 ---
 
@@ -71,16 +71,16 @@
 
 **Sessão:** 2026-03-16
 **Trabalho realizado:**
-- `feat/backoff-exponencial` completo do plano ao PR #11 mergeado
-  - `market.api.ts`: `fetchWithRetry` exportado + `RETRY_MAX_ATTEMPTS=3` + `RETRY_BASE_DELAY_MS=500`; `fetchPricesBatch` e `fetchHistoryBatch` delegam para ela
-  - `src/test/market.api.retry.test.ts`: 14 novos testes cobrindo AC-1 a AC-5
-  - `src/test/market.api.test.ts`: 4 testes existentes corrigidos com fake timers para compatibilidade com retry
-  - 79/79 testes passando; lint 0 erros; build limpo
-- Branch criada a partir de `origin/main` após detectar que `feat/catalog-expansion` havia divergido por merge do PR #10
+- `feat/code-splitting` completo do plano ao PR #13 mergeado
+  - `src/App.tsx`: imports de `Index`, `Dashboard`, `Alerts`, `About` convertidos para `React.lazy()` + `Suspense` com `role="status"` no fallback; `NotFound` mantida estática
+  - `src/test/App.test.tsx`: 2 testes — AC-2 (Suspense fallback, RED→GREEN) e AC-3 (NotFound estático)
+  - Bundle principal: 523 kB → 393 kB (~25% de redução); 4 chunks de rota separados
+  - 81/81 testes passando; lint 0 erros; build limpo
+- Sessão sem erros — único ajuste: mock de `window.matchMedia` para jsdom em testes de App
 
-**Estado ao encerrar:** Baseline limpa. 79/79 testes. Lint e build OK. Sem feature ativa. DEBT-P1-001 encerrado.
+**Estado ao encerrar:** Baseline limpa. 81/81 testes. Lint e build OK. Sem feature ativa. DEBT-P1-004 encerrado. Único P0 restante: TypeScript strict mode.
 
 **Retomar por:**
 ```
-session-open → technical-triage → próxima feature (code-splitting ou strict mode)
+session-open → implement-feature typescript-strict-mode
 ```
