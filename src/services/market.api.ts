@@ -11,6 +11,54 @@ const HISTORY_URL = 'https://west.albion-online-data.com/api/v2/stats/history';
 
 export const BATCH_SIZE = 100;
 export const HISTORY_CONCURRENCY = 3;
+export const RETRY_MAX_ATTEMPTS = 3;
+export const RETRY_BASE_DELAY_MS = 500;
+
+function isRetryable(status: number): boolean {
+  return status === 429 || (status >= 500 && status <= 599);
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function fetchWithRetry(
+  url: string,
+  options?: RequestInit,
+  retryConfig?: { maxAttempts?: number; baseDelayMs?: number }
+): Promise<Response> {
+  const maxAttempts = retryConfig?.maxAttempts ?? RETRY_MAX_ATTEMPTS;
+  const baseDelayMs = retryConfig?.baseDelayMs ?? RETRY_BASE_DELAY_MS;
+
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+    if (options?.signal?.aborted) {
+      throw new DOMException('The operation was aborted.', 'AbortError');
+    }
+
+    let response: Response | undefined;
+    try {
+      response = await fetch(url, options);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      lastError = err;
+    }
+
+    if (response) {
+      if (response.ok) return response;
+      if (!isRetryable(response.status)) throw new Error(`HTTP ${response.status}`);
+      lastError = new Error(`HTTP ${response.status}`);
+    }
+
+    if (attempt < maxAttempts) {
+      const jitter = Math.floor(Math.random() * 100);
+      await delay(baseDelayMs * Math.pow(2, attempt) + jitter);
+    }
+  }
+
+  throw lastError;
+}
 
 const LOCATIONS = [
   'Caerleon',
@@ -65,8 +113,7 @@ export class ApiMarketService implements MarketService {
   private async fetchPricesBatch(itemIds: string[], signal?: AbortSignal): Promise<AlbionPriceRecord[]> {
     const locationsParam = LOCATIONS.join(',');
     const url = `${BASE_URL}/${itemIds.join(',')}.json?locations=${locationsParam}&qualities=1,2,3,4,5`;
-    const response = await fetch(url, { signal });
-    if (!response.ok) throw new Error(`Albion API error: ${response.status}`);
+    const response = await fetchWithRetry(url, { signal });
     const raw: unknown[] = await response.json();
     return raw
       .map(r => {
@@ -80,8 +127,7 @@ export class ApiMarketService implements MarketService {
     const map: HistoryMap = new Map();
     try {
       const url = `${HISTORY_URL}/${itemIds.join(',')}.json?locations=${city}&qualities=1&time-scale=1`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`History API error: ${response.status}`);
+      const response = await fetchWithRetry(url);
       const raw: unknown[] = await response.json();
       for (const record of raw) {
         const result = AlbionHistoryRecordSchema.safeParse(record);

@@ -87,29 +87,37 @@ describe('ApiMarketService', () => {
 
     it('retorna mock data em erro de rede', async () => {
       // Given
+      vi.useFakeTimers();
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 
-      // When
-      const items = await service.getItems();
+      // When — fetchWithRetry retenta antes de esgotar; fake timers avançam os delays
+      const promise = service.getItems();
+      await vi.runAllTimersAsync();
+      const items = await promise;
 
       // Then
       expect(items.length).toBeGreaterThan(0);
-    });
+      vi.useRealTimers();
+    }, 10_000);
 
     it('retorna mock data quando API retorna status != 200', async () => {
       // Given
+      vi.useFakeTimers();
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
         json: vi.fn().mockResolvedValue([]),
       }));
 
-      // When
-      const items = await service.getItems();
+      // When — 503 é retentável; fake timers avançam os delays de backoff
+      const promise = service.getItems();
+      await vi.runAllTimersAsync();
+      const items = await promise;
 
       // Then
       expect(items.length).toBeGreaterThan(0);
-    });
+      vi.useRealTimers();
+    }, 10_000);
 
     it('retorna mock data em timeout (>15s)', async () => {
       // Given
@@ -187,20 +195,25 @@ describe('ApiMarketService', () => {
 
     it('não chama console.warn nem console.error em erro de rede (fallback)', async () => {
       // Given
+      vi.useFakeTimers();
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 
       // When
-      await service.getItems();
+      const promise = service.getItems();
+      await vi.runAllTimersAsync();
+      await promise;
 
       // Then
       expect(warnSpy).not.toHaveBeenCalled();
       expect(errorSpy).not.toHaveBeenCalled();
-    });
+      vi.useRealTimers();
+    }, 10_000);
 
     it('não chama console.warn em falha de histórico por cidade', async () => {
       // Given
+      vi.useFakeTimers();
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       let callCount = 0;
       vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
@@ -212,11 +225,14 @@ describe('ApiMarketService', () => {
       }));
 
       // When
-      await service.getItems();
+      const promise = service.getItems();
+      await vi.runAllTimersAsync();
+      await promise;
 
       // Then
       expect(warnSpy).not.toHaveBeenCalled();
-    });
+      vi.useRealTimers();
+    }, 10_000);
   });
 
   describe('albionRecordToMarketItem()', () => {
