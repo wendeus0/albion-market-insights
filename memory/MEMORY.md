@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — debug logging removido (DoD restaurado); 54/54 testes passando; lint e build limpos
-**Branch ativa:** main | Último commit: `ad190a2` fix(market.api): remover debug logging de produção
+**Status:** Baseline estável — PR #11 mergeado; 79/79 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/backoff-exponencial` (#11) — retry com backoff exponencial
 **ANALYSIS_REPORT.md:** gerado em 2026-03-16 — 11 débitos classificados (3×P0, 4×P1, 4×P2)
 
 ---
@@ -23,44 +23,47 @@
 | Estrutura de governança Claude | ✅ Fixo | CLAUDE.md com `@AGENTS.md`, `.claude/` com agents, rules e hooks |
 | Endpoint de histórico de preços | ✅ Fixo | `/api/v2/stats/history` integrado em `market.api.ts` |
 | Sem debug logging em produção | ✅ Fixo | `console.*` removidos de `market.api.ts` e `NotFound.tsx`; testes garantem ausência |
-| Timeout da API | ✅ Fixo | 15 segundos (não 10s) — teste corrigido para refletir valor real |
+| Timeout da API | ✅ Fixo | 15 segundos — `AbortController` único compartilhado entre todos os batches |
+| ITEM_CATALOG como fonte de verdade | ✅ Fixo | `ITEM_IDS` e `ITEM_NAMES` derivados de `ITEM_CATALOG`; 17 categorias, 450 IDs únicos (T4-T8) |
+| Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário |
+| Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
 
 ---
 
 ## Active fronts
 
-- **Catálogo de itens:** ~50 itens hardcoded em `src/data/constants.ts` — limitação de produto real; decisão pendente (hardcoded vs. endpoint dinâmico)
-- **TypeScript strict mode:** desativado (`noImplicitAny: false`, `strictNullChecks: false`) — migração gradual pendente
-- **Working tree com mudanças não commitadas:** arquivos de sessões anteriores (`AGENTS.md`, `CLAUDE.md`, test files, `vite.config.ts`, `docs/adr/`, `memory/`) aguardam avaliação
+- **TypeScript strict mode:** desativado (`noImplicitAny: false`, `strictNullChecks: false`) — migração gradual pendente; recomendação: começar por `src/services/`
+- **Bundle size:** ~520KB minificado — code-splitting por rota pendente (DEBT-P1-004)
 
 ---
 
 ## Open decisions
 
-- Estratégia de expansão do catálogo: hardcoded completo (~500 itens) vs. endpoint dinâmico da API
-- Migração TypeScript strict mode: quando e em qual escopo iniciar (recomendação: começar por `src/services/`)
-- ADR-004: decisão de localStorage para alertas precisa ser formalizada em `docs/adr/ADR-004-*.md`
+- Migração TypeScript strict mode: quando e em qual escopo iniciar
+- Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
 
 ---
 
 ## Recurrent pitfalls
 
 - Componentes `src/components/ui/` não devem ser editados diretamente — quebra atualizações do shadcn/ui
-- API do Albion Online não requer autenticação, mas está sujeita a rate limiting — não fazer polling agressivo; sem backoff implementado ainda
+- API do Albion Online não requer autenticação, mas tem rate limiting — `fetchWithRetry` agora mitiga isso
 - `VITE_USE_REAL_API` deve ser `'true'` (string), não booleano — default é modo mock
 - Imports relativos `../` são proibidos — usar path alias `@/*`
-- Timeout da API é 15s (não 10s) — qualquer teste de timer deve avançar ao menos 15001ms para disparar o abort
-- Não commitar arquivos fora do escopo da feature ativa — working tree tem mudanças de sessões anteriores pendentes
+- Timeout da API é 15s — testes de timer devem avançar ao menos 15001ms para disparar abort
+- `AbortController` deve ser único e compartilhado entre todos os batches — múltiplos controllers causam hang em testes com fake timers
+- Deduplicação por `${item_id}|${city}|${quality}` é obrigatória ao consolidar resultados de múltiplos batches
+- Testes com `fetchWithRetry`: usar `const assertion = expect(promise).rejects...; await vi.runAllTimersAsync(); await assertion` — handler ANTES dos timers para evitar `PromiseRejectionHandledWarning`
+- Quando um PR for mergeado, criar nova branch a partir de `origin/main` — não continuar na branch antiga que divergiu
 
 ---
 
 ## Next recommended steps
 
-1. **Avaliar working tree não commitado** — verificar se mudanças em `AGENTS.md`, `CLAUDE.md`, test files e `vite.config.ts` são intencionais e commitar ou descartar
-2. **`adr-manager`** — criar `docs/adr/ADR-004-localStorage-alertas.md` (esforço XS, fecha DEBT-P2-003)
-3. **`spec-editor`** — iniciar SPEC para expansão do catálogo de itens (DEBT-P0-003, maior impacto de produto)
-4. **Backoff exponencial** — implementar retry com backoff em `market.api.ts` para rate limiting (DEBT-P1-001)
-5. **Code-splitting** — `React.lazy()` nas rotas para reduzir bundle de 520KB (DEBT-P1-004)
+1. **Code-splitting** — `React.lazy()` nas rotas para reduzir bundle de 520KB (DEBT-P1-004)
+2. **TypeScript strict mode** — migração gradual iniciando por `src/services/` (DEBT-P0)
+3. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
+4. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo
 
 ---
 
@@ -68,13 +71,16 @@
 
 **Sessão:** 2026-03-16
 **Trabalho realizado:**
-- `codebase-analysis` completa → `ANALYSIS_REPORT.md` gerado com 11 débitos priorizados
-- `fix-feature` completo → debug logging removido de `market.api.ts` e `NotFound.tsx`; 4 testes adicionados/corrigidos; commit `ad190a2` em `main`; pushed
-- `technical-triage` executado duas vezes: antes e após o fix
+- `feat/backoff-exponencial` completo do plano ao PR #11 mergeado
+  - `market.api.ts`: `fetchWithRetry` exportado + `RETRY_MAX_ATTEMPTS=3` + `RETRY_BASE_DELAY_MS=500`; `fetchPricesBatch` e `fetchHistoryBatch` delegam para ela
+  - `src/test/market.api.retry.test.ts`: 14 novos testes cobrindo AC-1 a AC-5
+  - `src/test/market.api.test.ts`: 4 testes existentes corrigidos com fake timers para compatibilidade com retry
+  - 79/79 testes passando; lint 0 erros; build limpo
+- Branch criada a partir de `origin/main` após detectar que `feat/catalog-expansion` havia divergido por merge do PR #10
 
-**Estado ao encerrar:** Baseline limpa. 54/54 testes. Lint e build OK. Sem feature ativa em andamento.
+**Estado ao encerrar:** Baseline limpa. 79/79 testes. Lint e build OK. Sem feature ativa. DEBT-P1-001 encerrado.
 
 **Retomar por:**
 ```
-session-open → avaliar working tree não commitado → adr-manager (ADR-004) → spec-editor (catálogo de itens)
+session-open → technical-triage → próxima feature (code-splitting ou strict mode)
 ```
