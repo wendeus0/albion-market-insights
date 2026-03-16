@@ -8,13 +8,15 @@
 - **Teste de integração**: Validado que `market.api.ts` é carregado quando a variável de ambiente está ativa.
 - **Debug logging removido** (2026-03-16): `console.log/warn/error` removidos de `market.api.ts` e `NotFound.tsx`; testes adicionados para garantir ausência. Commit `ad190a2` em `main`.
 - **ANALYSIS_REPORT.md gerado** (2026-03-16): codebase-analysis completa; relatório em raiz do projeto com 11 débitos classificados (P0/P1/P2).
+- **Catálogo expandido** (2026-03-16): `feat/catalog-expansion` — PR #10 aceito em `main`; 52→450 IDs, 17 categorias, batch loading com concorrência controlada, filtro de categoria no PriceTable. 65/65 testes.
+- **Backoff exponencial** (2026-03-16): `feat/backoff-exponencial` — PR #11 aceito em `main`; `fetchWithRetry` exportado, retry em 429/5xx/network, backoff `500ms * 2^attempt + jitter`, `AbortSignal` respeitado. 79/79 testes. Fecha DEBT-P1-001.
 
 ## Pendências
 
-- [ ] **ADR-004 ausente**: Decisão de localStorage para alertas documentada em MEMORY.md mas sem arquivo formal em `docs/adr/`. Usar `adr-manager`. Esforço: XS.
-- [ ] **Expansão do catálogo**: `src/data/constants.ts` contém apenas ~50 itens hardcoded. Necessário decidir: hardcoded vs. endpoint dinâmico. Criar SPEC antes de implementar.
-- [ ] **Filtros de UI**: O dashboard exibe todos os itens de uma vez. Necessário adicionar filtros por Tier, Categoria e Cidade na interface.
-- [ ] **Tratamento de Rate Limit**: A API pública tem limites não documentados. Implementar backoff exponencial em `market.api.ts`.
+- [x] **ADR-004**: `docs/adr/ADR-004-localstorage-alert-persistence.md` já existe e está completo (2026-03-16).
+- [x] **Expansão do catálogo**: CONCLUÍDO — PR #10 mergeado. 450 IDs em 17 categorias.
+- [ ] **Filtros de UI adicionais**: Tier e Cidade já existem no PriceTable. Avaliar se há gaps remanescentes de UX.
+- [x] **Tratamento de Rate Limit**: CONCLUÍDO — PR #11 mergeado. `fetchWithRetry` com backoff exponencial e jitter em `market.api.ts`. `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`. Fecha DEBT-P1-001.
 - [ ] **Working tree com mudanças não commitadas**: Arquivos de sessões anteriores (`AGENTS.md`, `CLAUDE.md`, test files, `vite.config.ts`, `docs/adr/`, `memory/`) ainda não commitados. Avaliar e commitar ou descartar antes de próxima feature.
 
 ## Pontos de atenção
