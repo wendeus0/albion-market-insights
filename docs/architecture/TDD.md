@@ -174,4 +174,8 @@ docs/adr/
 
 | ADR | Título | Status | Última revisão |
 |-----|--------|--------|----------------|
-| — | nenhum criado ainda | — | — |
+| ADR-001 | shadcn/ui como biblioteca de componentes | Aceito | 2026-03-16 |
+| ADR-002 | TanStack Query para gerenciamento de estado de servidor | Aceito | 2026-03-16 |
+| ADR-003 | Interface MarketService com feature flag para implementação | Aceito | 2026-03-16 |
+| ADR-004 | localStorage para persistência de alertas | Aceito | 2026-03-16 |
+| ADR-005 | Playwright para testes E2E | Aceito | 2026-03-16 |

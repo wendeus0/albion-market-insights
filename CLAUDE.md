@@ -1,37 +1,22 @@
 # CLAUDE.md — Albion Market Insights
 
-## Pré-requisitos
-
-Antes de qualquer modificação, revise:
-
-1. **CONTEXT.md** — Contexto, filosofia e stack técnica do projeto
-2. **AGENTS.md** — Governança de agentes e workflow oficial
-3. Arquivo de SPEC da feature relevante (quando existir)
-
----
+@AGENTS.md
 
 ## Comandos de Validação
 
 ```bash
-# Verificação completa antes de commit
-npm run lint && npm run build
-
-# Desenvolvimento local
-npm run dev
-
-# Preview do build de produção
-npm run preview
+npm run lint && npm run build   # obrigatório antes de commit
+npm run test                    # testes unitários (Vitest — single run)
+npm run test:e2e                # testes E2E (Playwright)
+npm run dev                     # desenvolvimento local (http://localhost:8080)
+npm run preview                 # preview do build de produção
 ```
 
-Sempre execute `npm run lint && npm run build` antes de commitar. Build quebrado = commit bloqueado.
+`npm run lint && npm run build` deve passar sem erros antes de qualquer commit.
 
 ---
 
-## Visão Arquitetural
-
-**Albion Market Insights** é uma SPA (Single Page Application) para análise de preços de mercado do jogo Albion Online.
-
-### Stack
+## Stack
 
 | Camada | Tecnologia |
 |--------|-----------|
@@ -44,56 +29,55 @@ Sempre execute `npm run lint && npm run build` antes de commitar. Build quebrado
 | Gráficos | Recharts 2 |
 | Formulários | React Hook Form + Zod |
 | Ícones | Lucide React |
+| Testes unitários | Vitest 4 + Testing Library |
+| Testes E2E | Playwright 1.49 |
 
-### Estrutura de Diretórios
+---
+
+## Estrutura Principal
 
 ```
 src/
 ├── components/
-│   ├── ui/          # Componentes shadcn/ui (não modificar diretamente)
-│   ├── dashboard/   # Componentes do dashboard (StatsCard, PriceTable, TopItemsPanel)
+│   ├── ui/          # shadcn/ui — não modificar diretamente
+│   ├── dashboard/   # StatsCard, PriceTable, TopItemsPanel
 │   ├── layout/      # Layout, Navbar, Footer
 │   └── alerts/      # AlertsManager
-├── pages/           # Páginas (Dashboard, Index, Alerts, About, NotFound)
-├── hooks/           # Custom hooks (use-mobile, use-toast)
-├── lib/             # Utilitários (utils.ts)
-└── data/            # Dados e tipos (mockData.ts)
-```
-
-### Path Alias
-
-```typescript
-// Use @/* para imports absolutos
-import { Button } from "@/components/ui/button"
-import { mockItems } from "@/data/mockData"
+├── pages/           # Index, Dashboard, Alerts, About, NotFound
+├── hooks/           # useMarketItems, useTopProfitable, useAlerts, useAlertPoller, useLastUpdateTime
+├── services/        # MarketService interface + market.api.ts + market.mock.ts + alert engine
+├── lib/             # utils.ts, schemas.ts
+├── data/            # constants.ts (ITEM_IDS, ITEM_NAMES), types.ts, mockData.ts
+└── test/            # Testes unitários Vitest
 ```
 
 ---
 
 ## Convenções de Código
 
-- **Componentes**: PascalCase, um componente por arquivo
+- **Componentes**: PascalCase, um por arquivo
 - **Hooks**: camelCase com prefixo `use`
-- **Tipos**: interfaces TypeScript — definir próximo ao uso ou em `mockData.ts`
-- **Estilos**: Tailwind CSS com classes utilitárias; evitar CSS inline
-- **Componentes UI**: sempre usar shadcn/ui quando disponível antes de criar do zero
-- **Imports**: path alias `@/*` obrigatório (sem imports relativos de `../`)
+- **Tipos**: interfaces TypeScript — definir em `types.ts` ou próximo ao uso
+- **Estilos**: Tailwind CSS; evitar CSS inline
+- **Componentes UI**: usar shadcn/ui sempre que disponível
+- **Imports**: path alias `@/*` obrigatório — sem imports relativos `../`
 
 ---
 
-## Modelo de Domínio
+## Ambiente
 
-- **Cidades**: Caerleon, Bridgewatch, Fort Sterling, Lymhurst, Martlock, Thetford, Black Market
-- **Tiers**: T4, T5, T6, T7, T8
-- **Qualidades**: Normal, Good, Outstanding, Excellent, Masterpiece
-- **Dados**: `src/data/mockData.ts` — fonte atual dos dados de mercado
+- `VITE_USE_REAL_API=true` — ativa a API real (west.albion-online-data.com)
+- Sem essa variável: modo mock (padrão para testes E2E)
 
 ---
 
-## Workflow Oficial
+## Workflow
 
-```
-SPEC → COMPONENT_DESIGN → IMPLEMENT → REVIEW → QA → COMMIT
-```
+Meta-skill `implement-feature` orquestra o ciclo completo.
+Consulte `AGENTS.md` para fluxo de etapas, regras críticas e Definition of Done.
 
-Consulte `AGENTS.md` para detalhes de cada fase e papel dos agentes.
+---
+
+## Memória
+
+Estado durável desta sessão: `memory/MEMORY.md`

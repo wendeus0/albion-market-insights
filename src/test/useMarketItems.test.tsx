@@ -57,28 +57,52 @@ function createWrapper() {
 
 describe('useMarketItems', () => {
   it('começa em estado de loading', () => {
-    const { result } = renderHook(() => useMarketItems(), { wrapper: createWrapper() });
+    // Given
+    const wrapper = createWrapper();
+
+    // When
+    const { result } = renderHook(() => useMarketItems(), { wrapper });
+
+    // Then
     expect(result.current.isLoading).toBe(true);
   });
 
   it('retorna dados após resolver', async () => {
-    const { result } = renderHook(() => useMarketItems(), { wrapper: createWrapper() });
+    // Given
+    const wrapper = createWrapper();
+
+    // When
+    const { result } = renderHook(() => useMarketItems(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Then
     expect(result.current.data).toHaveLength(1);
     expect(result.current.data![0].itemId).toBe('ITEM_0001');
   });
 
   it('expõe data, isLoading e error', async () => {
-    const { result } = renderHook(() => useMarketItems(), { wrapper: createWrapper() });
+    // Given
+    const wrapper = createWrapper();
+
+    // When
+    const { result } = renderHook(() => useMarketItems(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Then
     expect(result.current).toHaveProperty('data');
     expect(result.current).toHaveProperty('isLoading');
     expect(result.current).toHaveProperty('error');
   });
 
   it('data é array de MarketItem com campos corretos', async () => {
-    const { result } = renderHook(() => useMarketItems(), { wrapper: createWrapper() });
+    // Given
+    const wrapper = createWrapper();
+
+    // When
+    const { result } = renderHook(() => useMarketItems(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Then
     const item = result.current.data![0];
     expect(item).toHaveProperty('itemId');
     expect(item).toHaveProperty('itemName');
