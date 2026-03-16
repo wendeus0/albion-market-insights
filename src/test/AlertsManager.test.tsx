@@ -56,11 +56,15 @@ describe('AlertsManager', () => {
   };
 
   it('renderiza lista de alertas', () => {
+    // Given / When
     render(<AlertsManager {...defaultProps} />);
+
+    // Then
     expect(screen.getByText('Clarent Blade')).toBeDefined();
   });
 
   it('renderiza com availableItems como prop (não mockData)', () => {
+    // Given / When
     const { container } = render(
       <AlertsManager
         availableItems={mockItems}
@@ -69,34 +73,44 @@ describe('AlertsManager', () => {
         onDeleteAlert={vi.fn()}
       />
     );
+
+    // Then
     expect(container).toBeDefined();
-    // Sem alerts, mostra estado vazio
     expect(screen.getByText('No alerts yet')).toBeDefined();
   });
 
   it('chama onDeleteAlert ao clicar em delete', () => {
+    // Given
     const onDeleteAlert = vi.fn();
     render(<AlertsManager {...defaultProps} onDeleteAlert={onDeleteAlert} />);
     const deleteButtons = screen.getAllByRole('button');
-    // Último botão é o de delete
+
+    // When
     const trashButton = deleteButtons[deleteButtons.length - 1];
     fireEvent.click(trashButton);
+
+    // Then
     expect(onDeleteAlert).toHaveBeenCalledWith('1');
   });
 
   it('chama onSaveAlert (toggle) ao clicar no botão de toggle', () => {
+    // Given
     const onSaveAlert = vi.fn();
     render(<AlertsManager {...defaultProps} onSaveAlert={onSaveAlert} />);
     const buttons = screen.getAllByRole('button');
-    // Penúltimo botão é o de toggle
+
+    // When
     const toggleButton = buttons[buttons.length - 2];
     fireEvent.click(toggleButton);
+
+    // Then
     expect(onSaveAlert).toHaveBeenCalledWith(
       expect.objectContaining({ id: '1', isActive: false })
     );
   });
 
   it('exibe "No alerts yet" quando lista de alertas está vazia', () => {
+    // Given / When
     render(
       <AlertsManager
         availableItems={mockItems}
@@ -105,10 +119,13 @@ describe('AlertsManager', () => {
         onDeleteAlert={vi.fn()}
       />
     );
+
+    // Then
     expect(screen.getByText('No alerts yet')).toBeDefined();
   });
 
   it('exibe erro de validação ao submeter sem selecionar item', async () => {
+    // Given
     const user = userEvent.setup();
     render(
       <AlertsManager
@@ -118,20 +135,20 @@ describe('AlertsManager', () => {
         onDeleteAlert={vi.fn()}
       />
     );
-
-    // Abre o dialog
     await user.click(screen.getAllByRole('button', { name: /create alert/i })[0]);
 
-    // Submete sem preencher item
+    // When
     const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
     await user.click(submitButtons[submitButtons.length - 1]);
 
+    // Then
     await waitFor(() => {
       expect(screen.getByText('Selecione um item')).toBeDefined();
     });
   });
 
   it('não chama onSaveAlert quando formulário é inválido', async () => {
+    // Given
     const user = userEvent.setup();
     const onSaveAlert = vi.fn();
     render(
@@ -142,16 +159,16 @@ describe('AlertsManager', () => {
         onDeleteAlert={vi.fn()}
       />
     );
-
     await user.click(screen.getAllByRole('button', { name: /create alert/i })[0]);
 
+    // When
     const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
     await user.click(submitButtons[submitButtons.length - 1]);
 
+    // Then
     await waitFor(() => {
       expect(screen.getByText('Selecione um item')).toBeDefined();
     });
-
     expect(onSaveAlert).not.toHaveBeenCalled();
   });
 });
