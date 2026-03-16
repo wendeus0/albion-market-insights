@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR #13 mergeado; 81/81 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/code-splitting` (#13) — code-splitting por rota
+**Status:** Baseline estável — PR feat/typescript-strict-mode mergeado; 85/85 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/typescript-strict-mode` — ativar noImplicitAny + strictNullChecks (fecha DEBT-P0)
 **ANALYSIS_REPORT.md:** gerado em 2026-03-16 — 11 débitos classificados (3×P0, 4×P1, 4×P2)
 
 ---
@@ -28,19 +28,21 @@
 | Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário |
 | Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
 | Code-splitting por rota | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB) |
+| TypeScript strict mode (iteração 1) | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
 
 ---
 
 ## Active fronts
 
-- **TypeScript strict mode:** desativado (`noImplicitAny: false`, `strictNullChecks: false`) — único P0 restante; migração gradual pendente iniciando por `src/services/`
+- Nenhuma frente ativa no momento. Baseline limpa, sem feature em andamento.
 
 ---
 
 ## Open decisions
 
-- Migração TypeScript strict mode: escopo exato da primeira iteração (apenas `src/services/` ou incluir `src/hooks/`?)
+- Migração TypeScript strict mode iteração 2: escopo de `src/hooks/` e posterior habilitação de `strict: true` completo (ver ADR-006)
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
+- Cache com TTL (DEBT-P1-002): localStorage para dados de preços — sem SPEC ainda
 
 ---
 
@@ -61,8 +63,8 @@
 
 ## Next recommended steps
 
-1. **TypeScript strict mode** — migração gradual iniciando por `src/services/` (único DEBT-P0 restante)
-2. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
+1. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
+2. **TypeScript strict mode iteração 2** — avaliar `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos
 3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (P2)
 
 ---
@@ -71,16 +73,17 @@
 
 **Sessão:** 2026-03-16
 **Trabalho realizado:**
-- `feat/code-splitting` completo do plano ao PR #13 mergeado
-  - `src/App.tsx`: imports de `Index`, `Dashboard`, `Alerts`, `About` convertidos para `React.lazy()` + `Suspense` com `role="status"` no fallback; `NotFound` mantida estática
-  - `src/test/App.test.tsx`: 2 testes — AC-2 (Suspense fallback, RED→GREEN) e AC-3 (NotFound estático)
-  - Bundle principal: 523 kB → 393 kB (~25% de redução); 4 chunks de rota separados
-  - 81/81 testes passando; lint 0 erros; build limpo
-- Sessão sem erros — único ajuste: mock de `window.matchMedia` para jsdom em testes de App
+- `feat/typescript-strict-mode` completo do plano ao PR mergeado
+  - `tsconfig.app.json`: `noImplicitAny: false → true`, `strictNullChecks: true` adicionado
+  - `tsconfig.json`: `noImplicitAny: false → true`, `strictNullChecks: false → true`
+  - `src/test/tsconfig.strict.test.ts`: 4 testes de AC-1 (leitura dos flags nos tsconfigs)
+  - `docs/adr/ADR-006-typescript-strict-mode-gradual-migration.md`: registra estratégia gradual por camada
+  - Codebase já era type-safe — nenhuma supressão necessária; 85/85 testes passando
+- Sessão sem erros — único DEBT-P0 do projeto fechado
 
-**Estado ao encerrar:** Baseline limpa. 81/81 testes. Lint e build OK. Sem feature ativa. DEBT-P1-004 encerrado. Único P0 restante: TypeScript strict mode.
+**Estado ao encerrar:** Baseline limpa. 85/85 testes. Lint e build OK. Sem feature ativa. Todos os DEBTs-P0 fechados.
 
 **Retomar por:**
 ```
-session-open → implement-feature typescript-strict-mode
+session-open → implement-feature cache-ttl-localstorage
 ```

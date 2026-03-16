@@ -71,3 +71,13 @@
 - Ciclo completo sem falhas: test-red → green-refactor → quality-gate → commit → PR #13 mergeado
 - Único ajuste necessário: mock de `window.matchMedia` para Sonner em `App.test.tsx` (jsdom não expõe a API)
 - **Status**: SEM ERROS
+
+---
+
+### [2026-03-16 07:00] feat/typescript-strict-mode — sem erros
+
+- Ciclo completo sem falhas: spec-editor → spec-validator → test-red → green-refactor → quality-gate → adr-manager → commit → PR mergeado
+- Codebase já era type-safe; ativar `noImplicitAny: true` + `strictNullChecks: true` não gerou nenhum erro de compilação
+- 85/85 testes passando (81 anteriores + 4 novos de AC-1)
+- ADR-006 criado para registrar estratégia de migração gradual
+- **Status**: SEM ERROS
