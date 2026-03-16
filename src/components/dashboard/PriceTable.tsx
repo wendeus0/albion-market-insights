@@ -9,7 +9,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import type { MarketItem } from '@/data/types';
-import { cities, tiers, qualities } from '@/data/constants';
+import { cities, tiers, qualities, ITEM_CATALOG } from '@/data/constants';
+import type { CatalogCategoryKey } from '@/data/constants';
 import { Sparkline } from '@/components/ui/sparkline';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ type SortDirection = 'asc' | 'desc';
 
 export function PriceTable({ items, className }: PriceTableProps) {
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<CatalogCategoryKey | 'all'>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [qualityFilter, setQualityFilter] = useState<string>('all');
@@ -44,6 +46,11 @@ export function PriceTable({ items, className }: PriceTableProps) {
     let result = [...items];
 
     // Apply filters
+    if (categoryFilter !== 'all') {
+      const ids = new Set(ITEM_CATALOG[categoryFilter].ids);
+      result = result.filter(item => ids.has(item.itemId));
+    }
+
     if (search) {
       const searchLower = search.toLowerCase();
       result = result.filter(
@@ -84,7 +91,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
     });
 
     return result;
-  }, [items, search, cityFilter, tierFilter, qualityFilter, sortField, sortDirection]);
+  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, sortField, sortDirection]);
 
   const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
   const paginatedItems = filteredAndSortedItems.slice(
@@ -138,6 +145,18 @@ export function PriceTable({ items, className }: PriceTableProps) {
           </div>
           
           <div className="flex flex-wrap gap-2">
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as CatalogCategoryKey | 'all')}>
+              <SelectTrigger className="w-[150px] bg-muted/50 border-border/50" aria-label="Category">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {(Object.entries(ITEM_CATALOG) as [CatalogCategoryKey, { label: string }][]).map(([key, cat]) => (
+                  <SelectItem key={key} value={key}>{cat.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select value={cityFilter} onValueChange={setCityFilter}>
               <SelectTrigger className="w-[140px] bg-muted/50 border-border/50">
                 <Filter className="h-3 w-3 mr-2" />
