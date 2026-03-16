@@ -47,12 +47,16 @@ describe('ApiMarketService', () => {
 
   describe('getItems()', () => {
     it('mapeia resposta válida da API para MarketItem[]', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue(validApiResponse),
       }));
 
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items.length).toBe(2);
       expect(items[0].itemId).toBe('T4_MAIN_SWORD');
       expect(items[0].city).toBe('Caerleon');
@@ -63,38 +67,52 @@ describe('ApiMarketService', () => {
     });
 
     it('filtra registros com campos inválidos sem crash (Zod)', async () => {
+      // Given
       const responseWithInvalid = [
         ...validApiResponse,
         { item_id: 'INVALID', city: 'Caerleon', quality: 99 }, // quality fora do range
         { item_id: 'MISSING_PRICES' }, // sem campos obrigatórios
       ];
-
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue(responseWithInvalid),
       }));
 
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items.length).toBe(2); // apenas os válidos
     });
 
     it('retorna mock data em erro de rede', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items.length).toBeGreaterThan(0);
     });
 
     it('retorna mock data quando API retorna status != 200', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: false,
         status: 503,
         json: vi.fn().mockResolvedValue([]),
       }));
+
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items.length).toBeGreaterThan(0);
     });
 
-    it('retorna mock data em timeout (>10s)', async () => {
+    it('retorna mock data em timeout (>15s)', async () => {
+      // Given
       vi.useFakeTimers();
       vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, options?: RequestInit) => {
         return new Promise((_resolve, reject) => {
@@ -106,31 +124,44 @@ describe('ApiMarketService', () => {
           }
         });
       }));
+
+      // When
       const promise = service.getItems();
-      vi.advanceTimersByTime(10_001);
+      vi.advanceTimersByTime(15_001);
       const items = await promise;
+
+      // Then
       expect(items.length).toBeGreaterThan(0);
       vi.useRealTimers();
     });
 
     it('aplica nome legível via ITEM_NAMES', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue(validApiResponse),
       }));
+
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items[0].itemName).toBe('Broadsword T4');
     });
   });
 
   describe('getTopProfitable()', () => {
     it('retorna itens ordenados por spreadPercent decrescente', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue(validApiResponse),
       }));
 
+      // When
       const items = await service.getTopProfitable(2);
+
+      // Then
       expect(items.length).toBeLessThanOrEqual(2);
       if (items.length > 1) {
         expect(items[0].spreadPercent).toBeGreaterThanOrEqual(items[1].spreadPercent);
@@ -138,8 +169,59 @@ describe('ApiMarketService', () => {
     });
   });
 
+  describe('console output', () => {
+    it('não chama console.log durante fetch bem-sucedido', async () => {
+      // Given
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue(validApiResponse),
+      }));
+
+      // When
+      await service.getItems();
+
+      // Then
+      expect(logSpy).not.toHaveBeenCalled();
+    });
+
+    it('não chama console.warn nem console.error em erro de rede (fallback)', async () => {
+      // Given
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+
+      // When
+      await service.getItems();
+
+      // Then
+      expect(warnSpy).not.toHaveBeenCalled();
+      expect(errorSpy).not.toHaveBeenCalled();
+    });
+
+    it('não chama console.warn em falha de histórico por cidade', async () => {
+      // Given
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      let callCount = 0;
+      vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({ ok: true, json: vi.fn().mockResolvedValue(validApiResponse) });
+        }
+        return Promise.reject(new Error('History unavailable'));
+      }));
+
+      // When
+      await service.getItems();
+
+      // Then
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('albionRecordToMarketItem()', () => {
     it('mapeia quality numérica corretamente', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue([
@@ -147,17 +229,26 @@ describe('ApiMarketService', () => {
           { ...validApiResponse[1], quality: 2 },
         ]),
       }));
+
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items[0].quality).toBe('Normal');
       expect(items[1].quality).toBe('Good');
     });
 
     it('calcula spread e spreadPercent corretamente', async () => {
+      // Given
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         json: vi.fn().mockResolvedValue([validApiResponse[0]]),
       }));
+
+      // When
       const items = await service.getItems();
+
+      // Then
       expect(items[0].spread).toBe(10000);
       expect(items[0].spreadPercent).toBeCloseTo(25, 0);
     });

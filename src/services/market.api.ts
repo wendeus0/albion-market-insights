@@ -31,7 +31,7 @@ export class ApiMarketService implements MarketService {
   private async fetchHistoryForCity(city: Location): Promise<HistoryMap> {
     const map: HistoryMap = new Map();
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
     try {
       const url = `${HISTORY_URL}/${ITEM_IDS.join(',')}.json?locations=${city}&qualities=1&time-scale=1`;
@@ -54,7 +54,6 @@ export class ApiMarketService implements MarketService {
       }
     } catch {
       clearTimeout(timeoutId);
-      console.warn(`[ApiMarketService] Histórico indisponível para ${city}, usando preço atual`);
     }
 
     return map;
@@ -62,7 +61,7 @@ export class ApiMarketService implements MarketService {
 
   async getItems(): Promise<MarketItem[]> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
     try {
       const locationsParam = LOCATIONS.join(',');
@@ -104,7 +103,6 @@ export class ApiMarketService implements MarketService {
       });
     } catch {
       clearTimeout(timeoutId);
-      console.warn('[ApiMarketService] API indisponível, usando mock data');
       return this.fallback.getItems();
     }
   }
