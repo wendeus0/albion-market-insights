@@ -81,3 +81,26 @@
 - 85/85 testes passando (81 anteriores + 4 novos de AC-1)
 - ADR-006 criado para registrar estratégia de migração gradual
 - **Status**: SEM ERROS
+
+---
+
+### [2026-03-16 09:06] feat/cache-ttl-localstorage — erros menores durante implementação
+
+- **Erro 1**: `vi.stubGlobal('fetch', vi.fn())` retorna o objeto global, não o spy — `expect(fetchSpy).not.toHaveBeenCalled()` lançou `TypeError: { …(45) } is not a spy`
+- **Causa**: `vi.stubGlobal` retorna o objeto `globalThis`, não a função mock
+- **Ação tomada**: Corrigido para `expect(globalThis.fetch as ReturnType<typeof vi.fn>).not.toHaveBeenCalled()` — padrão já usado em `market.api.test.ts`
+- **Status**: RESOLVIDO
+
+- **Erro 2**: 3× `vi.mock` dentro de blocos de teste causaram warning de hoisting
+- **Causa**: `vi.mock` deve estar no top-level do módulo; quando aninhado, é hoistado silenciosamente mas gera aviso
+- **Ação tomada**: Movido para top-level no arquivo de testes antes de prosseguir para GREEN
+- **Status**: RESOLVIDO
+
+- **Erro 3 (code-review)**: Import relativo `'./market.cache'` em `market.api.ts` violando convenção `@/*`
+- **Causa**: Import escrito como relativo durante implementação GREEN
+- **Ação tomada**: Corrigido para `'@/services/market.cache'` antes do commit
+- **Status**: RESOLVIDO
+
+- Ciclo completo sem outros bloqueadores: spec → test-red → green-refactor → code-review → quality-gate → ADR-007 → commit → PR #17 mergeado
+- 102/102 testes passando (85 anteriores + 17 novos)
+- **Status**: SEM ERROS REMANESCENTES

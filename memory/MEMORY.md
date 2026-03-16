@@ -5,9 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR feat/typescript-strict-mode mergeado; 85/85 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/typescript-strict-mode` — ativar noImplicitAny + strictNullChecks (fecha DEBT-P0)
-**ANALYSIS_REPORT.md:** gerado em 2026-03-16 — 11 débitos classificados (3×P0, 4×P1, 4×P2)
+**Status:** Baseline estável — PR feat/cache-ttl-localstorage mergeado; 102/102 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/cache-ttl-localstorage` (#17) — cache de dados de mercado com TTL em localStorage (fecha DEBT-P1-002)
 
 ---
 
@@ -29,6 +28,7 @@
 | Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
 | Code-splitting por rota | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB) |
 | TypeScript strict mode (iteração 1) | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
+| Cache de dados de mercado com TTL | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min (`CACHE_TTL_MS=300_000`); chave `albion_market_cache`; schema Zod valida campos completos de `MarketItem`; `writeCache` silencia `QuotaExceededError`; ADR-007 criado |
 
 ---
 
@@ -40,32 +40,34 @@
 
 ## Open decisions
 
-- Migração TypeScript strict mode iteração 2: escopo de `src/hooks/` e posterior habilitação de `strict: true` completo (ver ADR-006)
+- Migração TypeScript strict mode iteração 2: escopo de `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos (ver ADR-006)
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
-- Cache com TTL (DEBT-P1-002): localStorage para dados de preços — sem SPEC ainda
+- Filtros de UI adicionais: revisar gaps de UX remanescentes no PriceTable além de Tier e Cidade
 
 ---
 
 ## Recurrent pitfalls
 
 - Componentes `src/components/ui/` não devem ser editados diretamente — quebra atualizações do shadcn/ui
-- API do Albion Online não requer autenticação, mas tem rate limiting — `fetchWithRetry` agora mitiga isso
+- API do Albion Online não requer autenticação, mas tem rate limiting — `fetchWithRetry` mitiga isso
 - `VITE_USE_REAL_API` deve ser `'true'` (string), não booleano — default é modo mock
-- Imports relativos `../` são proibidos — usar path alias `@/*`
+- Imports relativos `../` ou `./` são proibidos — usar path alias `@/*` (inclui imports dentro de `src/services/`)
 - Timeout da API é 15s — testes de timer devem avançar ao menos 15001ms para disparar abort
 - `AbortController` deve ser único e compartilhado entre todos os batches — múltiplos controllers causam hang em testes com fake timers
 - Deduplicação por `${item_id}|${city}|${quality}` é obrigatória ao consolidar resultados de múltiplos batches
 - Testes com `fetchWithRetry`: usar `const assertion = expect(promise).rejects...; await vi.runAllTimersAsync(); await assertion` — handler ANTES dos timers para evitar `PromiseRejectionHandledWarning`
 - Quando um PR for mergeado, criar nova branch a partir de `origin/main` — não continuar na branch antiga que divergiu
 - `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
+- `vi.stubGlobal('fetch', vi.fn())` retorna o objeto `globalThis`, não o spy — usar `globalThis.fetch as ReturnType<typeof vi.fn>` para assertions
+- `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning (será erro em versão futura do Vitest)
 
 ---
 
 ## Next recommended steps
 
-1. **Cache com TTL** — localStorage para dados de preços (DEBT-P1-002); reduz chamadas à API
-2. **TypeScript strict mode iteração 2** — avaliar `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos
-3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (P2)
+1. **TypeScript strict mode iteração 2** — avaliar `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos (ADR-006)
+2. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (DEBT-P2)
+3. **Filtros de UI** — revisar gaps de UX no PriceTable (pendência aberta)
 
 ---
 
@@ -73,17 +75,17 @@
 
 **Sessão:** 2026-03-16
 **Trabalho realizado:**
-- `feat/typescript-strict-mode` completo do plano ao PR mergeado
-  - `tsconfig.app.json`: `noImplicitAny: false → true`, `strictNullChecks: true` adicionado
-  - `tsconfig.json`: `noImplicitAny: false → true`, `strictNullChecks: false → true`
-  - `src/test/tsconfig.strict.test.ts`: 4 testes de AC-1 (leitura dos flags nos tsconfigs)
-  - `docs/adr/ADR-006-typescript-strict-mode-gradual-migration.md`: registra estratégia gradual por camada
-  - Codebase já era type-safe — nenhuma supressão necessária; 85/85 testes passando
-- Sessão sem erros — único DEBT-P0 do projeto fechado
+- `feat/cache-ttl-localstorage` completo do plano ao PR #17 mergeado
+  - `src/services/market.cache.ts`: `readCache`, `writeCache`, `isCacheValid`; TTL 5 min; schema Zod com validação completa dos campos de `MarketItem`; `QuotaExceededError` silenciado
+  - `src/services/market.api.ts`: integração do cache em `getItems()` e `getLastUpdateTime()`; import via `@/services/market.cache`
+  - `src/test/market.cache.test.ts`: 17 testes cobrindo AC-1 a AC-5 + 3 testes de integração com `ApiMarketService`
+  - `docs/adr/ADR-007-market-data-cache-ttl-localstorage.md`: registra trade-offs de TTL, storage e degradação graciosa
+  - Erros menores resolvidos: `vi.stubGlobal` retorna globalThis (não spy), `vi.mock` deve ser top-level, import relativo corrigido para `@/*`
+  - 102/102 testes passando; lint 0 erros; build OK
 
-**Estado ao encerrar:** Baseline limpa. 85/85 testes. Lint e build OK. Sem feature ativa. Todos os DEBTs-P0 fechados.
+**Estado ao encerrar:** Baseline limpa. 102/102 testes. Lint e build OK. Sem feature ativa. DEBTs-P0 e P1-001, P1-002, P1-004 fechados.
 
 **Retomar por:**
 ```
-session-open → implement-feature cache-ttl-localstorage
+session-open → implement-feature typescript-strict-mode-hooks
 ```
