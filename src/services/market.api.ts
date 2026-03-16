@@ -5,6 +5,7 @@ import type { AlbionPriceRecord } from './market.api.types';
 import { AlertStorageService } from './alert.storage';
 import { ITEM_IDS, ITEM_NAMES } from '@/data/constants';
 import { MockMarketService } from './market.mock';
+import { readCache, writeCache, isCacheValid } from '@/services/market.cache';
 
 const BASE_URL = 'https://west.albion-online-data.com/api/v2/stats/prices';
 const HISTORY_URL = 'https://west.albion-online-data.com/api/v2/stats/history';
@@ -158,6 +159,12 @@ export class ApiMarketService implements MarketService {
   }
 
   async getItems(): Promise<MarketItem[]> {
+    const cached = readCache();
+    if (cached && isCacheValid(cached)) {
+      this.cachedLastUpdate = cached.cachedAt;
+      return cached.data;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
@@ -201,10 +208,13 @@ export class ApiMarketService implements MarketService {
 
       const historyMap = await this.buildHistoryMap(batches);
 
-      return items.map(item => {
+      const result = items.map(item => {
         const history = historyMap.get(`${item.itemId}|${item.city}`);
         return history ? { ...item, priceHistory: history } : item;
       });
+
+      writeCache(result);
+      return result;
     } catch {
       clearTimeout(timeoutId);
       return this.fallback.getItems();
