@@ -24,9 +24,9 @@ Normal, Good, Outstanding, Excellent, Masterpiece
 Cada entrada de preço tem: item_id, city, quality, sell_price_min,
 sell_price_min_date, buy_price_max, buy_price_max_date
 
-### Fonte de dados atual
-`src/data/mockData.ts` — mock local
-API real: Albion Online Data Project
+### Fonte de dados
+API real: `west.albion-online-data.com` (via `src/services/market.api.ts`)
+Mock local: `src/data/mockData.ts` (ativo quando `VITE_USE_REAL_API` não definido)
 
 ## Quando consultar este agente
 - Validar se um filtro de cidade/tier/qualidade faz sentido
