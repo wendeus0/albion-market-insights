@@ -16,17 +16,26 @@
 - **TypeScript strict mode iteração 2 (hooks)** (2026-03-17): `feat/typescript-strict-mode-hooks` — PR #18 aceito em `main`; 4 flags adicionais ativadas (`strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`); 106/106 testes; codebase continua type-safe sem supressões. Próxima iteração: `src/pages/`.
 - **TypeScript strict mode iteração 3 (pages)** (2026-03-17): `feat/typescript-strict-mode-pages` — PR #20 mergeado; 6 testes adicionados em `tsconfig.strict.test.ts` cobrindo AC-1 (compilação limpa de `src/pages/`) e AC-2 (ausência de `@ts-ignore`/`@ts-expect-error` nos 5 arquivos de página); 112/112 testes. Próxima iteração: `src/components/`.
 - **TypeScript strict mode iteração 4 (components)** (2026-03-17): `feat/typescript-strict-mode-components` — PR #22 mergeado; 9 testes adicionados em `tsconfig.strict.test.ts` cobrindo AC-1 (compilação limpa de `src/components/` exceto `ui/`) e AC-2 (ausência de `@ts-ignore`/`@ts-expect-error` nos 8 arquivos de componente); 121/121 testes. Migração gradual para TypeScript strict mode COMPLETA.
+- **Enchanted items** (2026-03-17): `feat(catalog)` — PR #24 mergeado em `main`; catálogo expandido de 450 para 1.830 IDs com suporte a `@1/@2/@3`, filtro de encantamento no `PriceTable` e ADR-008 criado. 126/126 testes.
+- **Enhanced UI Filters** (2026-03-17): `feat(ui)` — PR #25 mergeado em `main`; filtros min/max de preço e spread, botão `Clear All` e contador de filtros ativos no `PriceTable`. 133/133 testes.
+- **Auditoria de segurança do sprint** (2026-03-17): `SECURITY_AUDIT_REPORT.md` gerado com veredito `SECURITY_PASS_WITH_NOTES`; sem achados CRITICAL/HIGH/MEDIUM; observação LOW na leitura de alertas de `localStorage` sem validação de schema.
 
 ## Pendências
 
 - [x] **ADR-004**: `docs/adr/ADR-004-localstorage-alert-persistence.md` já existe e está completo (2026-03-16).
 - [x] **Expansão do catálogo**: CONCLUÍDO — PR #10 mergeado. 450 IDs em 17 categorias.
-- [ ] **Filtros de UI adicionais**: Tier e Cidade já existem no PriceTable. Avaliar se há gaps remanescentes de UX.
+- [x] **Enchanted items**: CONCLUÍDO — PR #24 mergeado. Catálogo em 1.830 IDs com filtro de encantamento.
+- [x] **Filtros de UI adicionais**: CONCLUÍDO parcialmente no PR #25 — min/max preço e spread, `Clear All`, contador de filtros. Gap remanescente: persistência opcional dos filtros (AC-5).
 - [x] **Tratamento de Rate Limit**: CONCLUÍDO — PR #11 mergeado. `fetchWithRetry` com backoff exponencial e jitter em `market.api.ts`. Fecha DEBT-P1-001.
 - [x] **Cache com TTL**: CONCLUÍDO — PR #17 mergeado. `market.cache.ts` com TTL 5 min e validação Zod. Fecha DEBT-P1-002.
+- [ ] **Cobertura de módulos críticos**: elevar cobertura de `src/components/dashboard/PriceTable.tsx`, `src/components/alerts/AlertsManager.tsx`, `src/hooks/useAlerts.ts`, `src/hooks/useAlertPoller.ts` e `src/hooks/use-toast.ts` para acima do limiar operacional de 80%.
+- [ ] **Validação defensiva de alertas persistidos**: adicionar schema validation ao ler `localStorage` em `src/services/alert.storage.ts`.
+- [ ] **E2E completo de alertas**: cobrir fluxo criar → persistir → disparar em Playwright.
+- [ ] **Decisão sobre `strict: true`**: avaliar ativação da flag master agora que a migração gradual terminou.
 
 ## Pontos de atenção
 
-- **TypeScript strict mode**: migração gradual COMPLETA — todas as camadas auditadas (services, hooks, pages, components). Considerar ativação de `strict: true` completo no futuro.
-- **Enchanted items** (`.@1/.@2/.@3`): avaliar adição ao catálogo — DEBT-P2 em aberto.
-- **Filtros de UI**: revisar se há gaps de UX remanescentes além de Tier e Cidade no PriceTable.
+- **Worktree local sujo**: existem mudanças fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`; não sobrescrever sem validar contexto.
+- **Cobertura atual**: `npx vitest run --coverage` resultou em 77.99% statements / 79.6% lines; `PriceTable`, `AlertsManager` e hooks de alertas concentram os maiores gaps.
+- **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
+- **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.

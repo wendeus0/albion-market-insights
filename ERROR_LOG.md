@@ -134,3 +134,13 @@
 - 121/121 testes passando (112 anteriores + 9 novos: AC-1 compilação limpa + AC-2 ×8 arquivos)
 - `src/components/` (exceto `ui/`) confirmada type-safe sem supressões com todas as flags vigentes
 - **Status**: SEM ERROS — migração gradual para TypeScript strict mode COMPLETA
+
+---
+
+### [2026-03-17 04:00] sprint-close — sem erros operacionais
+
+- Fechamento do sprint executado sem falhas de ambiente, Git, testes ou automações
+- Verificação de cobertura concluída com `npx vitest run --coverage`: 133/133 testes passando; cobertura global 77.99% statements / 79.6% lines
+- Auditoria de segurança consolidada sem achados CRITICAL/HIGH/MEDIUM; 1 observação LOW em `src/services/alert.storage.ts`
+- Worktree local permanece sujo por alterações fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`
+- **Status**: SEM ERROS — checkpoint de sprint consolidado
