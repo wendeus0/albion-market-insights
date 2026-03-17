@@ -12,6 +12,20 @@ export interface MarketItem {
   priceHistory: number[];
 }
 
+export interface ArbitrageOpportunity {
+  itemId: string;
+  itemName: string;
+  tier: string;
+  quality: string;
+  buyCity: string;
+  buyPrice: number;
+  sellCity: string;
+  sellPrice: number;
+  netProfit: number;
+  netProfitPercent: number;
+  timestamp: string;
+}
+
 export interface Alert {
   id: string;
   itemId: string;
