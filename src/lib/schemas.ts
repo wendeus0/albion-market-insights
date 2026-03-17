@@ -16,3 +16,20 @@ export const alertFormSchema = z.object({
 });
 
 export type AlertFormValues = z.infer<typeof alertFormSchema>;
+
+export const alertSchema = z.object({
+  id: z.string(),
+  itemId: z.string(),
+  itemName: z.string(),
+  city: z.string(),
+  condition: z.enum(['below', 'above', 'change']),
+  threshold: z.number(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+  notifications: z.object({
+    inApp: z.boolean(),
+    email: z.boolean(),
+  }),
+});
+
+export type AlertSchema = z.infer<typeof alertSchema>;

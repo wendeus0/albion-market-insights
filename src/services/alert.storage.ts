@@ -1,4 +1,5 @@
 import type { Alert } from '@/data/types';
+import { alertSchema } from '@/lib/schemas';
 
 const STORAGE_KEY = 'albion_alerts';
 
@@ -7,7 +8,14 @@ export class AlertStorageService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
-      return JSON.parse(raw) as Alert[];
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+
+      return parsed.filter((item): item is Alert => {
+        const result = alertSchema.safeParse(item);
+        return result.success;
+      });
     } catch {
       return [];
     }

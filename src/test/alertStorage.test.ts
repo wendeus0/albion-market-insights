@@ -112,4 +112,115 @@ describe('AlertStorageService', () => {
       expect(service.getAlerts().length).toBe(1);
     });
   });
+
+  describe('validação de schema (AC-2, AC-3)', () => {
+    it('retorna [] quando localStorage contém JSON inválido', () => {
+      // Given: JSON malformado
+      localStorage.setItem('albion_alerts', '{invalid json}');
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then
+      expect(alerts).toEqual([]);
+    });
+
+    it('retorna [] quando dados não seguem schema Alert (campos ausentes)', () => {
+      // Given: objeto sem campos obrigatórios
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        { id: '1', itemId: 'ITEM_1' }
+      ]));
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then
+      expect(alerts).toEqual([]);
+    });
+
+    it('retorna [] quando threshold não é número', () => {
+      // Given: tipo incorreto
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        {
+          id: '1',
+          itemId: 'ITEM_1',
+          itemName: 'Item 1',
+          city: 'Caerleon',
+          condition: 'below',
+          threshold: 'not-a-number',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          notifications: { inApp: true, email: false }
+        }
+      ]));
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then
+      expect(alerts).toEqual([]);
+    });
+
+    it('retorna [] quando condition não é valor válido', () => {
+      // Given: enum inválido
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        {
+          id: '1',
+          itemId: 'ITEM_1',
+          itemName: 'Item 1',
+          city: 'Caerleon',
+          condition: 'invalid-condition',
+          threshold: 10000,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          notifications: { inApp: true, email: false }
+        }
+      ]));
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then
+      expect(alerts).toEqual([]);
+    });
+
+    it('retorna [] quando notifications não tem estrutura correta', () => {
+      // Given: nested object inválido
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        {
+          id: '1',
+          itemId: 'ITEM_1',
+          itemName: 'Item 1',
+          city: 'Caerleon',
+          condition: 'below',
+          threshold: 10000,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          notifications: { inApp: 'yes', email: 'no' }
+        }
+      ]));
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then
+      expect(alerts).toEqual([]);
+    });
+
+    it('filtra apenas alertas válidos quando há dados mistos', () => {
+      // Given: array misto com válidos e inválidos
+      const validAlert = makeAlert('1');
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        validAlert,
+        { id: '2', itemId: 'ITEM_2' },
+        { id: '3', threshold: 'invalid' }
+      ]));
+
+      // When
+      const alerts = service.getAlerts();
+
+      // Then: apenas o válido deve ser retornado
+      expect(alerts).toEqual([validAlert]);
+    });
+  });
 });

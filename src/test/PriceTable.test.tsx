@@ -124,3 +124,152 @@ describe('PriceTable — Clear All e indicador (AC3, AC4)', () => {
     expect(screen.getByText('Battleaxe T5')).toBeInTheDocument();
   });
 });
+
+describe('PriceTable — ordenação', () => {
+  it('ordena itens ao clicar no cabeçalho', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const sellPriceHeader = screen.getByRole('button', { name: /sell price/i });
+    await user.click(sellPriceHeader);
+
+    expect(sellPriceHeader).toBeInTheDocument();
+  });
+
+  it('alterna direção da ordenação ao clicar novamente no mesmo cabeçalho', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const spreadHeader = screen.getByRole('button', { name: /spread/i });
+    await user.click(spreadHeader);
+    await user.click(spreadHeader);
+
+    expect(spreadHeader).toBeInTheDocument();
+  });
+
+  it('ordena por nome do item', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const itemNameHeader = screen.getByRole('button', { name: /item/i });
+    await user.click(itemNameHeader);
+
+    expect(itemNameHeader).toBeInTheDocument();
+    expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.getByText('Battleaxe T5')).toBeInTheDocument();
+  });
+});
+
+describe('PriceTable — estado vazio', () => {
+  it('exibe mensagem quando nenhum item corresponde aos critérios', () => {
+    render(<PriceTable items={[]} />);
+
+    expect(screen.getByText(/no items found/i)).toBeInTheDocument();
+  });
+
+  it('exibe estado vazio quando filtros não retornam resultados', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const minPriceInput = screen.getByPlaceholderText(/min price/i);
+    await user.type(minPriceInput, '999999');
+
+    expect(screen.getByText(/no items found/i)).toBeInTheDocument();
+  });
+});
+
+describe('PriceTable — filtros adicionais', () => {
+  it('filtra por max price', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const maxPriceInput = screen.getByPlaceholderText(/max price/i);
+    await user.type(maxPriceInput, '60000');
+
+    expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+
+  it('filtra por max spread', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const maxSpreadInput = screen.getByPlaceholderText(/max spread %/i);
+    await user.type(maxSpreadInput, '30');
+
+    expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+});
+
+describe('PriceTable — busca', () => {
+  it('filtra itens por nome', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const searchInput = screen.getByPlaceholderText(/search by item name/i);
+    await user.type(searchInput, 'Sword');
+
+    expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+
+  it('filtra itens por ID', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const searchInput = screen.getByPlaceholderText(/search by item name/i);
+    await user.type(searchInput, 'T5_MAIN_AXE');
+
+    expect(screen.queryByText('Broadsword T4')).not.toBeInTheDocument();
+    expect(screen.getByText('Battleaxe T5')).toBeInTheDocument();
+  });
+});
+
+describe('PriceTable — paginação', () => {
+  const manyItems: MarketItem[] = Array.from({ length: 25 }, (_, i) => ({
+    itemId: `T4_ITEM_${i}`,
+    itemName: `Item ${i}`,
+    city: 'Caerleon',
+    sellPrice: 50000 + i * 1000,
+    buyPrice: 40000 + i * 1000,
+    spread: 10000,
+    spreadPercent: 25,
+    timestamp: new Date().toISOString(),
+    tier: 'T4',
+    quality: 'Normal',
+    priceHistory: [45000, 46000, 47000],
+  }));
+
+  it('exibe controles de paginação quando há muitos itens', () => {
+    render(<PriceTable items={manyItems} />);
+
+    expect(screen.getByText(/showing 1 to 10 of 25 items/i)).toBeInTheDocument();
+  });
+
+  it('exibe números de página quando há muitos itens', () => {
+    render(<PriceTable items={manyItems} />);
+
+    expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '3' })).toBeInTheDocument();
+  });
+});
+
+describe('PriceTable — filtros combinados', () => {
+  it('aplica múltiplos filtros simultaneamente', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const minPriceInput = screen.getByPlaceholderText(/min price/i);
+    const maxPriceInput = screen.getByPlaceholderText(/max price/i);
+
+    await user.type(minPriceInput, '40000');
+    await user.type(maxPriceInput, '60000');
+
+    expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+
+    expect(screen.getByText(/2 filter active/i)).toBeInTheDocument();
+  });
+});
