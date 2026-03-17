@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR feat/cache-ttl-localstorage mergeado; 102/102 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/cache-ttl-localstorage` (#17) — cache de dados de mercado com TTL em localStorage (fecha DEBT-P1-002)
+**Status:** Baseline estável — PR #18 `feat/typescript-strict-mode-hooks` mergeado; 106/106 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/typescript-strict-mode-hooks` (#18) — strict mode iteração 2 completa
 
 ---
 
@@ -27,8 +27,9 @@
 | Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário |
 | Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
 | Code-splitting por rota | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB) |
-| TypeScript strict mode (iteração 1) | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
+| TypeScript strict mode iteração 1 | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
 | Cache de dados de mercado com TTL | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min (`CACHE_TTL_MS=300_000`); chave `albion_market_cache`; schema Zod valida campos completos de `MarketItem`; `writeCache` silencia `QuotaExceededError`; ADR-007 criado |
+| TypeScript strict mode iteração 2 | ✅ Fixo | 4 flags adicionais ativadas em `tsconfig.app.json`: `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`; codebase continua type-safe sem supressões; 106/106 testes |
 
 ---
 
@@ -40,7 +41,8 @@
 
 ## Open decisions
 
-- Migração TypeScript strict mode iteração 2: escopo de `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos (ver ADR-006)
+- TypeScript strict mode iteração 3: avaliar `src/pages/` com flags adicionais já ativas
+- TypeScript strict mode iteração 4: avaliar `src/components/` (exceto `src/components/ui/`)
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
 - Filtros de UI adicionais: revisar gaps de UX remanescentes no PriceTable além de Tier e Cidade
 
@@ -65,27 +67,28 @@
 
 ## Next recommended steps
 
-1. **TypeScript strict mode iteração 2** — avaliar `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos (ADR-006)
-2. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (DEBT-P2)
-3. **Filtros de UI** — revisar gaps de UX no PriceTable (pendência aberta)
+1. **TypeScript strict mode iteração 3** — avaliar `src/pages/` com flags adicionais já ativas (ADR-006)
+2. **TypeScript strict mode iteração 4** — avaliar `src/components/` (exceto `src/components/ui/`)
+3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (DEBT-P2)
+4. **Filtros de UI** — revisar gaps de UX no PriceTable (pendência aberta)
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** 2026-03-16
+**Sessão:** 2026-03-17
 **Trabalho realizado:**
-- `feat/cache-ttl-localstorage` completo do plano ao PR #17 mergeado
-  - `src/services/market.cache.ts`: `readCache`, `writeCache`, `isCacheValid`; TTL 5 min; schema Zod com validação completa dos campos de `MarketItem`; `QuotaExceededError` silenciado
-  - `src/services/market.api.ts`: integração do cache em `getItems()` e `getLastUpdateTime()`; import via `@/services/market.cache`
-  - `src/test/market.cache.test.ts`: 17 testes cobrindo AC-1 a AC-5 + 3 testes de integração com `ApiMarketService`
-  - `docs/adr/ADR-007-market-data-cache-ttl-localstorage.md`: registra trade-offs de TTL, storage e degradação graciosa
-  - Erros menores resolvidos: `vi.stubGlobal` retorna globalThis (não spy), `vi.mock` deve ser top-level, import relativo corrigido para `@/*`
-  - 102/102 testes passando; lint 0 erros; build OK
+- `feat/typescript-strict-mode-hooks` completo do plano ao PR #18 mergeado
+  - `tsconfig.app.json`: 4 flags adicionais ativadas (`strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`)
+  - `src/test/tsconfig.strict.test.ts`: 4 testes novos cobrindo AC-1 a AC-4
+  - Sem ajustes necessários nos hooks — codebase já era type-safe
+  - 106/106 testes passando (102 anteriores + 4 novos)
+  - Lint 0 erros; build OK; TypeScript compila sem erros
+  - PR #18 mergeado em `main`
 
-**Estado ao encerrar:** Baseline limpa. 102/102 testes. Lint e build OK. Sem feature ativa. DEBTs-P0 e P1-001, P1-002, P1-004 fechados.
+**Estado ao encerrar:** Baseline limpa. 106/106 testes. Lint e build OK. Sem feature ativa.
 
 **Retomar por:**
 ```
-session-open → implement-feature typescript-strict-mode-hooks
+session-open → implement-feature typescript-strict-mode-pages
 ```
