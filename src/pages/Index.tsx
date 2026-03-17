@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TrendingUp,
@@ -12,16 +13,22 @@ import {
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { TopItemsPanel } from '@/components/dashboard/TopItemsPanel';
-import { PriceTable } from '@/components/dashboard/PriceTable';
+import { TopArbitragePanel } from '@/components/dashboard/TopArbitragePanel';
+import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
 import { useMarketItems } from '@/hooks/useMarketItems';
 import { useTopProfitable } from '@/hooks/useTopProfitable';
 import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
+import { buildCrossCityArbitrage } from '@/lib/arbitrage';
 
 const Index = () => {
   const { data: items = [] } = useMarketItems();
   const { data: topItems = [] } = useTopProfitable(5);
   const { data: lastUpdate } = useLastUpdateTime();
+  const arbitrageItems = useMemo(() => buildCrossCityArbitrage(items), [items]);
+  const previewItems = arbitrageItems.slice(0, 8);
+  const averageRoi = arbitrageItems.length > 0
+    ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
+    : '0.0%';
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -147,9 +154,9 @@ const Index = () => {
               icon={LayoutDashboard}
             />
             <StatsCard
-              title="Average Spread"
-              value="18.5%"
-              subtitle="Profit opportunity"
+              title="Average ROI"
+              value={averageRoi}
+              subtitle="Net after tax"
               icon={Zap}
               trend={{ value: 2.3, isPositive: true }}
             />
@@ -167,8 +174,8 @@ const Index = () => {
       <section className="py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Top Items Panel */}
-            <TopItemsPanel items={topItems} className="lg:col-span-1" />
+            {/* Top Arbitrage Panel */}
+            <TopArbitragePanel items={arbitrageItems.length > 0 ? arbitrageItems : buildCrossCityArbitrage(topItems)} className="lg:col-span-1" />
 
             {/* Quick Stats */}
             <div className="lg:col-span-2 glass-card p-5">
@@ -183,25 +190,31 @@ const Index = () => {
                 </Link>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Real-time price data from all major trading cities in Albion Online.
-                Filter by tier, quality, and city to find the best trading opportunities.
+                Cross-city arbitrage routes ranked by net ROI after market tax.
+                Buy in one city, transport, and sell where demand pays more.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-2xl font-mono font-semibold text-success">+32%</p>
-                  <p className="text-xs text-muted-foreground">Highest Spread</p>
+                  <p className="text-2xl font-mono font-semibold text-success">
+                    {previewItems[0] ? `+${previewItems[0].netProfitPercent.toFixed(1)}%` : '0.0%'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Best ROI</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-2xl font-mono font-semibold text-foreground">1,247</p>
-                  <p className="text-xs text-muted-foreground">Active Listings</p>
+                  <p className="text-2xl font-mono font-semibold text-foreground">{arbitrageItems.length}</p>
+                  <p className="text-xs text-muted-foreground">Active Routes</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-2xl font-mono font-semibold text-foreground">156K</p>
-                  <p className="text-xs text-muted-foreground">Avg. Sell Price</p>
+                  <p className="text-2xl font-mono font-semibold text-foreground">
+                    {previewItems[0] ? `${Math.round(previewItems[0].buyPrice / 1000)}K` : '0K'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Best Buy Price</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-2xl font-mono font-semibold text-foreground">89K</p>
-                  <p className="text-xs text-muted-foreground">Avg. Buy Price</p>
+                  <p className="text-2xl font-mono font-semibold text-foreground">
+                    {previewItems[0] ? `${Math.round(previewItems[0].netProfit / 1000)}K` : '0K'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Net Profit</p>
                 </div>
               </div>
             </div>
@@ -218,7 +231,7 @@ const Index = () => {
                 Live Market Data
               </h2>
               <p className="text-muted-foreground text-sm mt-1">
-                Browse all items or use filters to find specific trades
+                Preview the best cross-city routes before opening the full dashboard
               </p>
             </div>
             <Button asChild variant="outline" className="border-primary/30">
@@ -228,7 +241,7 @@ const Index = () => {
               </Link>
             </Button>
           </div>
-          <PriceTable items={items} />
+          <ArbitrageTable items={previewItems} />
         </div>
       </section>
     </Layout>

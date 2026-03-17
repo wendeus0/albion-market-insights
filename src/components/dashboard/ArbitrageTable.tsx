@@ -14,21 +14,28 @@ type SortDirection = 'asc' | 'desc';
 
 export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
   const [search, setSearch] = useState('');
+  const [minNetProfit, setMinNetProfit] = useState('');
+  const [minRoi, setMinRoi] = useState('');
   const [sortField, setSortField] = useState<SortField>('netProfitPercent');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const filteredItems = useMemo(() => {
     const searchLower = search.toLowerCase();
+    const minNetProfitValue = minNetProfit ? Number(minNetProfit) : null;
+    const minRoiValue = minRoi ? Number(minRoi) : null;
 
     const result = items.filter(item => {
-      if (!searchLower) return true;
-
-      return (
+      const matchesSearch = !searchLower || (
         item.itemName.toLowerCase().includes(searchLower) ||
         item.itemId.toLowerCase().includes(searchLower) ||
         item.buyCity.toLowerCase().includes(searchLower) ||
         item.sellCity.toLowerCase().includes(searchLower)
       );
+
+      const matchesNetProfit = minNetProfitValue === null || item.netProfit >= minNetProfitValue;
+      const matchesRoi = minRoiValue === null || item.netProfitPercent >= minRoiValue;
+
+      return matchesSearch && matchesNetProfit && matchesRoi;
     });
 
     result.sort((a, b) => {
@@ -47,7 +54,7 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
     });
 
     return result;
-  }, [items, search, sortDirection, sortField]);
+  }, [items, minNetProfit, minRoi, search, sortDirection, sortField]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -81,14 +88,33 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
   return (
     <div className={cn('glass-card overflow-hidden', className)}>
       <div className="p-4 border-b border-border/50">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search item, buy city or sell city..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            className="pl-9 bg-muted/50 border-border/50"
-          />
+        <div className="flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search item, buy city or sell city..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="pl-9 bg-muted/50 border-border/50"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              placeholder="Min net profit"
+              value={minNetProfit}
+              onChange={(event) => setMinNetProfit(event.target.value)}
+              className="w-[140px] bg-muted/50 border-border/50"
+            />
+            <Input
+              type="number"
+              placeholder="Min ROI"
+              value={minRoi}
+              onChange={(event) => setMinRoi(event.target.value)}
+              className="w-[110px] bg-muted/50 border-border/50"
+            />
+          </div>
         </div>
       </div>
 
