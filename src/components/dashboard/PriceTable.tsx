@@ -9,7 +9,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import type { MarketItem } from '@/data/types';
-import { cities, tiers, qualities, ITEM_CATALOG } from '@/data/constants';
+import { cities, tiers, qualities, ITEM_CATALOG, ENCHANTMENT_LEVELS } from '@/data/constants';
 import type { CatalogCategoryKey } from '@/data/constants';
 import { Sparkline } from '@/components/ui/sparkline';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [qualityFilter, setQualityFilter] = useState<string>('all');
+  const [enchantFilter, setEnchantFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<SortField>('spreadPercent');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,6 +73,14 @@ export function PriceTable({ items, className }: PriceTableProps) {
       result = result.filter(item => item.quality === qualityFilter);
     }
 
+    if (enchantFilter !== 'all') {
+      const enchantLevel = parseInt(enchantFilter);
+      result = result.filter(item => {
+        const itemEnchantLevel = item.itemId.match(/@([0-3])$/)?.[1];
+        return itemEnchantLevel ? parseInt(itemEnchantLevel) === enchantLevel : enchantLevel === 0;
+      });
+    }
+
     // Apply sorting
     result.sort((a, b) => {
       const aVal = a[sortField];
@@ -91,7 +100,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
     });
 
     return result;
-  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, sortField, sortDirection]);
+  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, enchantFilter, sortField, sortDirection]);
 
   const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
   const paginatedItems = filteredAndSortedItems.slice(
@@ -190,6 +199,20 @@ export function PriceTable({ items, className }: PriceTableProps) {
                 <SelectItem value="all">All Qualities</SelectItem>
                 {qualities.map(quality => (
                   <SelectItem key={quality} value={quality}>{quality}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={enchantFilter} onValueChange={setEnchantFilter}>
+              <SelectTrigger className="w-[130px] bg-muted/50 border-border/50">
+                <SelectValue placeholder="Enchantment" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                {ENCHANTMENT_LEVELS.map(level => (
+                  <SelectItem key={level} value={String(level)}>
+                    {level === 0 ? 'No Enchant' : `Level ${level}`}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
