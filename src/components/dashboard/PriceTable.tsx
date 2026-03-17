@@ -38,6 +38,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [qualityFilter, setQualityFilter] = useState<string>('all');
   const [enchantFilter, setEnchantFilter] = useState<string>('all');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [minSpread, setMinSpread] = useState<string>('');
+  const [maxSpread, setMaxSpread] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('spreadPercent');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +85,22 @@ export function PriceTable({ items, className }: PriceTableProps) {
       });
     }
 
+    if (minPrice) {
+      result = result.filter(item => item.sellPrice >= parseInt(minPrice));
+    }
+
+    if (maxPrice) {
+      result = result.filter(item => item.sellPrice <= parseInt(maxPrice));
+    }
+
+    if (minSpread) {
+      result = result.filter(item => item.spreadPercent >= parseInt(minSpread));
+    }
+
+    if (maxSpread) {
+      result = result.filter(item => item.spreadPercent <= parseInt(maxSpread));
+    }
+
     // Apply sorting
     result.sort((a, b) => {
       const aVal = a[sortField];
@@ -100,7 +120,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
     });
 
     return result;
-  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, enchantFilter, sortField, sortDirection]);
+  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, enchantFilter, minPrice, maxPrice, minSpread, maxSpread, sortField, sortDirection]);
 
   const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
   const paginatedItems = filteredAndSortedItems.slice(
@@ -133,9 +153,21 @@ export function PriceTable({ items, className }: PriceTableProps) {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown className="h-3 w-3 opacity-50" />;
-    return sortDirection === 'asc' 
+    return sortDirection === 'asc'
       ? <ArrowUp className="h-3 w-3 text-primary" />
       : <ArrowDown className="h-3 w-3 text-primary" />;
+  };
+
+  const clearAllFilters = () => {
+    setCategoryFilter('all');
+    setCityFilter('all');
+    setTierFilter('all');
+    setQualityFilter('all');
+    setEnchantFilter('all');
+    setMinPrice('');
+    setMaxPrice('');
+    setMinSpread('');
+    setMaxSpread('');
   };
 
   return (
@@ -216,8 +248,68 @@ export function PriceTable({ items, className }: PriceTableProps) {
                 ))}
               </SelectContent>
             </Select>
+
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Min price"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-[100px] bg-muted/50 border-border/50"
+              />
+              <Input
+                type="number"
+                placeholder="Max price"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                className="w-[100px] bg-muted/50 border-border/50"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Min spread %"
+                value={minSpread}
+                onChange={(e) => setMinSpread(e.target.value)}
+                className="w-[100px] bg-muted/50 border-border/50"
+              />
+              <Input
+                type="number"
+                placeholder="Max spread %"
+                value={maxSpread}
+                onChange={(e) => setMaxSpread(e.target.value)}
+                className="w-[100px] bg-muted/50 border-border/50"
+              />
+            </div>
+
+            {(categoryFilter !== 'all' || cityFilter !== 'all' || tierFilter !== 'all' || 
+              qualityFilter !== 'all' || enchantFilter !== 'all' || minPrice || maxPrice || 
+              minSpread || maxSpread) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                className="border-border/50"
+              >
+                Clear All
+              </Button>
+            )}
           </div>
         </div>
+
+        {/* Active filters indicator */}
+        {(categoryFilter !== 'all' || cityFilter !== 'all' || tierFilter !== 'all' ||
+          qualityFilter !== 'all' || enchantFilter !== 'all' || minPrice || maxPrice ||
+          minSpread || maxSpread) && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="font-medium">
+              {[categoryFilter !== 'all', cityFilter !== 'all', tierFilter !== 'all',
+                qualityFilter !== 'all', enchantFilter !== 'all', minPrice, maxPrice,
+                minSpread, maxSpread].filter(Boolean).length} filter active
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Table */}
