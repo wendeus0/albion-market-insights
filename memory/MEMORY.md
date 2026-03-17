@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR #18 `feat/typescript-strict-mode-hooks` mergeado; 106/106 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/typescript-strict-mode-hooks` (#18) — strict mode iteração 2 completa
+**Status:** Baseline estável — PR #20 `feat/typescript-strict-mode-pages` aberto; 112/112 testes passando; lint e build limpos
+**Branch ativa:** main | Último PR: `feat/typescript-strict-mode-pages` (#20) — strict mode iteração 3 completa
 
 ---
 
@@ -30,19 +30,19 @@
 | TypeScript strict mode iteração 1 | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
 | Cache de dados de mercado com TTL | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min (`CACHE_TTL_MS=300_000`); chave `albion_market_cache`; schema Zod valida campos completos de `MarketItem`; `writeCache` silencia `QuotaExceededError`; ADR-007 criado |
 | TypeScript strict mode iteração 2 | ✅ Fixo | 4 flags adicionais ativadas em `tsconfig.app.json`: `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`; codebase continua type-safe sem supressões; 106/106 testes |
+| TypeScript strict mode iteração 3 | ✅ Fixo | `src/pages/` auditada: 5 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 6 testes adicionados em `tsconfig.strict.test.ts`; PR #20 aberto; 112/112 testes |
 
 ---
 
 ## Active fronts
 
-- Nenhuma frente ativa no momento. Baseline limpa, sem feature em andamento.
+- `feat/typescript-strict-mode-pages` — PR #20 aberto, aguardando merge. Iteração 3 concluída.
 
 ---
 
 ## Open decisions
 
-- TypeScript strict mode iteração 3: avaliar `src/pages/` com flags adicionais já ativas
-- TypeScript strict mode iteração 4: avaliar `src/components/` (exceto `src/components/ui/`)
+- TypeScript strict mode iteração 4: auditar `src/components/` (exceto `src/components/ui/`) com flags vigentes
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
 - Filtros de UI adicionais: revisar gaps de UX remanescentes no PriceTable além de Tier e Cidade
 
@@ -67,8 +67,8 @@
 
 ## Next recommended steps
 
-1. **TypeScript strict mode iteração 3** — avaliar `src/pages/` com flags adicionais já ativas (ADR-006)
-2. **TypeScript strict mode iteração 4** — avaliar `src/components/` (exceto `src/components/ui/`)
+1. **Merge PR #20** — `feat/typescript-strict-mode-pages` aguardando aprovação
+2. **TypeScript strict mode iteração 4** — auditar `src/components/` (exceto `src/components/ui/`) com flags já ativas (ADR-006)
 3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (DEBT-P2)
 4. **Filtros de UI** — revisar gaps de UX no PriceTable (pendência aberta)
 
@@ -78,17 +78,16 @@
 
 **Sessão:** 2026-03-17
 **Trabalho realizado:**
-- `feat/typescript-strict-mode-hooks` completo do plano ao PR #18 mergeado
-  - `tsconfig.app.json`: 4 flags adicionais ativadas (`strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`)
-  - `src/test/tsconfig.strict.test.ts`: 4 testes novos cobrindo AC-1 a AC-4
-  - Sem ajustes necessários nos hooks — codebase já era type-safe
-  - 106/106 testes passando (102 anteriores + 4 novos)
-  - Lint 0 erros; build OK; TypeScript compila sem erros
-  - PR #18 mergeado em `main`
+- `feat/typescript-strict-mode-pages` (iteração 3) — ciclo completo do plano ao PR #20
+  - `src/test/tsconfig.strict.test.ts`: 6 testes novos cobrindo AC-1 (compilação limpa via `tsc --noEmit`) e AC-2 (ausência de supressões nos 5 arquivos de página)
+  - `src/pages/` confirmada type-safe nativamente — sem supressões necessárias
+  - 112/112 testes passando (106 anteriores + 6 novos)
+  - Lint 0 erros; build OK; PR #20 aberto
+- Logs consolidados: `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` atualizados
 
-**Estado ao encerrar:** Baseline limpa. 106/106 testes. Lint e build OK. Sem feature ativa.
+**Estado ao encerrar:** PR #20 aberto. 112/112 testes. Lint e build OK. Iteração 3 concluída.
 
 **Retomar por:**
 ```
-session-open → implement-feature typescript-strict-mode-pages
+session-open → implement-feature typescript-strict-mode-components
 ```

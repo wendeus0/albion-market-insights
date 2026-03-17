@@ -14,6 +14,7 @@
 - **TypeScript strict mode iteração 1** (2026-03-16): `feat/typescript-strict-mode` — PR aceito em `main`; `noImplicitAny: true` + `strictNullChecks: true` ativados em `tsconfig.app.json` e `tsconfig.json`; codebase já era type-safe, sem supressões; 85/85 testes; ADR-006 criado. Fecha DEBT-P0.
 - **Cache com TTL em localStorage** (2026-03-16): `feat/cache-ttl-localstorage` — PR #17 aceito em `main`; `src/services/market.cache.ts` com `readCache`, `writeCache`, `isCacheValid`; TTL 5 min; schema Zod valida campos completos de `MarketItem`; `ApiMarketService.getItems()` verifica cache antes de fetch; `getLastUpdateTime()` reflete `cachedAt`; 102/102 testes; ADR-007 criado. Fecha DEBT-P1-002.
 - **TypeScript strict mode iteração 2 (hooks)** (2026-03-17): `feat/typescript-strict-mode-hooks` — PR #18 aceito em `main`; 4 flags adicionais ativadas (`strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`); 106/106 testes; codebase continua type-safe sem supressões. Próxima iteração: `src/pages/`.
+- **TypeScript strict mode iteração 3 (pages)** (2026-03-17): `feat/typescript-strict-mode-pages` — PR #20 aberto; 6 testes adicionados em `tsconfig.strict.test.ts` cobrindo AC-1 (compilação limpa de `src/pages/`) e AC-2 (ausência de `@ts-ignore`/`@ts-expect-error` nos 5 arquivos de página); 112/112 testes. Próxima iteração: `src/components/`.
 
 ## Pendências
 
@@ -25,6 +26,6 @@
 
 ## Pontos de atenção
 
-- **TypeScript strict mode iteração 2**: avaliar `src/hooks/` com `noImplicitAny` + `strictNullChecks` já ativos (ver ADR-006).
+- **TypeScript strict mode iteração 4**: auditar `src/components/` (exceto `src/components/ui/`) com as flags vigentes — próximo passo do ADR-006.
 - **Enchanted items** (`.@1/.@2/.@3`): avaliar adição ao catálogo — DEBT-P2 em aberto.
 - **Filtros de UI**: revisar se há gaps de UX remanescentes além de Tier e Cidade no PriceTable.
