@@ -5,8 +5,8 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável — PR #20 `feat/typescript-strict-mode-pages` aberto; 112/112 testes passando; lint e build limpos
-**Branch ativa:** main | Último PR: `feat/typescript-strict-mode-pages` (#20) — strict mode iteração 3 completa
+**Status:** Baseline estável — PR #22 `feat/typescript-strict-mode-components` mergeado; 121/121 testes passando; lint e build limpos; migração TypeScript strict mode COMPLETA
+**Branch ativa:** main | Último PR: `feat/typescript-strict-mode-components` (#22) — strict mode iteração 4 (final) completa
 
 ---
 
@@ -30,19 +30,20 @@
 | TypeScript strict mode iteração 1 | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
 | Cache de dados de mercado com TTL | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min (`CACHE_TTL_MS=300_000`); chave `albion_market_cache`; schema Zod valida campos completos de `MarketItem`; `writeCache` silencia `QuotaExceededError`; ADR-007 criado |
 | TypeScript strict mode iteração 2 | ✅ Fixo | 4 flags adicionais ativadas em `tsconfig.app.json`: `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`; codebase continua type-safe sem supressões; 106/106 testes |
-| TypeScript strict mode iteração 3 | ✅ Fixo | `src/pages/` auditada: 5 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 6 testes adicionados em `tsconfig.strict.test.ts`; PR #20 aberto; 112/112 testes |
+| TypeScript strict mode iteração 3 | ✅ Fixo | `src/pages/` auditada: 5 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 6 testes adicionados em `tsconfig.strict.test.ts`; PR #20 mergeado; 112/112 testes |
+| TypeScript strict mode iteração 4 | ✅ Fixo | `src/components/` (exceto `ui/`) auditada: 8 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 9 testes adicionados em `tsconfig.strict.test.ts`; PR #22 mergeado; 121/121 testes; migração gradual COMPLETA |
 
 ---
 
 ## Active fronts
 
-- `feat/typescript-strict-mode-pages` — PR #20 aberto, aguardando merge. Iteração 3 concluída.
+- Nenhuma frente ativa. Baseline limpa. Migração TypeScript strict mode completa em todas as camadas.
 
 ---
 
 ## Open decisions
 
-- TypeScript strict mode iteração 4: auditar `src/components/` (exceto `src/components/ui/`) com flags vigentes
+- **TypeScript strict mode**: migração gradual COMPLETA — considerar ativação de `strict: true` master no tsconfig quando houver confiança de estabilidade
 - Enchanted items (`.@1`, `.@2`, `.@3`): avaliar adição ao catálogo em feature futura
 - Filtros de UI adicionais: revisar gaps de UX remanescentes no PriceTable além de Tier e Cidade
 
@@ -67,8 +68,8 @@
 
 ## Next recommended steps
 
-1. **Merge PR #20** — `feat/typescript-strict-mode-pages` aguardando aprovação
-2. **TypeScript strict mode iteração 4** — auditar `src/components/` (exceto `src/components/ui/`) com flags já ativas (ADR-006)
+1. **Consolidar logs** — commitar atualizações de ERROR_LOG.md, PENDING_LOG.md e MEMORY.md
+2. **Avaliação de `strict: true`** — considerar ativação da flag master quando houver confiança de estabilidade (todas as camadas já auditadas)
 3. **Enchanted items** — avaliar adição de variantes `.@1/.@2/.@3` ao catálogo (DEBT-P2)
 4. **Filtros de UI** — revisar gaps de UX no PriceTable (pendência aberta)
 
@@ -78,16 +79,18 @@
 
 **Sessão:** 2026-03-17
 **Trabalho realizado:**
-- `feat/typescript-strict-mode-pages` (iteração 3) — ciclo completo do plano ao PR #20
-  - `src/test/tsconfig.strict.test.ts`: 6 testes novos cobrindo AC-1 (compilação limpa via `tsc --noEmit`) e AC-2 (ausência de supressões nos 5 arquivos de página)
-  - `src/pages/` confirmada type-safe nativamente — sem supressões necessárias
-  - 112/112 testes passando (106 anteriores + 6 novos)
-  - Lint 0 erros; build OK; PR #20 aberto
+- `feat/typescript-strict-mode-pages` (iteração 3) — ciclo completo do plano ao PR #20 mergeado
+  - `src/test/tsconfig.strict.test.ts`: 6 testes novos cobrindo AC-1 e AC-2 para `src/pages/`
+  - 112/112 testes passando
+- `feat/typescript-strict-mode-components` (iteração 4) — ciclo completo do plano ao PR #22 mergeado
+  - `src/test/tsconfig.strict.test.ts`: 9 testes novos cobrindo AC-1 e AC-2 para `src/components/` (exceto `ui/`)
+  - 121/121 testes passando
+  - Migração gradual para TypeScript strict mode COMPLETA em todas as camadas
 - Logs consolidados: `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` atualizados
 
-**Estado ao encerrar:** PR #20 aberto. 112/112 testes. Lint e build OK. Iteração 3 concluída.
+**Estado ao encerrar:** Baseline limpa. 121/121 testes. Lint e build OK. Iterações 3 e 4 concluídas e mergeadas. Migração strict mode completa.
 
 **Retomar por:**
 ```
-session-open → implement-feature typescript-strict-mode-components
+session-open → avaliar próximo débito técnico (enchanted items, filtros de UI, ou ativação de strict: true)
 ```

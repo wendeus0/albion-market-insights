@@ -120,7 +120,17 @@
 ### [2026-03-17] feat/typescript-strict-mode-pages — sem erros
 
 - Ciclo completo executado: spec-editor → spec-validator → test-red → green-refactor → code-review → quality-gate → report-writer → branch-sync-guard → feature-scope-guard → enforce-workflow → git-flow-manager
-- PR #20 aberto (`feat/typescript-strict-mode-pages` → `main`)
+- PR #20 mergeado em `main`
 - 112/112 testes passando (106 anteriores + 6 novos: AC-1 compilação limpa + AC-2 ×5 arquivos)
 - `src/pages/` confirmada type-safe sem supressões com todas as flags vigentes
 - **Status**: SEM ERROS
+
+---
+
+### [2026-03-17] feat/typescript-strict-mode-components — sem erros
+
+- Ciclo completo executado: spec-editor → spec-validator → test-red → green-refactor → code-review → quality-gate → report-writer → branch-sync-guard → feature-scope-guard → enforce-workflow → git-flow-manager
+- PR #22 mergeado em `main`
+- 121/121 testes passando (112 anteriores + 9 novos: AC-1 compilação limpa + AC-2 ×8 arquivos)
+- `src/components/` (exceto `ui/`) confirmada type-safe sem supressões com todas as flags vigentes
+- **Status**: SEM ERROS — migração gradual para TypeScript strict mode COMPLETA
