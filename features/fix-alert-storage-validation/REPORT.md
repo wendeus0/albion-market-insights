@@ -1,86 +1,33 @@
-# REPORT — Hardening de Alert Storage e Cobertura de Testes
+# REPORT — Hardening de Alert Storage
 
-**Status:** READY_FOR_COMMIT
-**Data:** 2026-03-17
-**Feature:** `fix/hardening-alert-storage-coverage`
-**Branch sugerida:** `feat/hardening-alert-storage-coverage`
-
----
-
-## Resumo
-
-Implementação de hardening de segurança no `AlertStorageService` com validação de schema Zod
-para dados lidos do localStorage, e elevação da cobertura de testes dos módulos críticos
-(PriceTable) acima do limiar operacional de 80%.
-
-## O que mudou
-
-| Arquivo | Tipo | Descrição |
-|---------|------|-----------|
-| `src/lib/schemas.ts` | Modificado | Adicionado `alertSchema` com validação Zod para o tipo `Alert` |
-| `src/services/alert.storage.ts` | Modificado | `getAlerts()` agora valida dados com Zod antes de retornar, filtrando itens inválidos |
-| `src/test/alertStorage.test.ts` | Modificado | +6 testes novos cobrindo validação de schema (AC-1 a AC-4) |
-| `src/test/PriceTable.test.tsx` | Modificado | +10 testes novos cobrindo ordenação, paginação, busca, filtros combinados |
-
-## Critérios de Aceitação
-
-### Fase 1: Hardening de Segurança
-
-| AC | Descrição | Status |
-|----|-----------|--------|
-| AC-1 | Schema Zod criado para validação de Alert | ✅ `alertSchema` em `src/lib/schemas.ts` |
-| AC-2 | Dados malformados retornam array vazio | ✅ JSON inválido, campos ausentes, tipos incorretos → `[]` |
-| AC-3 | Dados válidos são retornados normalmente | ✅ Testes de regressão passando |
-| AC-4 | Testes de regressão passando | ✅ Todos os 151 testes passando |
-
-### Fase 2: Cobertura de Testes
-
-| Métrica | Antes | Depois | Status |
-|---------|-------|--------|--------|
-| Cobertura global (statements) | 77.99% | 81.50% | ✅ > 80% |
-| Cobertura global (lines) | 79.60% | 83.03% | ✅ > 80% |
-| PriceTable.tsx (statements) | 57.25% | 75.00% | ✅ Significativa melhoria |
-| PriceTable.tsx (lines) | 60.90% | 78.18% | ✅ Significativa melhoria |
-| Total de testes | 139 | 151 | +12 novos testes |
-
-## Resultados de Validação
-
-| Check | Resultado |
-|-------|-----------|
-| `npm run lint` | 0 erros, 7 warnings (pré-existentes em `src/components/ui/`) |
-| `npm run test` | 151/151 passando (+12 novos) |
-| `npm run build` | OK — bundle 394 kB |
-| Cobertura global | 81.50% statements / 83.03% lines |
-
-## security-review
-
-**Status:** `SECURITY_PASS` — a mudança adiciona validação defensiva sem introduzir novas
-superfícies de ataque. O hardening mitiga o risco LOW identificado no `SECURITY_AUDIT_REPORT.md`
-em relação à leitura não validada de dados do localStorage.
-
-## Arquivos fora do escopo
-
-Nenhum arquivo fora do escopo foi modificado. Alterações restritas a:
-- Validação de schema em `src/lib/schemas.ts` e `src/services/alert.storage.ts`
-- Testes em `src/test/alertStorage.test.ts` e `src/test/PriceTable.test.tsx`
-
-## Riscos Residuais
-
-- **Cobertura de hooks**: `useAlerts.ts` (20%) e `useAlertPoller.ts` (43.75%) ainda abaixo do
-  limiar — não foram foco deste ciclo
-- **shadcn/ui warnings**: 7 warnings pré-existentes em `src/components/ui/` permanecem
-
-## Próximos Passos
-
-1. Monitorar comportamento do filtro de dados inválidos em produção
-2. Considerar estratégia para elevar cobertura dos hooks de alertas
-3. Avaliar necessidade de migração de dados persistidos de versões antigas
+**Status:** READY_FOR_COMMIT  
+**Data:** 2026-03-17  
+**Branch:** fix/alert-storage-validation  
+**Tipo:** fix-feature  
+**Referência:** SECURITY_AUDIT_REPORT.md — observação LOW em `src/services/alert.storage.ts`  
 
 ---
 
-## Resumo Técnico
+## Sumário Executivo
 
-### Schema de Validação
+Validação defensiva de schema Zod em `src/services/alert.storage.ts` verificada e testada. Implementação já existente atende todos os critérios de aceite. Fecha observação LOW da auditoria de segurança.
+
+---
+
+## O que foi validado
+
+### Implementação existente
+
+O código em `src/services/alert.storage.ts` já utiliza validação Zod:
+
+```typescript
+return parsed.filter((item): item is Alert => {
+  const result = alertSchema.safeParse(item);
+  return result.success;
+});
+```
+
+Schema: `src/lib/schemas.ts`
 
 ```typescript
 export const alertSchema = z.object({
@@ -99,11 +46,87 @@ export const alertSchema = z.object({
 });
 ```
 
-### Comportamento de Fallback
+### Testes de validação
 
-Quando `localStorage` contém dados inválidos:
-- JSON malformado → retorna `[]`
-- Campos obrigatórios ausentes → item filtrado
-- Tipos incorretos (ex: threshold como string) → item filtrado
-- Enums inválidos → item filtrado
-- Array misto (válidos + inválidos) → apenas válidos retornados
+Arquivo: `src/test/alertStorage.test.ts` — **13 testes**
+
+Cobertura de segurança:
+- ✅ JSON malformado → `[]`
+- ✅ Campos obrigatórios ausentes → `[]`
+- ✅ Tipos incorretos (threshold não número) → `[]`
+- ✅ Enum inválido (condition) → `[]`
+- ✅ Estrutura aninhada inválida (notifications) → `[]`
+- ✅ Array misto (válidos + inválidos) → apenas válidos
+
+---
+
+## Critérios de Aceitação
+
+| AC | Descrição | Status |
+|----|-----------|--------|
+| AC-1 | Schema Zod cobre todos os campos Alert | ✅ `alertSchema` completo |
+| AC-2 | Dados malformados retornam `[]` | ✅ 6 cenários testados |
+| AC-3 | Dados válidos retornam normalmente | ✅ CRUD testado |
+| AC-4 | Testes de regressão passam | ✅ 168/168 testes |
+
+---
+
+## Quality Gate
+
+```
+✅ npm test — 168/168 testes passando (18 arquivos)
+✅ npm run lint — 0 erros (10 warnings pré-existentes em shadcn/ui)
+✅ npm run build — bundle 395.28 kB (code-splitting ativo)
+✅ Sem console.log em produção
+✅ Imports via path aliases @/*
+```
+
+---
+
+## Security Review
+
+**Veredito:** `SECURITY_PASS`
+
+- Entrada não confiável (localStorage) validada com schema Zod
+- Comportamento fail-closed: dados inválidos são silenciosamente filtrados
+- Não expõe secrets nem altera infraestrutura
+- Superfície de ataque não aumentada
+
+---
+
+## Riscos Residuais
+
+| Risco | Nível | Mitigação |
+|-------|-------|-----------|
+| Dados de versões antigas filtrados | LOW | Comportamento aceitável — usuário recria alertas |
+| Overhead de parsing Zod | LOW | Volume típico <100 alertas, impacto negligenciável |
+
+---
+
+## Mudanças no Repositório
+
+```diff
+features/fix-alert-storage-validation/SPEC.md
+- Status: Draft
++ Status: Approved
+
+features/fix-alert-storage-validation/REPORT.md (novo)
++ Documentação do fix e validação
+```
+
+---
+
+## Próximos Passos Recomendados
+
+1. **Merge em `main`** — fechar débito técnico
+2. **Atualizar `PENDING_LOG.md`** — marcar validação como concluída
+3. **Atualizar `ERROR_LOG.md`** — registrar fechamento da observação LOW
+4. **Remover branch** após merge
+
+---
+
+## Notas
+
+- Implementação já existia no código base (pós-PR #27)
+- Este fix-feature focou em validar e documentar a implementação existente
+- Testes já cobrem todos os cenários de segurança identificados
