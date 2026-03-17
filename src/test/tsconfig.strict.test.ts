@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 // Iteração 2 (hooks): AC-1-AC-4 — strictFunctionTypes, strictBindCallApply,
 //   strictPropertyInitialization, useUnknownInCatchVariables
 // Iteração 3 (pages): AC-1 — compilação limpa; AC-2 — sem supressões
+// Iteração 4 (components): AC-1 — compilação limpa exceto ui/; AC-2 — sem supressões exceto ui/
 
 function readTsconfig(filename: string) {
   const raw = readFileSync(resolve(process.cwd(), filename), 'utf-8');
@@ -84,6 +85,49 @@ describe('src/pages/ — strict mode iteração 3 (AC-2): sem supressões de tip
   for (const file of pageFiles) {
     it(`${file} não deve conter @ts-ignore ou @ts-expect-error`, () => {
       const content = readFileSync(resolve(pagesDir, file), 'utf-8');
+      expect(content).not.toMatch(/@ts-ignore|@ts-expect-error/);
+    });
+  }
+});
+
+describe('src/components/ — strict mode iteração 4 (AC-1): compilação limpa', () => {
+  it('tsc --noEmit não deve reportar erros em src/components/ (exceto ui/)', () => {
+    let output = '';
+    try {
+      execSync('npx tsc --noEmit 2>&1', { cwd: resolve(process.cwd()) });
+    } catch (err: unknown) {
+      output = (err as { stdout?: Buffer; stderr?: Buffer }).stdout?.toString() ?? '';
+    }
+    const componentErrors = output
+      .split('\n')
+      .filter((line) => line.includes('src/components/') && !line.includes('src/components/ui/') && line.includes('error TS'));
+    expect(componentErrors).toHaveLength(0);
+  });
+});
+
+function getComponentFiles(dir: string, files: string[] = []): string[] {
+  const entries = readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'ui') {
+        getComponentFiles(fullPath, files);
+      }
+    } else if (entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+describe('src/components/ — strict mode iteração 4 (AC-2): sem supressões de tipo', () => {
+  const componentsDir = resolve(process.cwd(), 'src/components');
+  const componentFiles = getComponentFiles(componentsDir);
+
+  for (const filePath of componentFiles) {
+    const relativePath = filePath.replace(process.cwd() + '/', '');
+    it(`${relativePath} não deve conter @ts-ignore ou @ts-expect-error`, () => {
+      const content = readFileSync(filePath, 'utf-8');
       expect(content).not.toMatch(/@ts-ignore|@ts-expect-error/);
     });
   }
