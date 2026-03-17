@@ -12,6 +12,8 @@ export const tiers = ['T4', 'T5', 'T6', 'T7', 'T8'] as const;
 
 export const qualities = ['Normal', 'Good', 'Outstanding', 'Excellent', 'Masterpiece'] as const;
 
+export const ENCHANTMENT_LEVELS = [0, 1, 2, 3] as const;
+
 export interface CatalogCategory {
   label: string;
   ids: string[];
@@ -38,7 +40,11 @@ export type CatalogCategoryKey =
 
 function genIds(types: string[]): string[] {
   return ['T4', 'T5', 'T6', 'T7', 'T8'].flatMap(tier =>
-    types.map(type => `${tier}_${type}`)
+    types.flatMap(type =>
+      ENCHANTMENT_LEVELS.map(level =>
+        level === 0 ? `${tier}_${type}` : `${tier}_${type}@${level}`
+      )
+    )
   );
 }
 
@@ -136,15 +142,19 @@ export const ITEM_CATALOG: Record<CatalogCategoryKey, CatalogCategory> = {
   },
   bags: {
     label: 'Bags',
-    ids: ['T4_BAG', 'T5_BAG', 'T6_BAG', 'T7_BAG', 'T8_BAG'],
+    ids: genIds(['BAG']),
   },
   capes: {
     label: 'Capes',
-    ids: ['T4_CAPE', 'T5_CAPE', 'T6_CAPE', 'T7_CAPE', 'T8_CAPE'],
+    ids: genIds(['CAPE']),
   },
   resources: {
     label: 'Resources',
-    ids: genIds(['HIDE', 'ORE', 'FIBER', 'WOOD', 'ROCK']),
+    ids: ['T4_HIDE', 'T5_HIDE', 'T6_HIDE', 'T7_HIDE', 'T8_HIDE',
+          'T4_ORE', 'T5_ORE', 'T6_ORE', 'T7_ORE', 'T8_ORE',
+          'T4_FIBER', 'T5_FIBER', 'T6_FIBER', 'T7_FIBER', 'T8_FIBER',
+          'T4_WOOD', 'T5_WOOD', 'T6_WOOD', 'T7_WOOD', 'T8_WOOD',
+          'T4_ROCK', 'T5_ROCK', 'T6_ROCK', 'T7_ROCK', 'T8_ROCK'],
   },
 };
 
@@ -246,12 +256,16 @@ const TYPE_LABELS: Record<string, string> = {
 export const ITEM_NAMES: Record<string, string> = Object.fromEntries(
   ITEM_IDS.map(id => {
     const tier = id.match(/^(T\d)/)?.[1] ?? '';
-    const type = id.replace(/^T\d_/, '');
+    // Extrai o tipo e o nível de encantamento (se houver)
+    const enchantMatch = id.match(/@([0-3])$/);
+    const enchantLevel = enchantMatch ? parseInt(enchantMatch[1]) : 0;
+    const type = id.replace(/^T\d_/, '').replace(/@[0-3]$/, '');
     const label = TYPE_LABELS[type];
-    if (label) return [id, `${label} ${tier}`];
+    const enchantSuffix = enchantLevel > 0 ? ` .${enchantLevel}` : '';
+    if (label) return [id, `${label} ${tier}${enchantSuffix}`];
     const fallback = type
       .replace(/_/g, ' ')
       .replace(/\b(\w)/g, (_, c: string) => c.toUpperCase());
-    return [id, `${fallback} ${tier}`];
+    return [id, `${fallback} ${tier}${enchantSuffix}`];
   })
 );
