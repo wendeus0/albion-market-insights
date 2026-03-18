@@ -19,6 +19,8 @@
 - **Enchanted items** (2026-03-17): `feat(catalog)` — PR #24 mergeado em `main`; catálogo expandido de 450 para 1.830 IDs com suporte a `@1/@2/@3`, filtro de encantamento no `PriceTable` e ADR-008 criado. 126/126 testes.
 - **Enhanced UI Filters** (2026-03-17): `feat(ui)` — PR #25 mergeado em `main`; filtros min/max de preço e spread, botão `Clear All` e contador de filtros ativos no `PriceTable`. 133/133 testes.
 - **Auditoria de segurança do sprint** (2026-03-17): `SECURITY_AUDIT_REPORT.md` gerado com veredito `SECURITY_PASS_WITH_NOTES`; sem achados CRITICAL/HIGH/MEDIUM; observação LOW na leitura de alertas de `localStorage` sem validação de schema.
+- **Cobertura de hooks críticos** (2026-03-18): `feat/coverage-critical-modules` — PR #28 mergeado em `main`; testes adicionados para `use-toast.ts`, `useAlerts.ts` e `useAlertPoller.ts`; cobertura global elevada de 77.99% para 86.24% statements; 205/205 testes passando.
+- **E2E de AlertsManager** (2026-03-18): `feat/alerts-manager-e2e` — testes Playwright adicionados para fluxos de criação, persistência, toggle e exclusão; configuração ajustada para usar `chromium` do sistema no Arch Linux; modo mock forçado nos testes E2E; 9/9 cenários passando.
 
 ## Pendências
 
@@ -28,14 +30,15 @@
 - [x] **Filtros de UI adicionais**: CONCLUÍDO parcialmente no PR #25 — min/max preço e spread, `Clear All`, contador de filtros. Gap remanescente: persistência opcional dos filtros (AC-5).
 - [x] **Tratamento de Rate Limit**: CONCLUÍDO — PR #11 mergeado. `fetchWithRetry` com backoff exponencial e jitter em `market.api.ts`. Fecha DEBT-P1-001.
 - [x] **Cache com TTL**: CONCLUÍDO — PR #17 mergeado. `market.cache.ts` com TTL 5 min e validação Zod. Fecha DEBT-P1-002.
-- [ ] **Cobertura de módulos críticos**: elevar cobertura de `src/components/dashboard/PriceTable.tsx`, `src/components/alerts/AlertsManager.tsx`, `src/hooks/useAlerts.ts`, `src/hooks/useAlertPoller.ts` e `src/hooks/use-toast.ts` para acima do limiar operacional de 80%.
+- [x] **Cobertura de hooks críticos**: CONCLUÍDO — PR #28 mergeado. use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%). 72 novos testes.
+- [ ] **Cobertura de componentes críticos**: elevar cobertura de `src/components/dashboard/PriceTable.tsx` (76.61%) e `src/components/alerts/AlertsManager.tsx` (63.46%) para ≥80%.
 - [ ] **Validação defensiva de alertas persistidos**: adicionar schema validation ao ler `localStorage` em `src/services/alert.storage.ts`.
-- [ ] **E2E completo de alertas**: cobrir fluxo criar → persistir → disparar em Playwright.
+- [x] **E2E completo de alertas**: CONCLUÍDO — `feat/alerts-manager-e2e` com 9 cenários Playwright cobrindo criação, persistência, toggle e exclusão de alertas.
 - [ ] **Decisão sobre `strict: true`**: avaliar ativação da flag master agora que a migração gradual terminou.
 
 ## Pontos de atenção
 
 - **Worktree local sujo**: existem mudanças fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`; não sobrescrever sem validar contexto.
-- **Cobertura atual**: `npx vitest run --coverage` resultou em 77.99% statements / 79.6% lines; `PriceTable`, `AlertsManager` e hooks de alertas concentram os maiores gaps.
+- **Cobertura atual**: `npx vitest run --coverage` resultou em 86.24% statements / 88.02% lines; hooks de alertas agora estão acima de 90%. Gaps remanescentes: `PriceTable` (76.61%) e `AlertsManager` (63.46%).
 - **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
 - **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.

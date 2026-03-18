@@ -144,3 +144,48 @@
 - Auditoria de segurança consolidada sem achados CRITICAL/HIGH/MEDIUM; 1 observação LOW em `src/services/alert.storage.ts`
 - Worktree local permanece sujo por alterações fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`
 - **Status**: SEM ERROS — checkpoint de sprint consolidado
+
+---
+
+### [2026-03-18] feat/coverage-critical-modules — sem erros
+
+- Ciclo completo de implementação de testes executado: spec-editor → spec-validator → test-red → green-refactor → quality-gate → report-writer → branch-sync-guard → feature-scope-guard → enforce-workflow → git-flow-manager
+- PR #28 mergeado em `main` com 72 novos testes para hooks de alertas e notificações
+- Cobertura elevada: use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%)
+- Cobertura global: 81.81% → 86.24% statements / 83.35% → 88.02% lines
+- 205/205 testes passando sem regressões
+- **Status**: SEM ERROS — feature de cobertura parcial concluída
+
+---
+
+### [2026-03-18] feat/alerts-manager-e2e — erros de ambiente resolvidos
+
+- **Erro 1**: `npx playwright install chromium` falhou com timeout nos mirrors da Microsoft
+- **Causa**: Playwright tenta baixar build Ubuntu fallback, mas mirrors inacessíveis no ambiente atual
+- **Ação tomada**: Instalado `chromium` do sistema via `pacman` no Arch Linux; configurado `playwright.config.ts` com `executablePath: '/usr/bin/chromium'` condicional
+- **Status**: RESOLVIDO
+
+- **Erro 2**: Testes E2E falhavam porque app iniciava em modo API real (`VITE_USE_REAL_API=true` no `.env`)
+- **Causa**: E2E requer modo mock para ter dados determinísticos nos selects de itens
+- **Ação tomada**: Configurado `webServer.command: 'VITE_USE_REAL_API=false npm run dev'` no `playwright.config.ts`
+- **Status**: RESOLVIDO
+
+- **Erro 3**: Seletores `getByRole('option', { name: /bag/i })` não funcionavam — itens do mock são aleatórios
+- **Causa**: `mockItems` usa geração aleatória; não há garantia de "Bag" estar disponível
+- **Ação tomada**: Testes de criação alterados para usar `getByRole('option').first()` e capturar nome dinamicamente via `textContent()`
+- **Status**: RESOLVIDO
+
+- **Erro 4**: Strict mode violation em assertions de texto (múltiplos elementos correspondendo)
+- **Causa**: Toast notifications geram elementos duplicados no DOM (visual + aria-live region)
+- **Ação tomada**: Assertions alteradas para `{ exact: true }` ou seletores mais específicos (ex: `locator('p.font-medium')`)
+- **Status**: RESOLVIDO
+
+- **Erro 5**: Teste de persistência falhava após reload
+- **Causa**: `beforeEach` com `addInitScript` limpava localStorage após `page.goto()`, mas reload preservava
+- **Ação tomada**: Movida limpeza para `page.evaluate()` após `goto` + `reload`, garantindo estado limpo inicial
+- **Status**: RESOLVIDO
+
+- **Ciclo completo**: spec-editor → spec-validator → repo-preflight → test-red → green-refactor → code-review → quality-gate → report-writer → branch-sync-guard → feature-scope-guard → enforce-workflow → git-flow-manager
+- Branch `feat/alerts-manager-e2e` criada a partir de `main` com commit `bdf2924`
+- 9/9 testes E2E passando (5 originais + 4 novos: criação, persistência, toggle, exclusão)
+- **Status**: SEM ERROS — E2E de AlertsManager concluído
