@@ -44,7 +44,7 @@
 
 - Cobertura de componentes críticos CONCLUÍDA (PR #31): PriceTable (84.67%) e AlertsManager (80.76%) acima de 80%
 - Workflow `Quality Gate` operacional no GitHub Actions com npm 10.8.2 padronizado
-- Próxima frente recomendada: validação defensiva de `alert.storage.ts` (observação LOW de segurança)
+- Validação defensiva de `alert.storage.ts`: CONCLUÍDA — schema Zod aplicado, 13 testes de segurança
 
 ---
 
@@ -80,10 +80,9 @@
 
 ## Next recommended steps
 
-1. **Hardening de alertas** — validar payload de `localStorage` em `src/services/alert.storage.ts` (observação LOW de segurança)
-2. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
-3. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
-4. **Atualização de actions** — avaliar migração para `actions/checkout@v5` e `actions/setup-node@v5` (Node 20 deprecado a partir de 2026-06-02)
+1. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
+2. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
+3. **Atualização de actions** — avaliar migração para `actions/checkout@v5` e `actions/setup-node@v5` (Node 20 deprecado a partir de 2026-06-02)
 
 ---
 
@@ -122,14 +121,12 @@ Current state:
 - CI operacional: quality gate passando em toda push/PR
 
 Open points:
-- Validar defensivamente `localStorage` em `alert.storage.ts` (segurança LOW)
 - Decidir ativação de `strict: true` master flag (migração gradual completa)
 - Decidir sobre persistência de filtros do PriceTable
 - Avaliar upgrade de actions para Node 24 (deprecation em 2026-06-02)
 
 Recommended next front:
-- implement-feature para hardening de `alert.storage.ts` com schema validation
-- ou technical-triage para priorizar entre strict mode, UX filtros, ou upgrade de actions
+- technical-triage para priorizar entre strict mode master flag, UX filtros persistentes, ou upgrade de actions
 ```
 Read before acting:
 - `AGENTS.md`
