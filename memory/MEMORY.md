@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável em `main` — PR #28 mergeado; cobertura elevada para 86.24% statements / 88.02% lines; 205/205 testes passando; hooks de alertas agora com cobertura robusta (>90%)
-**Branch ativa:** `feat/alerts-manager-e2e` | Commit: `bdf2924` | Próximo passo: abrir PR para `main`
-**Snapshot local relevante:** worktree contém modificações nos logs (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) e arquivos de coverage gerados automaticamente; logs precisam ser commitados separadamente antes do PR
+**Status:** Baseline estável em `main` — PR #31 mergeado; cobertura de componentes críticos completada; 211/211 testes passando; CI operacional com quality gate
+**Branch ativa:** `main` (HEAD em `566e7c0` após merge do PR #31)
+**Snapshot local relevante:** `ERROR_LOG.md` atualizado com resolução do incidente npm/CI; pendências marcadas como concluídas em `PENDING_LOG.md`
 
 ---
 
@@ -36,14 +36,15 @@
 | Itens encantados no catálogo | ✅ Fixo | PR #24 mergeado; `ENCHANTMENT_LEVELS = [0,1,2,3]`; IDs com `@1/@2/@3`; filtro de encantamento no `PriceTable`; ADR-008 |
 | Filtros avançados no `PriceTable` | ✅ Fixo | PR #25 mergeado; min/max preço, min/max spread, botão `Clear All` e contador de filtros ativos |
 | Playwright E2E no Arch Linux | ✅ Fixo | Usar `chromium` do sistema (`/usr/bin/chromium`) via `executablePath` condicional em `playwright.config.ts`; build Ubuntu fallback não funciona no Arch; CI Ubuntu continua usando build padrão |
+| Quality Gate no CI | ✅ Fixo | Workflow `.github/workflows/quality-gate.yml` com lint → test --coverage → build; npm 10.8.2 padronizado via `packageManager` em `package.json` |
 
 ---
 
 ## Active fronts
 
-- E2E de AlertsManager concluído em `feat/alerts-manager-e2e`; pronto para PR.
-- Cobertura de testes: hooks concluídos (PR #28), E2E concluído; componentes unitários pendentes.
-- Frente principal recomendada: elevar cobertura de `PriceTable` (76.61%) e `AlertsManager` (63.46%) para ≥80% via testes unitários.
+- Cobertura de componentes críticos CONCLUÍDA (PR #31): PriceTable (84.67%) e AlertsManager (80.76%) acima de 80%
+- Workflow `Quality Gate` operacional no GitHub Actions com npm 10.8.2 padronizado
+- Próxima frente recomendada: validação defensiva de `alert.storage.ts` (observação LOW de segurança)
 
 ---
 
@@ -79,10 +80,10 @@
 
 ## Next recommended steps
 
-1. **Cobertura de componentes** — priorizar `src/components/dashboard/PriceTable.tsx` (76.61%) e `src/components/alerts/AlertsManager.tsx` (63.46%) para ≥80%
+1. **Hardening de alertas** — validar payload de `localStorage` em `src/services/alert.storage.ts` (observação LOW de segurança)
 2. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
-3. **Hardening de alertas** — validar payload de `localStorage` em `src/services/alert.storage.ts`
-4. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
+3. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
+4. **Atualização de actions** — avaliar migração para `actions/checkout@v5` e `actions/setup-node@v5` (Node 20 deprecado a partir de 2026-06-02)
 
 ---
 
@@ -90,20 +91,45 @@
 
 **Sessão:** 2026-03-18
 **Trabalho realizado:**
-- Feature `feat/coverage-critical-modules` implementada e mergeada (PR #28)
-- 72 novos testes adicionados para hooks de alertas e notificações
-- Cobertura elevada: use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%)
-- Cobertura global: 81.81% → 86.24% statements / 83.35% → 88.02% lines
-- 205/205 testes passando sem regressões
-- Feature `feat/alerts-manager-e2e` desenvolvida e commitada (commit `bdf2924`)
-- 4 novos cenários E2E adicionados: criação, persistência, toggle, exclusão de alertas
-- Configuração Playwright ajustada para usar `chromium` do sistema no Arch Linux
-- Modo mock forçado nos testes E2E para garantir determinismo
-- 9/9 testes E2E passando (5 originais + 4 novos)
+- PR #31 mergeado em `main`: cobertura de componentes críticos completada
+  - `PriceTable.tsx`: 76.61% → 84.67% statements
+  - `AlertsManager.tsx`: 63.46% → 80.76% statements  
+  - 6 novos testes unitários adicionados
+  - 211/211 testes passando
+- Workflow `Quality Gate` criado e operacional no GitHub Actions
+- Resolução de incidente CI: `EBADPLATFORM` em `npm ci` corrigido
+  - Regenerado `package-lock.json` com npm 10.8.2
+  - Adicionado `"packageManager": "npm@10.8.2"` em `package.json`
+  - Workflow ajustado para pinar npm antes do `npm ci`
+- Logs atualizados: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`
 
-**Estado ao encerrar:** Branch `feat/alerts-manager-e2e` pronta para PR. Logs atualizados (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) precisam ser commitados antes de abrir o PR.
+**Estado ao encerrar:** `main` atualizado com PR #31; worktree limpo exceto logs pendentes de commit
 
 **Retomar por:**
+```
+Read before acting:
+- `AGENTS.md`
+- `ERROR_LOG.md`
+- `PENDING_LOG.md`
+- `memory/MEMORY.md`
+
+Current state:
+- `main` contém PR #31 (cobertura de componentes + quality gate)
+- HEAD em `566e7c0`: ci(npm): fix EBADPLATFORM in quality gate
+- 211/211 testes passando
+- Cobertura global: 88.59% statements / 90.17% lines
+- PriceTable: 84.67% | AlertsManager: 80.76% | ambos ≥80%
+- CI operacional: quality gate passando em toda push/PR
+
+Open points:
+- Validar defensivamente `localStorage` em `alert.storage.ts` (segurança LOW)
+- Decidir ativação de `strict: true` master flag (migração gradual completa)
+- Decidir sobre persistência de filtros do PriceTable
+- Avaliar upgrade de actions para Node 24 (deprecation em 2026-06-02)
+
+Recommended next front:
+- implement-feature para hardening de `alert.storage.ts` com schema validation
+- ou technical-triage para priorizar entre strict mode, UX filtros, ou upgrade de actions
 ```
 Read before acting:
 - `AGENTS.md`

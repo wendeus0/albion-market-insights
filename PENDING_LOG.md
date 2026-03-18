@@ -31,7 +31,7 @@
 - [x] **Tratamento de Rate Limit**: CONCLUÍDO — PR #11 mergeado. `fetchWithRetry` com backoff exponencial e jitter em `market.api.ts`. Fecha DEBT-P1-001.
 - [x] **Cache com TTL**: CONCLUÍDO — PR #17 mergeado. `market.cache.ts` com TTL 5 min e validação Zod. Fecha DEBT-P1-002.
 - [x] **Cobertura de hooks críticos**: CONCLUÍDO — PR #28 mergeado. use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%). 72 novos testes.
-- [ ] **Cobertura de componentes críticos**: elevar cobertura de `src/components/dashboard/PriceTable.tsx` (76.61%) e `src/components/alerts/AlertsManager.tsx` (63.46%) para ≥80%.
+- [x] **Cobertura de componentes críticos** (2026-03-18): CONCLUÍDO — PR #31 mergeado em `main`; testes unitários adicionados para `PriceTable.tsx` (84.67%) e `AlertsManager.tsx` (80.76%); ambos acima do limiar de 80%; 211/211 testes passando; workflow `Quality Gate` criado e operacional.
 - [ ] **Validação defensiva de alertas persistidos**: adicionar schema validation ao ler `localStorage` em `src/services/alert.storage.ts`.
 - [x] **E2E completo de alertas**: CONCLUÍDO — `feat/alerts-manager-e2e` com 9 cenários Playwright cobrindo criação, persistência, toggle e exclusão de alertas.
 - [ ] **Decisão sobre `strict: true`**: avaliar ativação da flag master agora que a migração gradual terminou.

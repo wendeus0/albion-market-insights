@@ -189,3 +189,16 @@
 - Branch `feat/alerts-manager-e2e` criada a partir de `main` com commit `bdf2924`
 - 9/9 testes E2E passando (5 originais + 4 novos: criação, persistência, toggle, exclusão)
 - **Status**: SEM ERROS — E2E de AlertsManager concluído
+
+---
+
+### [2026-03-18 09:30] PR #31 — EBADPLATFORM em npm ci no Quality Gate
+
+- **Erro**: Workflow `Quality Gate` falhava em `npm ci` com `EBADPLATFORM` para `@esbuild/aix-ppc64@0.27.4` em runner Ubuntu Linux x64
+- **Causa**: Incompatibilidade entre lockfile gerado com npm 11 local e npm 10.8.2 no CI (Node 20)
+- **Ação tomada**: 
+  - Regenerado `package-lock.json` com npm 10.8.2
+  - Adicionado `"packageManager": "npm@10.8.2"` em `package.json`
+  - Workflow ajustado para pinar npm 10.8.2 antes do `npm ci`
+  - Commit `566e7c0` na branch `feat/coverage-critical-components`
+- **Status**: RESOLVIDO — PR #31 mergeado em `main`, CI passando (run `23237923699`)
