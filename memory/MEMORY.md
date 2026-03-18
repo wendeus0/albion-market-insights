@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável em `main` — PR #25 mergeado; TypeScript strict mode completo, enchanted items ativos e filtros avançados no `PriceTable`; 133/133 testes passando; cobertura atual 77.99% statements / 79.6% lines
-**Branch ativa:** main | Último PR: `feat(ui): adicionar filtros avançados no PriceTable` (#25)
-**Snapshot local relevante:** worktree local sujo com mudanças fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`; preservar antes de iniciar nova frente
+**Status:** Baseline estável em `main` — PR #28 mergeado; cobertura elevada para 86.24% statements / 88.02% lines; 205/205 testes passando; hooks de alertas agora com cobertura robusta (>90%)
+**Branch ativa:** `feat/alerts-manager-e2e` | Commit: `bdf2924` | Próximo passo: abrir PR para `main`
+**Snapshot local relevante:** worktree contém modificações nos logs (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) e arquivos de coverage gerados automaticamente; logs precisam ser commitados separadamente antes do PR
 
 ---
 
@@ -16,7 +16,7 @@
 | Decisão | Status | Detalhes |
 |---------|--------|---------|
 | Camada de serviços (`src/services/`) | ✅ Fixo | Interface `MarketService`, implementações `market.api.ts` e `market.mock.ts` |
-| Hooks customizados | ✅ Fixo | `useMarketItems`, `useTopProfitable`, `useAlerts`, `useAlertPoller`, `useLastUpdateTime` |
+| Hooks customizados | ✅ Fixo | `useMarketItems`, `useTopProfitable`, `useAlerts`, `useAlertPoller`, `useLastUpdateTime` — testados com >90% cobertura |
 | Alert engine + storage | ✅ Fixo | Polling via `alert.engine.ts`, persistência via `alert.storage.ts` (localStorage) |
 | shadcn/ui como biblioteca de componentes | ✅ Fixo | 59 componentes em `src/components/ui/` — não editar diretamente |
 | Testes E2E com Playwright | ✅ Fixo | 13 testes cobrindo dashboard, navegação e alertas |
@@ -35,19 +35,21 @@
 | TypeScript strict mode iteração 4 | ✅ Fixo | `src/components/` (exceto `ui/`) auditada: 8 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 9 testes adicionados em `tsconfig.strict.test.ts`; PR #22 mergeado; 121/121 testes; migração gradual COMPLETA |
 | Itens encantados no catálogo | ✅ Fixo | PR #24 mergeado; `ENCHANTMENT_LEVELS = [0,1,2,3]`; IDs com `@1/@2/@3`; filtro de encantamento no `PriceTable`; ADR-008 |
 | Filtros avançados no `PriceTable` | ✅ Fixo | PR #25 mergeado; min/max preço, min/max spread, botão `Clear All` e contador de filtros ativos |
+| Playwright E2E no Arch Linux | ✅ Fixo | Usar `chromium` do sistema (`/usr/bin/chromium`) via `executablePath` condicional em `playwright.config.ts`; build Ubuntu fallback não funciona no Arch; CI Ubuntu continua usando build padrão |
 
 ---
 
 ## Active fronts
 
-- Encerramento de sprint concluído; próximos trabalhos são de follow-up técnico, não de feature aberta.
-- Frente principal recomendada: elevar cobertura e robustez dos módulos de alertas e dashboard antes de novas expansões de produto.
+- E2E de AlertsManager concluído em `feat/alerts-manager-e2e`; pronto para PR.
+- Cobertura de testes: hooks concluídos (PR #28), E2E concluído; componentes unitários pendentes.
+- Frente principal recomendada: elevar cobertura de `PriceTable` (76.61%) e `AlertsManager` (63.46%) para ≥80% via testes unitários.
 
 ---
 
 ## Open decisions
 
-- **`strict: true` master flag**: migração gradual está concluída; decidir se a flag agregada deve substituir a configuração fragmentada atual
+- **`strict: true` master flag**: migração gradual concluída; decidir se a flag agregada deve substituir a configuração fragmentada atual
 - **Persistência de filtros (AC-5)**: decidir se filtros do `PriceTable` devem sobreviver à navegação via `localStorage`
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
 
@@ -67,31 +69,39 @@
 - `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
 - `vi.stubGlobal('fetch', vi.fn())` retorna o objeto `globalThis`, não o spy — usar `globalThis.fetch as ReturnType<typeof vi.fn>` para assertions
 - `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning (será erro em versão futura do Vitest)
-- `src/services/alert.storage.ts` lê dados persistidos sem validação de schema — tratar `localStorage` como entrada não confiável em mudanças futuras
+- Hooks com estado global (ex: use-toast) precisam de função de reset entre testes — exportar `_resetXxxState()` se necessário
+- Mock de TanStack Query: usar `as ReturnType<typeof useHook>` para tipagem em testes de hooks dependentes
+- Playwright no Arch Linux: usar `chromium` do sistema; build Ubuntu fallback dos mirrors da Microsoft não funciona; configurar `executablePath` condicional em `playwright.config.ts`
+- Testes E2E devem rodar em modo mock (`VITE_USE_REAL_API=false`) para garantir dados determinísticos nos selects e formulários
+- Toast notifications geram elementos duplicados no DOM (visual + aria-live); usar `{ exact: true }` ou seletores específicos para evitar strict mode violation
 
 ---
 
 ## Next recommended steps
 
-1. **Consolidar logs** — commitar atualizações de ERROR_LOG.md, PENDING_LOG.md e MEMORY.md
-2. **Cobertura de testes** — priorizar `src/components/dashboard/PriceTable.tsx`, `src/components/alerts/AlertsManager.tsx`, `src/hooks/useAlerts.ts`, `src/hooks/useAlertPoller.ts` e `src/hooks/use-toast.ts`
+1. **Cobertura de componentes** — priorizar `src/components/dashboard/PriceTable.tsx` (76.61%) e `src/components/alerts/AlertsManager.tsx` (63.46%) para ≥80%
+2. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
 3. **Hardening de alertas** — validar payload de `localStorage` em `src/services/alert.storage.ts`
-4. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
-5. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
+4. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** 2026-03-17
+**Sessão:** 2026-03-18
 **Trabalho realizado:**
-- Sprint consolidado com PRs #23, #24 e #25 já em `main`
-- `feat(catalog)` (#24): catálogo expandido para 1.830 IDs com suporte a encantamentos e ADR-008
-- `feat(ui)` (#25): filtros avançados no `PriceTable`; baseline atual em 133/133 testes passando
-- Cobertura revisada com `npx vitest run --coverage`: 77.99% statements / 79.6% lines; gaps concentrados em dashboard e alertas
-- `SECURITY_AUDIT_REPORT.md` gerado com veredito `SECURITY_PASS_WITH_NOTES` e 1 observação LOW em `alert.storage.ts`
+- Feature `feat/coverage-critical-modules` implementada e mergeada (PR #28)
+- 72 novos testes adicionados para hooks de alertas e notificações
+- Cobertura elevada: use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%)
+- Cobertura global: 81.81% → 86.24% statements / 83.35% → 88.02% lines
+- 205/205 testes passando sem regressões
+- Feature `feat/alerts-manager-e2e` desenvolvida e commitada (commit `bdf2924`)
+- 4 novos cenários E2E adicionados: criação, persistência, toggle, exclusão de alertas
+- Configuração Playwright ajustada para usar `chromium` do sistema no Arch Linux
+- Modo mock forçado nos testes E2E para garantir determinismo
+- 9/9 testes E2E passando (5 originais + 4 novos)
 
-**Estado ao encerrar:** Baseline funcional em `main`, sprint fechado, memória consolidada; worktree local ainda contém mudanças fora do sprint que exigem cuidado.
+**Estado ao encerrar:** Branch `feat/alerts-manager-e2e` pronta para PR. Logs atualizados (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) precisam ser commitados antes de abrir o PR.
 
 **Retomar por:**
 ```
@@ -100,20 +110,24 @@ Read before acting:
 - `ERROR_LOG.md`
 - `PENDING_LOG.md`
 - `memory/MEMORY.md`
-- `SECURITY_AUDIT_REPORT.md`
 
 Current state:
-- `main` já contém PRs #24 e #25; baseline com 133/133 testes passando
-- Cobertura global abaixo do limiar operacional de 80%, com maiores gaps em `PriceTable`, `AlertsManager` e hooks de alertas
-- Há observação LOW de segurança em `src/services/alert.storage.ts`
-- Worktree local está sujo por arquivos fora do sprint; não sobrescrever sem triagem
+- `main` contém PR #28 com cobertura de hooks completa
+- Branch `feat/alerts-manager-e2e` pronta para PR (commit `bdf2924`)
+- Cobertura global em 86.24% statements / 88.02% lines (acima de 80%)
+- Hooks críticos: use-toast (91%), useAlerts (100%), useAlertPoller (93.75%)
+- E2E de AlertsManager: 9/9 cenários passando
+- Gaps remanescentes: PriceTable (76.61%), AlertsManager (63.46%) em testes unitários
+- 205/205 testes passando
 
 Open points:
-- decidir ativação de `strict: true`
-- endurecer leitura de alertas persistidos
-- elevar cobertura dos módulos críticos
-- decidir se filtros do `PriceTable` devem persistir
+- abrir PR para `feat/alerts-manager-e2e` (com 2 commits: E2E + logs)
+- elevar cobertura de PriceTable e AlertsManager para ≥80% via testes unitários
+- decidir ativação de `strict: true` master flag
+- endurecer leitura de alertas persistidos (observação LOW de segurança)
+- decidir sobre persistência de filtros do PriceTable
 
 Recommended next front:
-- iniciar por uma frente curta de robustez: `fix-feature` para `alert.storage.ts` + testes de cobertura em alertas/dashboard
+- git-flow-manager: commitar logs atualizados e abrir PR para `feat/alerts-manager-e2e`
+- ou implement-feature para cobertura de componentes: PriceTable.tsx + AlertsManager.tsx
 ```
