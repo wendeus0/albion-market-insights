@@ -125,6 +125,14 @@ const listeners: Array<(state: State) => void> = [];
 
 let memoryState: State = { toasts: [] };
 
+// Reset function for testing purposes only
+export function _resetToastState() {
+  memoryState = { toasts: [] };
+  listeners.length = 0;
+  toastTimeouts.clear();
+  count = 0;
+}
+
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
   listeners.forEach((listener) => {

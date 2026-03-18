@@ -1,6 +1,6 @@
 # SPEC — Hardening de Alert Storage
 
-**Status:** Draft
+**Status:** Approved
 **Data:** 2026-03-17
 **Autor:** Claude
 **Debt ref:** SECURITY_AUDIT_REPORT.md — observação LOW em `src/services/alert.storage.ts`
