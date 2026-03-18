@@ -31,7 +31,26 @@ const mockItems: MarketItem[] = [
     quality: 'Normal',
     priceHistory: [75000, 77000, 80000],
   },
+  {
+    itemId: 'T4_BAG@2',
+    itemName: 'Bag T4.2',
+    city: 'Martlock',
+    sellPrice: 65000,
+    buyPrice: 50000,
+    spread: 15000,
+    spreadPercent: 30,
+    timestamp: new Date().toISOString(),
+    tier: 'T4',
+    quality: 'Outstanding',
+    priceHistory: [62000, 63000, 65000],
+  },
 ];
+
+async function selectOption(triggerText: RegExp | string, optionText: RegExp | string) {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('combobox', { name: triggerText }));
+  await user.click(await screen.findByRole('option', { name: optionText }));
+}
 
 describe('PriceTable — filtro de categoria (AC6)', () => {
   it('exibe Select de categoria com opção "All Categories"', () => {
@@ -198,6 +217,42 @@ describe('PriceTable — filtros adicionais', () => {
     await user.type(maxSpreadInput, '30');
 
     expect(screen.getByText('Broadsword T4')).toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+
+  it('filtra por categoria usando o select', async () => {
+    render(<PriceTable items={mockItems} />);
+
+    await selectOption(/category/i, /bags/i);
+
+    expect(screen.getByText('Bag T4.2')).toBeInTheDocument();
+    expect(screen.queryByText('Broadsword T4')).not.toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+
+  it('filtra por encantamento usando o select', async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const comboboxes = screen.getAllByRole('combobox');
+    await user.click(comboboxes[4]);
+    await user.click(await screen.findByRole('option', { name: /level 2/i }));
+
+    expect(screen.getByText('Bag T4.2')).toBeInTheDocument();
+    expect(screen.queryByText('Broadsword T4')).not.toBeInTheDocument();
+    expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
+  });
+
+  it('filtra por cidade usando o select', async () => {
+    render(<PriceTable items={mockItems} />);
+
+    const user = userEvent.setup();
+    const comboboxes = screen.getAllByRole('combobox');
+    await user.click(comboboxes[1]);
+    await user.click(await screen.findByRole('option', { name: 'Martlock' }));
+
+    expect(screen.getByText('Bag T4.2')).toBeInTheDocument();
+    expect(screen.queryByText('Broadsword T4')).not.toBeInTheDocument();
     expect(screen.queryByText('Battleaxe T5')).not.toBeInTheDocument();
   });
 });

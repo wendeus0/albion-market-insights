@@ -1,8 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AlertsManager } from '@/components/alerts/AlertsManager';
 import type { Alert, MarketItem } from '@/data/types';
+
+const toastSpy = vi.fn();
+
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: toastSpy }),
+}));
 
 const mockItems: MarketItem[] = [
   {
@@ -55,12 +61,35 @@ describe('AlertsManager', () => {
     onDeleteAlert: vi.fn(),
   };
 
+  const openCreateDialog = async () => {
+    const user = userEvent.setup();
+    await user.click(screen.getAllByRole('button', { name: /create alert/i })[0]);
+    return user;
+  };
+
+  async function selectDialogOption(triggerText: RegExp | string, optionText: RegExp | string) {
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('combobox', { name: triggerText }));
+    await user.click(await screen.findByRole('option', { name: optionText }));
+  }
+
+  beforeEach(() => {
+    toastSpy.mockClear();
+  });
+
   it('renderiza lista de alertas', () => {
     // Given / When
     render(<AlertsManager {...defaultProps} />);
 
     // Then
     expect(screen.getByText('Clarent Blade')).toBeDefined();
+  });
+
+  it('renderiza canais de notificacao do alerta ativo', () => {
+    render(<AlertsManager {...defaultProps} />);
+
+    expect(screen.getByText(/in-app/i)).toBeDefined();
+    expect(screen.queryByText(/email/i)).toBeNull();
   });
 
   it('renderiza com availableItems como prop (não mockData)', () => {
@@ -91,6 +120,9 @@ describe('AlertsManager', () => {
 
     // Then
     expect(onDeleteAlert).toHaveBeenCalledWith('1');
+    expect(toastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Alert deleted', variant: 'destructive' })
+    );
   });
 
   it('chama onSaveAlert (toggle) ao clicar no botão de toggle', () => {
@@ -106,6 +138,9 @@ describe('AlertsManager', () => {
     // Then
     expect(onSaveAlert).toHaveBeenCalledWith(
       expect.objectContaining({ id: '1', isActive: false })
+    );
+    expect(toastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Alert updated' })
     );
   });
 
@@ -170,5 +205,71 @@ describe('AlertsManager', () => {
       expect(screen.getByText('Selecione um item')).toBeDefined();
     });
     expect(onSaveAlert).not.toHaveBeenCalled();
+  });
+
+  it('cria alerta com city all e item conhecido', async () => {
+    const onSaveAlert = vi.fn();
+    render(
+      <AlertsManager
+        availableItems={mockItems}
+        alerts={[]}
+        onSaveAlert={onSaveAlert}
+        onDeleteAlert={vi.fn()}
+      />
+    );
+
+    const user = await openCreateDialog();
+    await selectDialogOption(/item/i, /clarent blade/i);
+    await user.type(screen.getByPlaceholderText(/e\.g\., 50000/i), '25000');
+    const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
+    await user.click(submitButtons[submitButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(onSaveAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          itemId: 'ITEM_0001',
+          itemName: 'Clarent Blade',
+          city: 'All Cities',
+          condition: 'below',
+          threshold: 25000,
+          isActive: true,
+        })
+      );
+    });
+  });
+
+  it('cria alerta de change com percentual no toast', async () => {
+    const onSaveAlert = vi.fn();
+    render(
+      <AlertsManager
+        availableItems={mockItems}
+        alerts={[]}
+        onSaveAlert={onSaveAlert}
+        onDeleteAlert={vi.fn()}
+      />
+    );
+
+    const user = await openCreateDialog();
+    await selectDialogOption(/item/i, /bloodletter/i);
+    await user.click(screen.getByRole('button', { name: /change/i }));
+    await user.type(screen.getByPlaceholderText(/e\.g\., 15/i), '12');
+    const submitButtons = screen.getAllByRole('button', { name: /create alert/i });
+    await user.click(submitButtons[submitButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(onSaveAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          itemName: 'Bloodletter',
+          condition: 'change',
+          threshold: 12,
+        })
+      );
+      expect(toastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Alert created!',
+          description: expect.stringContaining('12%'),
+        })
+      );
+    });
   });
 });

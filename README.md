@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+[![Quality Gate](https://github.com/wendeus0/albion-market-insights/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/wendeus0/albion-market-insights/actions/workflows/quality-gate.yml)
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
