@@ -43,9 +43,10 @@
 
 ## Active fronts
 
-- Baseline técnica estabilizada após regressões em testes resolvidas e PRs #43/#42 mergeados em `main`
-- Backlog por lotes permanece válido em `PENDING_LOG.md`; próxima frente técnica continua sendo Lote 1B ou upgrade de actions para Node 24
-- Worktree local está suja apenas por atualizações documentais de sessão (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`)
+- ✅ **LOTE 1B 100% CONCLUÍDO** (2026-03-19): Todos os 4 itens validados — Items 3 e 4 já estavam implementados, PRs #48 e #49 criados para documentação
+- **Próxima frente: LOTE 2** — Refatoração Estrutural e UX (extrair regras da PriceTable, rota com layout compartilhado)
+- Baseline estável em `main` com 269/269 testes passando
+- PR #47 (logs), #48 (Item 3), #49 (Item 4) abertos e aguardando review
 
 ---
 
@@ -89,10 +90,13 @@
 
 ## Next recommended steps
 
-1. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
-2. **Abrir SPEC do próximo item do Lote 1B** e retomar a frente de consistência de dados sem reabrir a baseline
-3. **Definir desenho da camada central da API** (cache compartilhado + rate limit) antes de liberar refresh manual em escala
-4. **Consolidar docs de sessão** (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) em branch apropriada após revisão
+1. **Iniciar LOTE 2 — Refatoração Estrutural e UX**:
+   - Extrair regras da `PriceTable` para hooks/serviços puros (filtros, sort, persistência, paginação)
+   - Implementar rota com layout compartilhado para reduzir repetição de `Layout` nas páginas
+   - Validar cobertura de testes após refatoração
+2. **Review e merge dos PRs abertos**: #47 (logs), #48 (Item 3), #49 (Item 4)
+3. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
+4. **Definir desenho da camada central da API** (cache compartilhado + rate limit) antes de liberar refresh manual em escala
 
 ---
 
@@ -101,12 +105,17 @@
 **Sessão:** 2026-03-19 (encerramento/consolidação)
 **Trabalho realizado:**
 
-- Sessão de `technical-triage` para avaliar próximo passo após estabilização da baseline
-- Verificado estado atual: PRs #42 e #43 mergeados, Quality Gate verde, 269/269 testes passando
-- Logs consolidados via `session-close`: `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` atualizados
-- Definido próximo passo: iniciar Lote 1B (consistência de dados) ou upgrade de actions para Node 24
+- ✅ **LOTE 1B 100% CONCLUÍDO**: Todos os 4 itens validados e documentados
+  - Item 3 (Cooldown persistente): Validado em `useAlertPoller.ts`, PR #48 criado
+  - Item 4 (Runtime Node 20): Validado em README/package.json/CI, PR #49 criado
+- PR #47 (consolidação de logs) também aberto
+- Logs atualizados: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`
 
-**Estado ao encerrar:** `origin/main` em `417d6db` com baseline verde; logs documentais consolidados; worktree limpo para nova feature
+**Estado ao encerrar:**
+
+- `origin/main` estável com baseline verde (269/269 testes)
+- 3 PRs abertos aguardando review (#47, #48, #49)
+- Lote 1B completo, pronto para Lote 2
 
 **Retomar por:**
 
@@ -117,16 +126,19 @@ Read before acting:
 - `PENDING_LOG.md`
 
 Current state:
-- `origin/main` estável em `417d6db` com 269/269 testes passando
-- Quality Gate operacional no CI
-- Worktree limpo (logs já consolidados)
-
-Open points:
-- Lote 1B: 4 itens de consistência de dados pendentes
-- Upgrade de actions para Node 24 (deadline 2026-06-02)
-- Definir arquitetura de proteção global da API
+- ✅ LOTE 1B 100% CONCLUÍDO (todos os 4 itens validados)
+- 3 PRs abertos: #47 (logs), #48 (Item 3), #49 (Item 4)
+- Baseline estável: 269/269 testes, Quality Gate verde
 
 Recommended next front:
-1. Abrir SPEC do próximo item do Lote 1B (política única de frescor, ID robusto, cooldown persistente, ou runtime Node 20)
-2. Alternativa: upgrade de workflow para Node 24 compatível
+1. 🎯 PRIMEIRO: Review e merge dos PRs #47, #48, #49
+2. 🚀 DEPOIS: Iniciar LOTE 2 (Refatoração Estrutural e UX)
+   - Extrair regras da PriceTable
+   - Rota com layout compartilhado
+3. Alternativa: Upgrade de workflow para Node 24 (deadline 2026-06-02)
+
+Lote 2 items prioritários (ver PENDING_LOG.md):
+- Extrair regras da PriceTable para hooks/serviços
+- Rota com layout compartilhado
+- Persistência de tabela (filtros + ordenação)
 ```

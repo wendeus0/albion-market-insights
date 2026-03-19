@@ -247,6 +247,9 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - [x] **Restauração do Quality Gate** (2026-03-19): CONCLUÍDO — PR #43 mergeado; mocks de testes alinhados ao contrato atual de `@/data/constants`; CI voltou a ficar verde.
 - [x] **Refatoração do AlertsManager para hooks especializados** (2026-03-19): CONCLUÍDO — PR #42 mergeado; ajuste posterior em `market.cache.test.ts` removeu mock contraditório de TTL.
 - [x] **Sessão de triagem técnica** (2026-03-19): CONCLUÍDO — avaliação do estado atual via `technical-triage`; baseline verificada como estável; próximo passo definido como Lote 1B.
+- [x] **Lote 1B — Item 3: Cooldown persistente** (2026-03-19): ✅ **VALIDADO** — implementação já existia em `useAlertPoller.ts`; PR #48 criado com documentação; funções `loadLastFiredFromStorage()` e `saveLastFiredToStorage()` validadas; 8 testes passando.
+- [x] **Lote 1B — Item 4: Runtime Node 20** (2026-03-19): ✅ **VALIDADO** — README, package.json engines, e workflow CI já alinhados; PR #49 criado com documentação.
+- [x] **LOTE 1B 100% CONCLUÍDO** (2026-03-19): ✅ Todos os 4 itens validados e documentados; próxima frente: Lote 2 (Refatoração Estrutural e UX).
 
 ## Pontos de atenção
 
