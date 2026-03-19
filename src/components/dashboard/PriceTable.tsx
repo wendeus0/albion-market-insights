@@ -1,104 +1,181 @@
-import { useState, useMemo } from 'react';
-import { 
-  ArrowUpDown, 
-  ArrowUp, 
-  ArrowDown, 
-  Search, 
+import { useState, useMemo, useEffect, useRef } from "react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Search,
   Filter,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
-import type { MarketItem } from '@/data/types';
-import { cities, tiers, qualities, ITEM_CATALOG, ENCHANTMENT_LEVELS } from '@/data/constants';
-import type { CatalogCategoryKey } from '@/data/constants';
-import { Sparkline } from '@/components/ui/sparkline';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+  ChevronRight,
+} from "lucide-react";
+import type { MarketItem } from "@/data/types";
+import {
+  cities,
+  tiers,
+  qualities,
+  ITEM_CATALOG,
+  ENCHANTMENT_LEVELS,
+} from "@/data/constants";
+import type { CatalogCategoryKey } from "@/data/constants";
+import { Sparkline } from "@/components/ui/sparkline";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { filterStorage } from "@/services/filter.storage";
 
 interface PriceTableProps {
   items: MarketItem[];
   className?: string;
 }
 
-type SortField = 'itemName' | 'city' | 'sellPrice' | 'buyPrice' | 'spread' | 'spreadPercent' | 'timestamp';
-type SortDirection = 'asc' | 'desc';
+type SortField =
+  | "itemName"
+  | "city"
+  | "sellPrice"
+  | "buyPrice"
+  | "spread"
+  | "spreadPercent"
+  | "timestamp";
+type SortDirection = "asc" | "desc";
 
 export function PriceTable({ items, className }: PriceTableProps) {
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<CatalogCategoryKey | 'all'>('all');
-  const [cityFilter, setCityFilter] = useState<string>('all');
-  const [tierFilter, setTierFilter] = useState<string>('all');
-  const [qualityFilter, setQualityFilter] = useState<string>('all');
-  const [enchantFilter, setEnchantFilter] = useState<string>('all');
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
-  const [minSpread, setMinSpread] = useState<string>('');
-  const [maxSpread, setMaxSpread] = useState<string>('');
-  const [sortField, setSortField] = useState<SortField>('spreadPercent');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  // Load persisted filters on mount
+  const persistedFilters = filterStorage.getFilters();
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<
+    CatalogCategoryKey | "all"
+  >((persistedFilters.categoryFilter as CatalogCategoryKey | "all") || "all");
+  const [cityFilter, setCityFilter] = useState<string>(
+    persistedFilters.cityFilter || "all",
+  );
+  const [tierFilter, setTierFilter] = useState<string>(
+    persistedFilters.tierFilter || "all",
+  );
+  const [qualityFilter, setQualityFilter] = useState<string>(
+    persistedFilters.qualityFilter || "all",
+  );
+  const [enchantFilter, setEnchantFilter] = useState<string>(
+    persistedFilters.enchantFilter || "all",
+  );
+  const [minPrice, setMinPrice] = useState<string>(
+    persistedFilters.minPrice || "",
+  );
+  const [maxPrice, setMaxPrice] = useState<string>(
+    persistedFilters.maxPrice || "",
+  );
+  const [minSpread, setMinSpread] = useState<string>(
+    persistedFilters.minSpread || "",
+  );
+  const [maxSpread, setMaxSpread] = useState<string>(
+    persistedFilters.maxSpread || "",
+  );
+  const [sortField, setSortField] = useState<SortField>("spreadPercent");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [shouldPersist, setShouldPersist] = useState(true);
   const itemsPerPage = 10;
+
+  // Persist filters when they change (skip on initial mount)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (!shouldPersist) {
+      // Clear was clicked, don't save
+      return;
+    }
+    filterStorage.saveFilters({
+      categoryFilter,
+      cityFilter,
+      tierFilter,
+      qualityFilter,
+      enchantFilter,
+      minPrice,
+      maxPrice,
+      minSpread,
+      maxSpread,
+    });
+  }, [
+    categoryFilter,
+    cityFilter,
+    tierFilter,
+    qualityFilter,
+    enchantFilter,
+    minPrice,
+    maxPrice,
+    minSpread,
+    maxSpread,
+    shouldPersist,
+  ]);
 
   const filteredAndSortedItems = useMemo(() => {
     let result = [...items];
 
     // Apply filters
-    if (categoryFilter !== 'all') {
+    if (categoryFilter !== "all") {
       const ids = new Set(ITEM_CATALOG[categoryFilter].ids);
-      result = result.filter(item => ids.has(item.itemId));
+      result = result.filter((item) => ids.has(item.itemId));
     }
 
     if (search) {
       const searchLower = search.toLowerCase();
       result = result.filter(
-        item => 
+        (item) =>
           item.itemName.toLowerCase().includes(searchLower) ||
-          item.itemId.toLowerCase().includes(searchLower)
+          item.itemId.toLowerCase().includes(searchLower),
       );
     }
 
-    if (cityFilter !== 'all') {
-      result = result.filter(item => item.city === cityFilter);
+    if (cityFilter !== "all") {
+      result = result.filter((item) => item.city === cityFilter);
     }
 
-    if (tierFilter !== 'all') {
-      result = result.filter(item => item.tier === tierFilter);
+    if (tierFilter !== "all") {
+      result = result.filter((item) => item.tier === tierFilter);
     }
 
-    if (qualityFilter !== 'all') {
-      result = result.filter(item => item.quality === qualityFilter);
+    if (qualityFilter !== "all") {
+      result = result.filter((item) => item.quality === qualityFilter);
     }
 
-    if (enchantFilter !== 'all') {
+    if (enchantFilter !== "all") {
       const enchantLevel = parseInt(enchantFilter);
-      result = result.filter(item => {
+      result = result.filter((item) => {
         const itemEnchantLevel = item.itemId.match(/@([0-3])$/)?.[1];
-        return itemEnchantLevel ? parseInt(itemEnchantLevel) === enchantLevel : enchantLevel === 0;
+        return itemEnchantLevel
+          ? parseInt(itemEnchantLevel) === enchantLevel
+          : enchantLevel === 0;
       });
     }
 
     if (minPrice) {
-      result = result.filter(item => item.sellPrice >= parseInt(minPrice));
+      result = result.filter((item) => item.sellPrice >= parseInt(minPrice));
     }
 
     if (maxPrice) {
-      result = result.filter(item => item.sellPrice <= parseInt(maxPrice));
+      result = result.filter((item) => item.sellPrice <= parseInt(maxPrice));
     }
 
     if (minSpread) {
-      result = result.filter(item => item.spreadPercent >= parseInt(minSpread));
+      result = result.filter(
+        (item) => item.spreadPercent >= parseInt(minSpread),
+      );
     }
 
     if (maxSpread) {
-      result = result.filter(item => item.spreadPercent <= parseInt(maxSpread));
+      result = result.filter(
+        (item) => item.spreadPercent <= parseInt(maxSpread),
+      );
     }
 
     // Apply sorting
@@ -106,72 +183,91 @@ export function PriceTable({ items, className }: PriceTableProps) {
       const aVal = a[sortField];
       const bVal = b[sortField];
 
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return sortDirection === 'asc' 
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortDirection === "asc"
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal);
       }
 
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
       }
 
       return 0;
     });
 
     return result;
-  }, [items, search, categoryFilter, cityFilter, tierFilter, qualityFilter, enchantFilter, minPrice, maxPrice, minSpread, maxSpread, sortField, sortDirection]);
+  }, [
+    items,
+    search,
+    categoryFilter,
+    cityFilter,
+    tierFilter,
+    qualityFilter,
+    enchantFilter,
+    minPrice,
+    maxPrice,
+    minSpread,
+    maxSpread,
+    sortField,
+    sortDirection,
+  ]);
 
   const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
   const paginatedItems = filteredAndSortedItems.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortField(field);
-      setSortDirection('desc');
+      setSortDirection("desc");
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US').format(price);
+    return new Intl.NumberFormat("en-US").format(price);
   };
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
-    
-    if (diffMinutes < 1) return 'Just now';
+
+    if (diffMinutes < 1) return "Just now";
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
     return `${Math.floor(diffMinutes / 60)}h ago`;
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 opacity-50" />;
-    return sortDirection === 'asc'
-      ? <ArrowUp className="h-3 w-3 text-primary" />
-      : <ArrowDown className="h-3 w-3 text-primary" />;
+    if (sortField !== field)
+      return <ArrowUpDown className="h-3 w-3 opacity-50" />;
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-3 w-3 text-primary" />
+    ) : (
+      <ArrowDown className="h-3 w-3 text-primary" />
+    );
   };
 
   const clearAllFilters = () => {
-    setCategoryFilter('all');
-    setCityFilter('all');
-    setTierFilter('all');
-    setQualityFilter('all');
-    setEnchantFilter('all');
-    setMinPrice('');
-    setMaxPrice('');
-    setMinSpread('');
-    setMaxSpread('');
+    setShouldPersist(false);
+    setCategoryFilter("all");
+    setCityFilter("all");
+    setTierFilter("all");
+    setQualityFilter("all");
+    setEnchantFilter("all");
+    setMinPrice("");
+    setMaxPrice("");
+    setMinSpread("");
+    setMaxSpread("");
+    filterStorage.clearFilters();
   };
 
   return (
-    <div className={cn('glass-card overflow-hidden', className)}>
+    <div className={cn("glass-card overflow-hidden", className)}>
       {/* Filters Bar */}
       <div className="p-4 border-b border-border/50">
         <div className="flex flex-col lg:flex-row gap-3">
@@ -184,29 +280,49 @@ export function PriceTable({ items, className }: PriceTableProps) {
               className="pl-9 bg-muted/50 border-border/50"
             />
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
-            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as CatalogCategoryKey | 'all')}>
-              <SelectTrigger className="w-[150px] bg-muted/50 border-border/50" aria-label="Category">
+            <Select
+              value={categoryFilter}
+              onValueChange={(v) =>
+                setCategoryFilter(v as CatalogCategoryKey | "all")
+              }
+            >
+              <SelectTrigger
+                className="w-[150px] bg-muted/50 border-border/50"
+                aria-label="Category"
+              >
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {(Object.entries(ITEM_CATALOG) as [CatalogCategoryKey, { label: string }][]).map(([key, cat]) => (
-                  <SelectItem key={key} value={key}>{cat.label}</SelectItem>
+                {(
+                  Object.entries(ITEM_CATALOG) as [
+                    CatalogCategoryKey,
+                    { label: string },
+                  ][]
+                ).map(([key, cat]) => (
+                  <SelectItem key={key} value={key}>
+                    {cat.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger className="w-[140px] bg-muted/50 border-border/50">
+              <SelectTrigger
+                className="w-[140px] bg-muted/50 border-border/50"
+                aria-label="City"
+              >
                 <Filter className="h-3 w-3 mr-2" />
                 <SelectValue placeholder="City" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Cities</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                {cities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -217,8 +333,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Tiers</SelectItem>
-                {tiers.map(tier => (
-                  <SelectItem key={tier} value={tier}>{tier}</SelectItem>
+                {tiers.map((tier) => (
+                  <SelectItem key={tier} value={tier}>
+                    {tier}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -229,8 +347,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Qualities</SelectItem>
-                {qualities.map(quality => (
-                  <SelectItem key={quality} value={quality}>{quality}</SelectItem>
+                {qualities.map((quality) => (
+                  <SelectItem key={quality} value={quality}>
+                    {quality}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -241,9 +361,9 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Levels</SelectItem>
-                {ENCHANTMENT_LEVELS.map(level => (
+                {ENCHANTMENT_LEVELS.map((level) => (
                   <SelectItem key={level} value={String(level)}>
-                    {level === 0 ? 'No Enchant' : `Level ${level}`}
+                    {level === 0 ? "No Enchant" : `Level ${level}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -283,9 +403,15 @@ export function PriceTable({ items, className }: PriceTableProps) {
               />
             </div>
 
-            {(categoryFilter !== 'all' || cityFilter !== 'all' || tierFilter !== 'all' || 
-              qualityFilter !== 'all' || enchantFilter !== 'all' || minPrice || maxPrice || 
-              minSpread || maxSpread) && (
+            {(categoryFilter !== "all" ||
+              cityFilter !== "all" ||
+              tierFilter !== "all" ||
+              qualityFilter !== "all" ||
+              enchantFilter !== "all" ||
+              minPrice ||
+              maxPrice ||
+              minSpread ||
+              maxSpread) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -299,14 +425,31 @@ export function PriceTable({ items, className }: PriceTableProps) {
         </div>
 
         {/* Active filters indicator */}
-        {(categoryFilter !== 'all' || cityFilter !== 'all' || tierFilter !== 'all' ||
-          qualityFilter !== 'all' || enchantFilter !== 'all' || minPrice || maxPrice ||
-          minSpread || maxSpread) && (
+        {(categoryFilter !== "all" ||
+          cityFilter !== "all" ||
+          tierFilter !== "all" ||
+          qualityFilter !== "all" ||
+          enchantFilter !== "all" ||
+          minPrice ||
+          maxPrice ||
+          minSpread ||
+          maxSpread) && (
           <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium">
-              {[categoryFilter !== 'all', cityFilter !== 'all', tierFilter !== 'all',
-                qualityFilter !== 'all', enchantFilter !== 'all', minPrice, maxPrice,
-                minSpread, maxSpread].filter(Boolean).length} filter active
+              {
+                [
+                  categoryFilter !== "all",
+                  cityFilter !== "all",
+                  tierFilter !== "all",
+                  qualityFilter !== "all",
+                  enchantFilter !== "all",
+                  minPrice,
+                  maxPrice,
+                  minSpread,
+                  maxSpread,
+                ].filter(Boolean).length
+              }{" "}
+              filter active
             </span>
           </div>
         )}
@@ -318,51 +461,53 @@ export function PriceTable({ items, className }: PriceTableProps) {
           <thead>
             <tr className="border-b border-border/50 bg-muted/30">
               <th className="text-left p-3">
-                <button 
-                  onClick={() => handleSort('itemName')}
+                <button
+                  onClick={() => handleSort("itemName")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Item <SortIcon field="itemName" />
                 </button>
               </th>
               <th className="text-left p-3">
-                <button 
-                  onClick={() => handleSort('city')}
+                <button
+                  onClick={() => handleSort("city")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
                   City <SortIcon field="city" />
                 </button>
               </th>
               <th className="text-right p-3">
-                <button 
-                  onClick={() => handleSort('sellPrice')}
+                <button
+                  onClick={() => handleSort("sellPrice")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors ml-auto"
                 >
                   Sell Price <SortIcon field="sellPrice" />
                 </button>
               </th>
               <th className="text-right p-3">
-                <button 
-                  onClick={() => handleSort('buyPrice')}
+                <button
+                  onClick={() => handleSort("buyPrice")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors ml-auto"
                 >
                   Buy Price <SortIcon field="buyPrice" />
                 </button>
               </th>
               <th className="text-right p-3">
-                <button 
-                  onClick={() => handleSort('spreadPercent')}
+                <button
+                  onClick={() => handleSort("spreadPercent")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors ml-auto"
                 >
                   Spread <SortIcon field="spreadPercent" />
                 </button>
               </th>
               <th className="text-center p-3 hidden md:table-cell">
-                <span className="text-xs font-semibold text-muted-foreground">Trend</span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Trend
+                </span>
               </th>
               <th className="text-right p-3">
-                <button 
-                  onClick={() => handleSort('timestamp')}
+                <button
+                  onClick={() => handleSort("timestamp")}
                   className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors ml-auto"
                 >
                   Updated <SortIcon field="timestamp" />
@@ -373,7 +518,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
           <tbody>
             {paginatedItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-muted-foreground">
+                <td
+                  colSpan={7}
+                  className="text-center py-12 text-muted-foreground"
+                >
                   <div className="flex flex-col items-center gap-2">
                     <Search className="h-8 w-8 opacity-50" />
                     <p>No items found matching your criteria</p>
@@ -382,39 +530,54 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </tr>
             ) : (
               paginatedItems.map((item, index) => (
-                <tr 
+                <tr
                   key={item.itemId + index}
                   className="border-b border-border/30 hover:bg-muted/30 transition-colors"
                 >
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <div>
-                        <p className="font-medium text-sm text-foreground">{item.itemName}</p>
+                        <p className="font-medium text-sm text-foreground">
+                          {item.itemName}
+                        </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
                             {item.tier}
                           </span>
-                          <span className="text-xs text-muted-foreground">{item.quality}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {item.quality}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="p-3">
-                    <span className="text-sm text-muted-foreground">{item.city}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {item.city}
+                    </span>
                   </td>
                   <td className="p-3 text-right">
-                    <span className="font-mono text-sm text-foreground">{formatPrice(item.sellPrice)}</span>
+                    <span className="font-mono text-sm text-foreground">
+                      {formatPrice(item.sellPrice)}
+                    </span>
                   </td>
                   <td className="p-3 text-right">
-                    <span className="font-mono text-sm text-foreground">{formatPrice(item.buyPrice)}</span>
+                    <span className="font-mono text-sm text-foreground">
+                      {formatPrice(item.buyPrice)}
+                    </span>
                   </td>
                   <td className="p-3 text-right">
                     <div className="flex flex-col items-end">
-                      <span className={cn(
-                        'font-mono text-sm font-semibold',
-                        item.spreadPercent > 20 ? 'text-success' : 
-                        item.spreadPercent > 10 ? 'text-primary' : 'text-muted-foreground'
-                      )}>
+                      <span
+                        className={cn(
+                          "font-mono text-sm font-semibold",
+                          item.spreadPercent > 20
+                            ? "text-success"
+                            : item.spreadPercent > 10
+                              ? "text-primary"
+                              : "text-muted-foreground",
+                        )}
+                      >
                         +{item.spreadPercent.toFixed(1)}%
                       </span>
                       <span className="text-xs text-muted-foreground font-mono">
@@ -428,7 +591,9 @@ export function PriceTable({ items, className }: PriceTableProps) {
                     </div>
                   </td>
                   <td className="p-3 text-right">
-                    <span className="text-xs text-muted-foreground">{formatTime(item.timestamp)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTime(item.timestamp)}
+                    </span>
                   </td>
                 </tr>
               ))
@@ -441,13 +606,18 @@ export function PriceTable({ items, className }: PriceTableProps) {
       {totalPages > 1 && (
         <div className="p-4 border-t border-border/50 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredAndSortedItems.length)} of {filteredAndSortedItems.length} items
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(
+              currentPage * itemsPerPage,
+              filteredAndSortedItems.length,
+            )}{" "}
+            of {filteredAndSortedItems.length} items
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -464,16 +634,17 @@ export function PriceTable({ items, className }: PriceTableProps) {
                 } else {
                   page = currentPage - 2 + i;
                 }
-                
+
                 return (
                   <Button
                     key={page}
-                    variant={currentPage === page ? 'default' : 'ghost'}
+                    variant={currentPage === page ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
                     className={cn(
-                      'w-8 h-8 p-0',
-                      currentPage === page && 'bg-primary text-primary-foreground'
+                      "w-8 h-8 p-0",
+                      currentPage === page &&
+                        "bg-primary text-primary-foreground",
                     )}
                   >
                     {page}
@@ -484,7 +655,9 @@ export function PriceTable({ items, className }: PriceTableProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />
