@@ -13,7 +13,17 @@
 | 1    | Política única de frescor (15 min) | ✅ Concluído via `DATA_FRESHNESS_MS`                   |
 | 2    | ID robusto para alertas            | ✅ Concluído via `useAlertsForm`                       |
 | 3    | Cooldown de alerta persistente     | ✅ **CONCLUÍDO** — implementado em `useAlertPoller.ts` |
-| 4    | Runtime padronizado em Node 20     | ⏳ Pendente                                            |
+| 4    | Runtime padronizado em Node 20     | ✅ **CONCLUÍDO** — README, package.json e CI alinhados |
+
+---
+
+## ✅ LOTE 1B 100% CONCLUÍDO
+
+Todos os 4 itens de consistência de dados foram validados e estão operacionais.
+
+### Próximo Lote
+
+**Lote 2 — Refatoração Estrutural e UX** (ver `PENDING_LOG.md`)
 
 ---
 
