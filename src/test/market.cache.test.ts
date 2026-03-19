@@ -12,15 +12,6 @@ vi.mock('@/services/alert.storage', () => ({
   },
 }));
 
-vi.mock('@/data/constants', async () => {
-  const actual = await vi.importActual('@/data/constants');
-  return {
-    ...actual,
-    DATA_FRESHNESS_MS: 300_000, // 5 minutos para testes
-    CACHE_TTL_MS: 300_000,
-  };
-});
-
 const mockItems: MarketItem[] = [
   {
     itemId: 'T4_MAIN_SWORD',
