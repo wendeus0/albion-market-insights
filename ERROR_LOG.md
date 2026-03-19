@@ -225,3 +225,27 @@
   - Toast atualizado para mostrar a variação real (+25.0%, -15.3%, etc.)
   - Testes atualizados para refletir nova lógica
 - **Status**: RESOLVIDO — Lote 1A Item 1 concluído, PR mergeado em `main`
+
+---
+
+### [2026-03-19 16:36] PR #43 — regressão no Quality Gate por mocks incompletos de `@/data/constants`
+
+- **Erro**: Workflow `Quality Gate` falhava com 18 testes quebrados em `src/test/market.api.retry.test.ts` e `src/test/market.api.batch.test.ts`, todos em cascata a partir do erro `[vitest] No "DATA_FRESHNESS_MS" export is defined on the "@/data/constants" mock`
+- **Causa**: Após a unificação da política de frescor em `DATA_FRESHNESS_MS`, os dois arquivos de teste continuaram mockando `@/data/constants` de forma manual e incompleta, omitindo o novo export exigido por `market.cache.ts` e, por consequência, por `market.api.ts`
+- **Ação tomada**:
+  - Substituído mock manual por mock parcial com `importOriginal` em `src/test/market.api.retry.test.ts`
+  - Substituído mock manual por mock parcial com `importOriginal` em `src/test/market.api.batch.test.ts`
+  - Alinhado `src/test/market.cache.test.ts` com a política real de 15 minutos (`900_000ms`)
+- **Status**: RESOLVIDO — fix publicado no PR #43 e mergeado em `main`
+
+---
+
+### [2026-03-19 18:55] PR #42 — mock contraditório de TTL em `market.cache.test.ts`
+
+- **Erro**: `Quality Gate` do PR #42 falhava no teste `CACHE_TTL_MS segue a política única de frescor (15 min)` com `AssertionError: expected 300000 to be 900000`
+- **Causa**: O próprio arquivo `src/test/market.cache.test.ts` passou a mockar `@/data/constants` forçando `DATA_FRESHNESS_MS` e `CACHE_TTL_MS` para `300_000`, mas manteve a assertion fixa em `900_000`; o teste ficou internamente contraditório
+- **Ação tomada**:
+  - Removido o mock de `@/data/constants` de `src/test/market.cache.test.ts`
+  - Mantida a validação contra a política real de frescor de 15 minutos
+  - `npm run quality:gate` reexecutado com sucesso na branch `feat/alerts-manager-hooks`
+- **Status**: RESOLVIDO — commit `73e517c` enviado para o PR #42
