@@ -21,6 +21,9 @@
 - **Auditoria de segurança do sprint** (2026-03-17): `SECURITY_AUDIT_REPORT.md` gerado com veredito `SECURITY_PASS_WITH_NOTES`; sem achados CRITICAL/HIGH/MEDIUM; observação LOW na leitura de alertas de `localStorage` sem validação de schema.
 - **Cobertura de hooks críticos** (2026-03-18): `feat/coverage-critical-modules` — PR #28 mergeado em `main`; testes adicionados para `use-toast.ts`, `useAlerts.ts` e `useAlertPoller.ts`; cobertura global elevada de 77.99% para 86.24% statements; 205/205 testes passando.
 - **E2E de AlertsManager** (2026-03-18): `feat/alerts-manager-e2e` — testes Playwright adicionados para fluxos de criação, persistência, toggle e exclusão; configuração ajustada para usar `chromium` do sistema no Arch Linux; modo mock forçado nos testes E2E; 9/9 cenários passando.
+- **TypeScript strict mode consolidação** (2026-03-19): CONCLUÍDO — ADR-006 atualizado com decisão de substituir 6 flags individuais por `strict: true` master flag; mitigações documentadas; PR #32 aberto (`feat/typescript-strict-mode-final`).
+- **Persistência de filtros do PriceTable** (2026-03-19): CONCLUÍDO — implementação de AC-5 do SPEC `enhanced-ui-filters`; serviço `filter.storage.ts` com validação defensiva; integração no `PriceTable`; 10 testes novos; 215/215 testes passando; PR #33 aberto (`feat/persist-price-filters`).
+- **README modernizado** (2026-03-19): CONCLUÍDO — atualização completa do README.md com descrição em português, funcionalidades, tech stack e links para documentação; PR #34 aberto (`docs/readme-update`).
 
 ## Pendências
 
@@ -34,7 +37,8 @@
 - [x] **Cobertura de componentes críticos** (2026-03-18): CONCLUÍDO — PR #31 mergeado em `main`; testes unitários adicionados para `PriceTable.tsx` (84.67%) e `AlertsManager.tsx` (80.76%); ambos acima do limiar de 80%; 211/211 testes passando; workflow `Quality Gate` criado e operacional.
 - [x] **Validação defensiva de alertas persistidos**: CONCLUÍDO — PR #28 mergeado em `main`; `alertSchema.safeParse()` valida dados do localStorage; 13 testes cobrindo JSON malformado, campos ausentes, tipos incorretos, enum inválido e estrutura aninhada inválida.
 - [x] **E2E completo de alertas**: CONCLUÍDO — `feat/alerts-manager-e2e` com 9 cenários Playwright cobrindo criação, persistência, toggle e exclusão de alertas.
-- [ ] **Decisão sobre `strict: true`**: avaliar ativação da flag master agora que a migração gradual terminou.
+- [x] **Decisão sobre `strict: true`** (2026-03-19): CONCLUÍDO — ADR-006 atualizado com decisão de consolidar 6 flags em `strict: true`; mitigações documentadas (`@ts-expect-error`, limite de 5 supressões); PR #32 aberto.
+- [x] **Persistência de filtros do PriceTable** (2026-03-19): CONCLUÍDO — implementação de AC-5 do SPEC `enhanced-ui-filters`; serviço `filter.storage.ts` com validação defensiva; 10 testes novos; 215/215 testes passando; PR #33 aberto.
 
 ## Pontos de atenção
 
@@ -42,3 +46,5 @@
 - **Cobertura atual**: `npx vitest run --coverage` resultou em 86.24% statements / 88.02% lines; hooks de alertas agora estão acima de 90%. Gaps remanescentes: `PriceTable` (76.61%) e `AlertsManager` (63.46%).
 - **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
 - **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.
+- **PRs abertos aguardando merge** (2026-03-19): #32 (strict mode), #33 (persist filters), #34 (readme update) — revisar e mergear quando aprovados.
+- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data.
