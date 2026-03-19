@@ -19,24 +19,32 @@ export function useAlertPoller() {
     const fired = checkAlerts(items, alerts);
     const now = Date.now();
 
-    for (const { alert, item, currentPrice } of fired) {
-      // Respeitar preferência de notificação inApp do usuário
-      if (!alert.notifications?.inApp) continue;
-
+    for (const { alert, item, currentPrice, priceChangePercent } of fired) {
       const lastTime = lastFiredAt.current[alert.id] ?? 0;
       if (now - lastTime < NOTIFICATION_COOLDOWN_MS) continue;
 
       lastFiredAt.current[alert.id] = now;
 
-      const conditionText =
-        alert.condition === 'below'
-          ? `abaixo de ${alert.threshold.toLocaleString()}`
-          : alert.condition === 'above'
-            ? `acima de ${alert.threshold.toLocaleString()}`
-            : `variação ≥ ${alert.threshold}%`;
+      let conditionText: string;
+      let description: string;
 
-      toast.warning(`⚠️ ${item.itemName} — preço ${conditionText}`, {
-        description: `Preço atual: ${currentPrice.toLocaleString()} em ${item.city}`,
+      if (alert.condition === 'below') {
+        conditionText = `abaixo de ${alert.threshold.toLocaleString()}`;
+        description = `Preço atual: ${currentPrice.toLocaleString()} em ${item.city}`;
+      } else if (alert.condition === 'above') {
+        conditionText = `acima de ${alert.threshold.toLocaleString()}`;
+        description = `Preço atual: ${currentPrice.toLocaleString()} em ${item.city}`;
+      } else {
+        // Condição 'change' - variação percentual temporal
+        const changeText = priceChangePercent !== undefined 
+          ? `${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(1)}%`
+          : 'N/A';
+        conditionText = `variação de ${changeText}`;
+        description = `Variação detectada: ${changeText} (limite: ${alert.threshold}%)`;
+      }
+
+      toast.warning(`⚠️ ${item.itemName} — ${conditionText}`, {
+        description,
         duration: 8000,
       });
     }
