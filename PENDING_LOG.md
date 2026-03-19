@@ -4,6 +4,16 @@
 
 ## Decisões incorporadas
 
+- **Lote P0 completo** (2026-03-19): Todas as correções críticas de confiança de dados implementadas em `feat/lote-p0-correcoes-criticas`.
+  - DataSourceBadge: indicador visual de modo de dados (Real/Mock/Degraded)
+  - DegradedBanner: fallback explícito em produção (sem silêncio)
+  - Clear All transacional: bug fix no PriceTable com persistência correta
+  - Last Update real: removido timestamp fictício inicial
+  - Dashboard foco único: removida aba Local Spread, apenas arbitragem cross-city
+  - Cooldown de refresh: 5 minutos entre refreshes manuais com countdown
+  - 41 testes novos (total: 250+ passando)
+  - PR enviado para revisão
+
 - **Ativação da API Real**: O ambiente foi configurado para usar a API real (`VITE_USE_REAL_API=true`) no arquivo `.env`, substituindo o mock data padrão.
 - **Teste de integração**: Validado que `market.api.ts` é carregado quando a variável de ambiente está ativa.
 - **Debug logging removido** (2026-03-16): `console.log/warn/error` removidos de `market.api.ts` e `NotFound.tsx`; testes adicionados para garantir ausência. Commit `ad190a2` em `main`.
@@ -32,14 +42,15 @@
 
 ## Plano de implementação por lotes (decisões 2026-03-19)
 
-### Lote 0 — Correções críticas de confiança de dados (P0)
+### Lote 0 — Correções críticas de confiança de dados (P0) ✅ CONCLUÍDO
 
-- [ ] **Serviço real sem fallback silencioso em produção**: restringir fallback para dev/test e expor estado degradado na UI quando API falhar.
-- [ ] **Status de modo de dados visível**: badge/indicador `Mock`, `Real`, `Degraded` em `Index` e `Dashboard`.
-- [ ] **`Clear All` transacional no PriceTable**: limpar estado + storage sem quebrar persistência posterior.
-- [ ] **Contrato de alerta `change`**: migrar para variação percentual temporal de preço (não `spreadPercent` atual).
-- [ ] **Fonte correta de `Last Update`**: remover timestamp fictício inicial; exibir apenas timestamp real.
-- [ ] **Dashboard com foco único em arbitragem**: remover aba `Local Spread` e métricas placeholders associadas.
+- [x] **Serviço real sem fallback silencioso em produção** (2026-03-19): `dataSourceManager` com estado `degraded`; fallback apenas em dev/test.
+- [x] **Status de modo de dados visível** (2026-03-19): `DataSourceBadge` em `Index` e `Dashboard`; estados `Real`/`Mock`/`Degraded` com tooltip.
+- [x] **`Clear All` transacional no PriceTable** (2026-03-19): `isClearingRef` controla persistência; reset de página ao limpar.
+- [ ] **Contrato de alerta `change`**: migrar para variação percentual temporal de preço (não `spreadPercent` atual). *[Movido para Lote 1]*
+- [x] **Fonte correta de `Last Update`** (2026-03-19): `getLastUpdateTime()` retorna `null` inicialmente; timestamp real após fetch.
+- [x] **Dashboard com foco único em arbitragem** (2026-03-19): removida aba `Local Spread`; apenas `ArbitrageTable` e `TopArbitragePanel`.
+- [x] **Refresh manual com cooldown (5 min)** (2026-03-19): `refreshCooldown.ts` com localStorage; UI mostra countdown; toast informativo.
 
 ### Lote 1 — Consistência de dados, contratos e runtime (P1)
 
@@ -78,6 +89,27 @@
 
 - [ ] **Feature futura de temas**: arquitetura light/dark/system com `ThemeProvider` completo (via SPEC dedicada).
 - [ ] **Frente mobile**: estudar roadmap PWA vs app nativo, reaproveitando contratos e componentes existentes.
+
+---
+
+## 🎯 Próxima Frente Recomendada
+
+**Análise completa em:** `features/proxima-frente-analise.md`
+
+### Recomendação: Lote 1A — Correções de Alertas e Notificações (P1)
+
+**Prioridade:** 🔥 ALTA  
+**Racional:** Bugs no sistema de alertas afetam funcionalidade core e satisfação do usuário
+
+**Itens prioritários:**
+1. **Contrato de alerta `change` (Q07)** — UI promete "price change" mas engine usa `spreadPercent`
+2. **Unificação de notificações (Q14)** — Dois sistemas de toast causam inconsistência
+3. **Respeitar `notifications.inApp` (Q10)** — Poller ignora preferência do usuário
+4. **Normalização de `alert.city` (Q08, Q44)** — inconsistência `"all"` vs `"All Cities"`
+
+**Estimativa:** 1-2 dias  
+**Impacto UX:** ⭐⭐⭐⭐⭐  
+**Status:** Aguardando aprovação para iniciar SPEC
 
 ## Pendências
 
