@@ -1,75 +1,73 @@
-# Welcome to your Lovable project
+# Albion Market Insights
 
-[![Quality Gate](https://github.com/wendeus0/albion-market-insights/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/wendeus0/albion-market-insights/actions/workflows/quality-gate.yml)
+![Quality Gate](https://github.com/wendeus0/albion-market-insights/actions/workflows/quality-gate.yml/badge.svg)
 
-## Project info
+Ferramenta de análise de mercado para **Albion Online**, focada em visualização de preços, detecção de oportunidades de arbitragem e monitoramento de alertas.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 Funcionalidades
 
-## How can I edit this code?
+- **Dashboard de Mercado**: Visualização em tempo real de preços, tendências e estatísticas.
+- **Arbitragem entre Cidades**: Identificação automática de oportunidades de lucro comprando em uma cidade e vendendo em outra.
+- **Gerenciador de Alertas**: Configure alertas personalizados para ser notificado quando itens atingirem preços alvo.
+- **Suporte a Encantamentos**: Filtragem e análise detalhada por nível de encantamento (Tier/Enchantment).
+- **Dados Reais**: Integração com a API do *Albion Online Data Project* (opcional).
+- **Performance**: Otimizações como *code splitting*, *caching* local e *backoff* exponencial para requisições.
 
-There are several ways of editing your application.
+## 🛠️ Tech Stack
 
-**Use Lovable**
+- **Core**: React 18, TypeScript, Vite
+- **UI**: Tailwind CSS, shadcn/ui (Radix UI), Lucide React
+- **Data**: TanStack Query, Recharts, Zod
+- **Testes**: Vitest (Unit), Playwright (E2E)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 📦 Instalação e Execução
 
-Changes made via Lovable will be committed automatically to this repo.
+### Pré-requisitos
+- Node.js (v18+)
+- npm
 
-**Use your preferred IDE**
+### Passos
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/wendeus0/albion-market-insights.git
+   cd albion-market-insights
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-Follow these steps:
+3. Execute o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+A aplicação estará disponível em `http://localhost:8080`.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## ⚙️ Configuração
 
-# Step 3: Install the necessary dependencies.
-npm i
+O projeto pode rodar com dados mockados (padrão) ou com a API real.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+Para usar a API real, crie um arquivo `.env` na raiz ou defina a variável de ambiente:
+
+```env
+VITE_USE_REAL_API=true
 ```
 
-**Edit a file directly in GitHub**
+## ✅ Testes
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Unitários**: `npm run test`
+- **E2E**: `npm run test:e2e`
+- **Validação Completa**: `npm run quality:gate` (Lint + Build + Testes + Coverage)
 
-**Use GitHub Codespaces**
+## 📂 Documentação do Desenvolvedor
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- [CLAUDE.md](./CLAUDE.md): Guia rápido de comandos, stack e convenções.
+- [AGENTS.md](./AGENTS.md): Regras de workflow, arquitetura, hierarquia de documentação e skills.
+- [features/](./features/): Especificações (SPEC.md) e relatórios (REPORT.md) de cada funcionalidade.
 
-## What technologies are used for this project?
+## 🤝 Contribuição
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Este projeto segue um workflow estrito baseado em Specs e Features. Consulte `AGENTS.md` antes de contribuir.
