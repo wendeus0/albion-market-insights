@@ -79,7 +79,7 @@
 - [x] **Serviço real sem fallback silencioso em produção** (2026-03-19): `dataSourceManager` com estado `degraded`; fallback apenas em dev/test.
 - [x] **Status de modo de dados visível** (2026-03-19): `DataSourceBadge` em `Index` e `Dashboard`; estados `Real`/`Mock`/`Degraded` com tooltip.
 - [x] **`Clear All` transacional no PriceTable** (2026-03-19): `isClearingRef` controla persistência; reset de página ao limpar.
-- [ ] **Contrato de alerta `change`**: migrar para variação percentual temporal de preço (não `spreadPercent` atual). *[Movido para Lote 1]*
+- [ ] **Contrato de alerta `change`**: migrar para variação percentual temporal de preço (não `spreadPercent` atual). _[Movido para Lote 1]_
 - [x] **Fonte correta de `Last Update`** (2026-03-19): `getLastUpdateTime()` retorna `null` inicialmente; timestamp real após fetch.
 - [x] **Dashboard com foco único em arbitragem** (2026-03-19): removida aba `Local Spread`; apenas `ArbitrageTable` e `TopArbitragePanel`.
 - [x] **Refresh manual com cooldown (5 min)** (2026-03-19): `refreshCooldown.ts` com localStorage; UI mostra countdown; toast informativo.
@@ -87,16 +87,19 @@
 ### Lote 1 — Consistência de dados, contratos e runtime (P1)
 
 #### ✅ Já Concluídos no Lote 1A:
+
 - [x] **Normalização de `alert.city`**: valor canônico (`all`) no domínio + labels na UI.
 - [x] **Unificação de notificações**: consolidar em Sonner + wrapper interno; descontinuar `use-toast` custom.
 
 #### 🔄 Lote 1B — Consistência de Dados (Em Andamento):
+
 - [ ] **Política única de frescor (15 min)**: alinhar TTL de cache, `staleTime`, textos de UI e polling.
 - [ ] **ID robusto para alertas**: migrar para `crypto.randomUUID()` com fallback seguro.
 - [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
 - [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
 
 #### ⏳ Itens Futuros (Lote 1C ou Lote 2):
+
 - [ ] **Refresh manual com cooldown local (5 min)**: já parcialmente implementado, avaliar necessidade.
 - [ ] **Histórico por qualidade (alvo final)**: ajustar fetch/enriquecimento para respeitar qualidade do item.
 - [ ] **Deduplicação por recência**: substituir `first occurrence wins` por regra de timestamp/confiabilidade.
@@ -108,11 +111,13 @@
 > Foco em arquitetura de código, separação de responsabilidades e DX.
 
 **Itens Prioritários:**
+
 - [ ] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação).
 - [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
 - [x] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback). ✅ **CONCLUÍDO e mergeado na `main` em 2026-03-19 (PR #42)**
 
 **Itens Secundários:**
+
 - [ ] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar.
 - [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
 - [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
@@ -185,12 +190,14 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
    - `getConditionStyles()` - estilos condicionais para UI
 
 #### Resultados:
+
 - **AlertsManager.tsx:** 466 → ~320 linhas (-31%)
 - **Cobertura de testes:** 3 arquivos de teste com 30+ casos
 - **Separação de responsabilidades:** UI, formulário e feedback isolados
 - **ADR-009:** Documentação arquitetural criada
 
 #### Testes:
+
 - `useAlertsForm.test.ts` - 9 casos (form init, createAlert, reset, UUID fallback)
 - `useAlertsFeedback.test.ts` - 6 casos (toggle, delete, create toasts)
 - `useAlertsUI.test.ts` - 6 casos (icons, text, labels)
@@ -206,7 +213,6 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - [x] **Item 1: Contrato de alerta `change` (Q07)** — ✅ **MERGEADO**
   - Engine calcula variação percentual temporal usando `priceHistory`
   - Substitui `spreadPercent` por variação real do preço ao longo do tempo
-  
 - [x] **Item 2: Unificação de notificações (Q14)** — ✅ **MERGEADO**
   - Removido sistema `use-toast` legado
   - Sistema único baseado em Sonner
@@ -240,6 +246,7 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - [x] **Persistência de filtros do PriceTable** (2026-03-19): CONCLUÍDO — implementação de AC-5 do SPEC `enhanced-ui-filters`; serviço `filter.storage.ts` com validação defensiva; 10 testes novos; PR #33 mergeado.
 - [x] **Restauração do Quality Gate** (2026-03-19): CONCLUÍDO — PR #43 mergeado; mocks de testes alinhados ao contrato atual de `@/data/constants`; CI voltou a ficar verde.
 - [x] **Refatoração do AlertsManager para hooks especializados** (2026-03-19): CONCLUÍDO — PR #42 mergeado; ajuste posterior em `market.cache.test.ts` removeu mock contraditório de TTL.
+- [x] **Sessão de triagem técnica** (2026-03-19): CONCLUÍDO — avaliação do estado atual via `technical-triage`; baseline verificada como estável; próximo passo definido como Lote 1B.
 
 ## Pontos de atenção
 
@@ -249,3 +256,4 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.
 - **Qualidade da baseline** (2026-03-19): `Quality Gate` restaurado após os merges dos PRs #43 e #42; monitorar apenas novas regressões introduzidas por features futuras.
 - **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data.
+- **Avaliação futura de `node-version: 24` no job do projeto**: antes de migrar o runtime do CI, comparar desempenho e estabilidade contra Node 20 (`npm ci`, `quality:gate`, tempo total, consumo de memória e compatibilidade de dependências).
