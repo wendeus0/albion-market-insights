@@ -196,9 +196,18 @@
 
 - **Erro**: Workflow `Quality Gate` falhava em `npm ci` com `EBADPLATFORM` para `@esbuild/aix-ppc64@0.27.4` em runner Ubuntu Linux x64
 - **Causa**: Incompatibilidade entre lockfile gerado com npm 11 local e npm 10.8.2 no CI (Node 20)
-- **Ação tomada**: 
+- **Ação tomada**:
   - Regenerado `package-lock.json` com npm 10.8.2
   - Adicionado `"packageManager": "npm@10.8.2"` em `package.json`
   - Workflow ajustado para pinar npm 10.8.2 antes do `npm ci`
   - Commit `566e7c0` na branch `feat/coverage-critical-components`
 - **Status**: RESOLVIDO — PR #31 mergeado em `main`, CI passando (run `23237923699`)
+
+---
+
+### [2026-03-19] feat/persist-price-filters — race condition em testes de Clear All
+
+- **Erro**: Teste "deve remover filtros do localStorage ao clicar Clear All" falhava — localStorage continha dados após Clear All
+- **Causa**: Race condition entre `setState` (assíncrono) e `useEffect` de persistência; filtros eram salvos novamente após serem limpos
+- **Ação tomada**: Implementado flag `shouldPersist` no componente; Clear All seta flag para false antes de limpar estados, evitando que useEffect salve após a limpeza
+- **Status**: RESOLVIDO — testes passando, 215/215 testes na suite completa
