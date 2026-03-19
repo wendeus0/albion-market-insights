@@ -79,14 +79,26 @@ npm run build   # ✅ Sucesso (9.02s)
 
 ---
 
-## Próximos Passos (fora do escopo deste lote)
+## ✅ Todos os Itens P0 Implementados
 
-### Itens P0 Pendentes:
-3. **Clear All transacional** - Corrigir bug de persistência no PriceTable
-5. **Dashboard foco único** - Remover aba "Local Spread"
-6. **Cooldown de refresh** - Implementar limitação de 5 min
+### Item 3: Clear All Transacional ✅
+- **Problema:** `shouldPersist` ficava `false` permanentemente após Clear All
+- **Solução:** Substituído por `isClearingRef` (ref mutável) que controla quando persistir
+- **Bonus:** Reset de página ao limpar filtros implementado
 
-### Itens P1-P2:
+### Item 5: Dashboard Foco Único ✅
+- **Removido:** Estado `mode`, aba "Local Spread", `TopItemsPanel`, `PriceTable` no dashboard
+- **Mantido:** Apenas "Cross-City Arbitrage" com `ArbitrageTable` e `TopArbitragePanel`
+- **Simplificado:** StatsCards sem placeholders (removido o 18.5% hardcoded)
+- **Cleanup:** Removido hook `useTopProfitable` não utilizado
+
+### Item 6: Cooldown de Refresh ✅
+- **Serviço:** `refreshCooldown.ts` com persistência em localStorage
+- **Hook:** `useRefreshCooldown.ts` com atualização em tempo real (1s interval)
+- **UI:** Botão mostra countdown quando em cooldown, desabilitado durante cooldown
+- **Feedback:** Toast informativo quando usuário tenta refresh durante cooldown
+
+### Itens P1-P2 (Próximas Frentes):
 - Extrair regras de negócio de PriceTable/AlertsManager
 - Unificar política de frescor (15 min)
 - Normalizar contrato de alerta `city`
