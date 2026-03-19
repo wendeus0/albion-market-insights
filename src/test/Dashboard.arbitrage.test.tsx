@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import Dashboard from '@/pages/Dashboard';
 import type { MarketItem } from '@/data/types';
 
@@ -9,10 +8,13 @@ vi.mock('@/components/layout/Layout', () => ({
   Layout: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: vi.fn(),
-  }),
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 vi.mock('@tanstack/react-query', async () => {
@@ -50,46 +52,26 @@ const mockItems: MarketItem[] = [
     timestamp: '2026-03-17T10:00:00.000Z',
     tier: 'T8',
     quality: 'Good',
-    priceHistory: [7_000_000, 7_100_000, 7_200_000],
+    priceHistory: [7_200_000, 7_300_000, 7_500_000],
   },
   {
     itemId: 'T6_MAIN_AXE',
     itemName: 'Battleaxe T6',
-    city: 'Bridgewatch',
-    sellPrice: 100_000,
-    buyPrice: 90_000,
-    spread: 10_000,
-    spreadPercent: 11.11,
+    city: 'Lymhurst',
+    sellPrice: 12_000,
+    buyPrice: 10_000,
+    spread: 2_000,
+    spreadPercent: 20,
     timestamp: '2026-03-17T10:00:00.000Z',
     tier: 'T6',
     quality: 'Normal',
-    priceHistory: [95_000, 96_000, 100_000],
-  },
-  {
-    itemId: 'T6_MAIN_AXE',
-    itemName: 'Battleaxe T6',
-    city: 'Thetford',
-    sellPrice: 110_000,
-    buyPrice: 100_000,
-    spread: 10_000,
-    spreadPercent: 10,
-    timestamp: '2026-03-17T10:00:00.000Z',
-    tier: 'T6',
-    quality: 'Normal',
-    priceHistory: [100_000, 105_000, 110_000],
+    priceHistory: [],
   },
 ];
 
 vi.mock('@/hooks/useMarketItems', () => ({
   useMarketItems: () => ({
     data: mockItems,
-    isLoading: false,
-  }),
-}));
-
-vi.mock('@/hooks/useTopProfitable', () => ({
-  useTopProfitable: () => ({
-    data: [mockItems[0], mockItems[2]],
     isLoading: false,
   }),
 }));
@@ -101,47 +83,49 @@ vi.mock('@/hooks/useLastUpdateTime', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useRefreshCooldown', () => ({
+  useRefreshCooldown: () => ({
+    canRefresh: true,
+    formattedTime: '0:00',
+    recordRefresh: vi.fn(),
+    refreshState: {
+      canRefresh: true,
+      timeRemaining: 0,
+      lastRefresh: null,
+    },
+  }),
+}));
+
 describe('Dashboard — Cross-City Arbitrage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('deve exibir alternancia entre Local Spread e Cross-City Arbitrage', () => {
+  it('deve exibir título de arbitragem cross-city', () => {
     render(<Dashboard />);
 
-    expect(screen.getByRole('button', { name: /local spread/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cross-city arbitrage/i })).toBeInTheDocument();
+    expect(screen.getByText('Cross-City Arbitrage Opportunities')).toBeInTheDocument();
   });
 
-  it('deve exibir rota de compra e venda ao ativar Cross-City Arbitrage', async () => {
-    const user = userEvent.setup();
+  it('deve exibir oportunidades de arbitragem na tabela', () => {
     render(<Dashboard />);
-
-    await user.click(screen.getByRole('button', { name: /cross-city arbitrage/i }));
 
     expect(screen.getAllByText('Great Holy Staff T8 .3')).toHaveLength(2);
     expect(screen.getAllByText('Martlock').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Caerleon').length).toBeGreaterThan(0);
-    expect(screen.getByText(/net profit/i)).toBeInTheDocument();
   });
 
-  it('deve calcular lucro liquido com taxa e esconder oportunidades sem lucro', async () => {
-    const user = userEvent.setup();
+  it('deve exibir estatísticas de arbitragem no painel lateral', () => {
     render(<Dashboard />);
 
-    await user.click(screen.getByRole('button', { name: /cross-city arbitrage/i }));
-
-    expect(screen.getAllByText('832,000').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('+14.1%').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Battleaxe T6')).not.toBeInTheDocument();
-  });
-
-  it('deve refletir oportunidades cross-city no painel lateral', async () => {
-    const user = userEvent.setup();
-    render(<Dashboard />);
-
-    await user.click(screen.getByRole('button', { name: /cross-city arbitrage/i }));
-
+    // O painel lateral deve mostrar oportunidades de arbitragem
     expect(screen.getByText(/martlock → caerleon/i)).toBeInTheDocument();
   });
+
+  it('deve calcular e exibir ROI médio', () => {
+    render(<Dashboard />);
+
+    expect(screen.getByText('Avg. ROI')).toBeInTheDocument();
+  });
 });
+

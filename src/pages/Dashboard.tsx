@@ -11,13 +11,11 @@ import { useRefreshCooldown } from '@/hooks/useRefreshCooldown';
 import { TrendingUp, LayoutDashboard, Zap, Clock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { buildCrossCityArbitrage } from '@/lib/arbitrage';
 
 const Dashboard = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { data: items = [], isLoading: itemsLoading } = useMarketItems();
   const { data: lastUpdate, isLoading: timeLoading } = useLastUpdateTime();
   const { canRefresh, formattedTime, recordRefresh } = useRefreshCooldown();
