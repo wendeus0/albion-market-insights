@@ -100,7 +100,7 @@
 **Itens Prioritários:**
 - [ ] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação).
 - [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
-- [ ] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback).
+- [x] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback). ✅ **CONCLUÍDO**
 
 **Itens Secundários:**
 - [ ] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar.
@@ -143,6 +143,47 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 
 **Estimativa:** 1 dia  
 **Próxima Feature Estrutural:** Lote 2 (Refatoração Estrutural e UX)
+
+---
+
+## 🏗️ Lote 2 — Refatoração Estrutural e UX (P1/P2) 🔄 EM ANDAMENTO
+
+### Item 3: AlertsManager Hooks ✅ CONCLUÍDO
+
+**Data:** 2026-03-19  
+**Status:** ✅ **CONCLUÍDO**
+
+#### Hooks Criados:
+
+1. **`useAlertsForm.ts`** (72 linhas)
+   - Gerenciamento do formulário com react-hook-form
+   - Geração de ID robusto (`crypto.randomUUID` com fallback)
+   - Criação do objeto Alert a partir dos valores do formulário
+   - Função `generateAlertId` exportada para reuso
+
+2. **`useAlertsFeedback.ts`** (63 linhas)
+   - Centralização de todos os toasts do Sonner
+   - `notifyToggle()` - feedback de ativação/desativação
+   - `notifyDelete()` - feedback de exclusão com nome do item
+   - `notifyCreate()` - feedback de criação com formatação contextual
+
+3. **`useAlertsUI.ts`** (76 linhas)
+   - Helpers de UI para formatação
+   - `getConditionIcon()` - ícones por condição (below/above/change)
+   - `getConditionText()` - textos descritivos formatados
+   - `getCityLabel()` - labels de cidade ("All Cities" vs nome)
+   - `getConditionStyles()` - estilos condicionais para UI
+
+#### Resultados:
+- **AlertsManager.tsx:** 466 → ~320 linhas (-31%)
+- **Cobertura de testes:** 3 arquivos de teste com 30+ casos
+- **Separação de responsabilidades:** UI, formulário e feedback isolados
+- **ADR-009:** Documentação arquitetural criada
+
+#### Testes:
+- `useAlertsForm.test.ts` - 9 casos (form init, createAlert, reset, UUID fallback)
+- `useAlertsFeedback.test.ts` - 6 casos (toggle, delete, create toasts)
+- `useAlertsUI.test.ts` - 6 casos (icons, text, labels)
 
 ---
 

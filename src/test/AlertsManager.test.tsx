@@ -145,8 +145,8 @@ describe('AlertsManager', () => {
       expect.objectContaining({ id: '1', isActive: false })
     );
     expect(toast.success).toHaveBeenCalledWith(
-      'Alert updated',
-      expect.objectContaining({ description: expect.any(String) })
+      'Alert disabled',
+      expect.objectContaining({ description: 'Your alert for Clarent Blade has been disabled.' })
     );
   });
 

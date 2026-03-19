@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { Controller } from 'react-hook-form';
 import {
   Bell,
   Plus,
@@ -16,7 +14,9 @@ import {
 } from 'lucide-react';
 import type { Alert, MarketItem } from '@/data/types';
 import { cities } from '@/data/constants';
-import { alertFormSchema, type AlertFormValues } from '@/lib/schemas';
+import { useAlertsForm } from '@/hooks/useAlertsForm';
+import { useAlertsFeedback } from '@/hooks/useAlertsFeedback';
+import { useAlertsUI } from '@/hooks/useAlertsUI';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,18 +46,6 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-/**
- * Gera ID único para alertas usando crypto.randomUUID quando disponível
- * Fallback seguro para browsers antigos
- */
-function generateAlertId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  // Fallback: timestamp + random string
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-}
-
 interface AlertsManagerProps {
   availableItems: MarketItem[];
   alerts: Alert[];
@@ -68,78 +56,34 @@ interface AlertsManagerProps {
 export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const form = useForm<AlertFormValues>({
-    resolver: zodResolver(alertFormSchema),
-    defaultValues: {
-      itemId: '',
-      city: 'all',
-      condition: 'below',
-      threshold: undefined,
-      notifications: { inApp: true, email: false },
-    },
+  const { form, alertType, createAlert, resetForm } = useAlertsForm({
+    onSaveAlert,
+    availableItems,
   });
 
-  const alertType = form.watch('condition');
+  const { notifyToggle, notifyDelete, notifyCreate } = useAlertsFeedback({
+    onDeleteAlert,
+  });
+
+  const { getConditionIcon, getConditionText, getCityLabel } = useAlertsUI();
 
   const toggleAlert = (alert: Alert) => {
     onSaveAlert({ ...alert, isActive: !alert.isActive });
-    toast.success('Alert updated', {
-      description: 'Your alert status has been changed.',
-    });
+    notifyToggle(alert);
   };
 
-  const deleteAlert = (id: string) => {
-    onDeleteAlert(id);
-    toast.success('Alert deleted', {
-      description: 'Your price alert has been removed.',
-    });
+  const deleteAlert = (id: string, itemName?: string) => {
+    notifyDelete(id, itemName);
   };
 
-  const onSubmit = (values: AlertFormValues) => {
-    const item = availableItems.find(i => i.itemId === values.itemId);
-    const newAlert: Alert = {
-      id: generateAlertId(), // ID robusto (crypto.randomUUID ou fallback)
-      itemId: values.itemId,
-      itemName: item?.itemName || 'Unknown Item',
-      city: values.city, // Valor canônico: 'all' ou nome da cidade
-      condition: values.condition,
-      threshold: values.threshold,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      notifications: values.notifications,
-    };
-
-    onSaveAlert(newAlert);
-    setIsDialogOpen(false);
-    form.reset();
-
-    toast.success('Alert created!', {
-      description: `You'll be notified when ${item?.itemName} price ${
-        values.condition === 'below' ? 'drops below' :
-        values.condition === 'above' ? 'goes above' : 'changes by'
-      } ${values.threshold}${values.condition === 'change' ? '%' : ''}.`,
-    });
-  };
-
-  const getConditionIcon = (condition: string) => {
-    switch (condition) {
-      case 'below': return <ArrowDown className="h-4 w-4 text-success" />;
-      case 'above': return <ArrowUp className="h-4 w-4 text-destructive" />;
-      case 'change': return <Percent className="h-4 w-4 text-primary" />;
-      default: return null;
+  const onSubmit = (values: Parameters<typeof createAlert>[0]) => {
+    const alert = createAlert(values);
+    
+    if (alert) {
+      setIsDialogOpen(false);
+      resetForm();
+      notifyCreate(alert.itemName, alert.condition, alert.threshold);
     }
-  };
-
-  const getConditionText = (alert: Alert) => {
-    switch (alert.condition) {
-      case 'below': return `Price below ${alert.threshold.toLocaleString()}`;
-      case 'above': return `Price above ${alert.threshold.toLocaleString()}`;
-      case 'change': return `Price change ≥ ${alert.threshold}%`;
-    }
-  };
-
-  const getCityLabel = (city: string) => {
-    return city === 'all' ? 'All Cities' : city;
   };
 
   const uniqueItems = Array.from(
@@ -159,7 +103,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) form.reset();
+          if (!open) resetForm();
         }}>
           <DialogTrigger asChild>
             <Button className="bg-gold-gradient text-primary-foreground hover:opacity-90 gold-glow">
@@ -450,7 +394,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deleteAlert(alert.id)}
+                    onClick={() => deleteAlert(alert.id, alert.itemName)}
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -464,3 +408,4 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
     </div>
   );
 }
+
