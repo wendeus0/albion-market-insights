@@ -211,3 +211,17 @@
 - **Causa**: Race condition entre `setState` (assíncrono) e `useEffect` de persistência; filtros eram salvos novamente após serem limpos
 - **Ação tomada**: Implementado flag `shouldPersist` no componente; Clear All seta flag para false antes de limpar estados, evitando que useEffect salve após a limpeza
 - **Status**: RESOLVIDO — testes passando, 215/215 testes na suite completa
+
+---
+
+### [2026-03-19] feat/lote-1a-item-1-contrato-change — alerta 'change' usando spreadPercent em vez de variação temporal
+
+- **Erro**: A UI do AlertsManager prometia "Price change ≥ X%" mas a engine (`alert.engine.ts`) disparava o alerta baseado em `item.spreadPercent`, que é o spread entre buy/sell price, não a variação temporal do preço
+- **Causa**: Implementação inicial confundiu "change" (variação de preço ao longo do tempo) com spread percentual
+- **Impacto**: Usuários recebiam alertas incorretos — o alerta disparava quando o spread era alto, não quando o preço variava
+- **Ação tomada**: 
+  - Criada função `calculatePriceChangePercent()` que calcula variação usando `priceHistory`
+  - Engine agora usa variação temporal real para condição `change`
+  - Toast atualizado para mostrar a variação real (+25.0%, -15.3%, etc.)
+  - Testes atualizados para refletir nova lógica
+- **Status**: RESOLVIDO — Lote 1A Item 1 concluído, PR mergeado em `main`

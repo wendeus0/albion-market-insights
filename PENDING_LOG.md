@@ -22,6 +22,20 @@
   - Testes atualizados
   - PR aceito e mergeado em `main`
 
+- **Lote 1A — Itens 3 e 4: Alertas** (2026-03-19) ✅ **MERGEADO NA MAIN**
+  - Item 3: Respeitar `notifications.inApp` — poller só notifica quando habilitado
+  - Item 4: Normalização de `alert.city` — valor canônico `"all"`, migração automática
+  - Schema atualizado, testes atualizados
+  - PR aceito e mergeado em `main`
+
+- **Lote 1A — Item 1: Contrato `change`** (2026-03-19) ✅ **MERGEADO NA MAIN**
+  - Engine de alertas agora calcula variação percentual temporal real
+  - Usa `priceHistory` em vez de `spreadPercent` para condição `change`
+  - Toast mostra variação real (+25.0%, -15.3%, etc.)
+  - Testes atualizados para nova lógica
+  - PR aceito e mergeado em `main`
+  - **LOTE 1A COMPLETO** — todos os 4 itens implementados
+
 - **Ativação da API Real**: O ambiente foi configurado para usar a API real (`VITE_USE_REAL_API=true`) no arquivo `.env`, substituindo o mock data padrão.
 - **Teste de integração**: Validado que `market.api.ts` é carregado quando a variável de ambiente está ativa.
 - **Debug logging removido** (2026-03-16): `console.log/warn/error` removidos de `market.api.ts` e `NotFound.tsx`; testes adicionados para garantir ausência. Commit `ad190a2` em `main`.
@@ -100,27 +114,32 @@
 
 ---
 
-## 🎯 Lote 1A — Correções de Alertas e Notificações (P1) 🔄 EM ANDAMENTO
+## 🎯 Lote 1A — Correções de Alertas e Notificações (P1) ✅ CONCLUÍDO
 
 **Análise completa em:** `features/proxima-frente-analise.md`
 
-### Progresso
+### ✅ Todos os Itens Concluídos
 
-- [x] **Item 2: Unificação de notificações (Q14)** — ✅ **MERGEADO NA MAIN**
+- [x] **Item 1: Contrato de alerta `change` (Q07)** — ✅ **MERGEADO**
+  - Engine calcula variação percentual temporal usando `priceHistory`
+  - Substitui `spreadPercent` por variação real do preço ao longo do tempo
+  
+- [x] **Item 2: Unificação de notificações (Q14)** — ✅ **MERGEADO**
   - Removido sistema `use-toast` legado
-  - Migrado para Sonner em todos os componentes
-  - 5 arquivos legados deletados
-  - Testes atualizados
+  - Sistema único baseado em Sonner
 
-### Itens Pendentes
+- [x] **Item 3: Respeitar `notifications.inApp` (Q10)** — ✅ **MERGEADO**
+  - Poller verifica flag antes de notificar
+  - Usuário pode desabilitar notificações por alerta
 
-- [ ] **Item 1: Contrato de alerta `change` (Q07)** — UI promete "price change" mas engine usa `spreadPercent`
-- [ ] **Item 3: Respeitar `notifications.inApp` (Q10)** — Poller ignora preferência do usuário  
-- [ ] **Item 4: Normalização de `alert.city` (Q08, Q44)** — inconsistência `"all"` vs `"All Cities"`
+- [x] **Item 4: Normalização de `alert.city` (Q08, Q44)** — ✅ **MERGEADO**
+  - Valor canônico `"all"` em todo o sistema
+  - Migração automática de dados antigos
+  - Label de UI separada do valor persistido
 
-**Estimativa restante:** 1 dia  
+**Tempo total:** 1.5 dias  
 **Impacto UX:** ⭐⭐⭐⭐⭐  
-**Status:** 1 de 4 itens concluídos, 3 pendentes
+**Status:** ✅ **LOTE 1A 100% COMPLETO**
 
 ## Pendências
 
