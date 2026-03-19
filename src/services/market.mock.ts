@@ -2,11 +2,13 @@ import { mockItems, lastUpdateTime } from '@/data/mockData';
 import type { MarketItem, Alert } from '@/data/types';
 import type { MarketService } from './market.service';
 import { AlertStorageService } from './alert.storage';
+import { dataSourceManager } from './dataSource.manager';
 
 export class MockMarketService implements MarketService {
   private storage = new AlertStorageService();
 
   async getItems(): Promise<MarketItem[]> {
+    dataSourceManager.setMock();
     return [...mockItems];
   }
 
@@ -14,7 +16,7 @@ export class MockMarketService implements MarketService {
     return mockItems.slice(0, limit);
   }
 
-  async getLastUpdateTime(): Promise<string> {
+  async getLastUpdateTime(): Promise<string | null> {
     return lastUpdateTime;
   }
 

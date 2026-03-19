@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { TopItemsPanel } from '@/components/dashboard/TopItemsPanel';
-import { PriceTable } from '@/components/dashboard/PriceTable';
 import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
 import { TopArbitragePanel } from '@/components/dashboard/TopArbitragePanel';
+import { DataSourceBadge } from '@/components/dashboard/DataSourceBadge';
+import { DegradedBanner } from '@/components/dashboard/DegradedBanner';
 import { useMarketItems } from '@/hooks/useMarketItems';
-import { useTopProfitable } from '@/hooks/useTopProfitable';
 import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
+import { useRefreshCooldown } from '@/hooks/useRefreshCooldown';
 import { TrendingUp, LayoutDashboard, Zap, Clock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,26 +15,19 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { buildCrossCityArbitrage } from '@/lib/arbitrage';
 
-type DashboardMode = 'local' | 'arbitrage';
-
 const Dashboard = () => {
-  const [mode, setMode] = useState<DashboardMode>('local');
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: items = [], isLoading: itemsLoading } = useMarketItems();
-  const { data: topItems = [], isLoading: topLoading } = useTopProfitable(5);
   const { data: lastUpdate, isLoading: timeLoading } = useLastUpdateTime();
+  const { canRefresh, formattedTime, recordRefresh } = useRefreshCooldown();
 
   const arbitrageItems = useMemo(() => buildCrossCityArbitrage(items), [items]);
 
-  const isRefreshing = itemsLoading || topLoading || timeLoading;
-  const panelTitle = mode === 'local' ? 'Avg. Spread' : 'Avg. ROI';
-  const panelValue = mode === 'local'
-    ? '18.5%'
-    : (arbitrageItems.length > 0
-      ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
-      : '0.0%');
-  const panelSubtitle = mode === 'local' ? 'Profit margin' : 'Net return after tax';
+  const isRefreshing = itemsLoading || timeLoading;
+  const avgRoi = arbitrageItems.length > 0
+    ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
+    : '0.0%';
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -46,9 +39,18 @@ const Dashboard = () => {
   };
 
   const handleRefresh = () => {
+    if (!canRefresh) {
+      toast({
+        title: 'Refresh on cooldown',
+        description: `Please wait ${formattedTime} before refreshing again.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     queryClient.invalidateQueries({ queryKey: ['marketItems'] });
-    queryClient.invalidateQueries({ queryKey: ['topProfitable'] });
     queryClient.invalidateQueries({ queryKey: ['lastUpdateTime'] });
+    recordRefresh();
     toast({
       title: 'Data refreshed',
       description: 'Market prices have been updated.',
@@ -58,6 +60,9 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        {/* Degraded Banner */}
+        <DegradedBanner />
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -68,15 +73,19 @@ const Dashboard = () => {
               Real-time price data across all Albion Online cities
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="border-primary/30"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Data
-          </Button>
+          <div className="flex items-center gap-3">
+            <DataSourceBadge />
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={isRefreshing || !canRefresh}
+              className="border-primary/30"
+              title={canRefresh ? 'Refresh data' : `Cooldown: ${formattedTime}`}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {canRefresh ? 'Refresh Data' : formattedTime}
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -94,11 +103,10 @@ const Dashboard = () => {
             icon={LayoutDashboard}
           />
           <StatsCard
-            title={panelTitle}
-            value={panelValue}
-            subtitle={panelSubtitle}
+            title="Avg. ROI"
+            value={itemsLoading ? '...' : avgRoi}
+            subtitle="Net return after tax"
             icon={Zap}
-            trend={{ value: 2.3, isPositive: true }}
           />
           <StatsCard
             title="Last Update"
@@ -110,36 +118,22 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Top Items Sidebar */}
+          {/* Top Arbitrage Sidebar */}
           <div className="xl:col-span-1">
-            {topLoading ? (
+            {itemsLoading ? (
               <Skeleton className="h-64 w-full" />
             ) : (
-              mode === 'local' ? <TopItemsPanel items={topItems} /> : <TopArbitragePanel items={arbitrageItems} />
+              <TopArbitragePanel items={arbitrageItems} />
             )}
           </div>
 
-          {/* Price Table */}
+          {/* Arbitrage Table */}
           <div className="xl:col-span-3">
-            <div className="flex items-center gap-2 mb-4">
-              <Button
-                variant={mode === 'local' ? 'default' : 'outline'}
-                onClick={() => setMode('local')}
-              >
-                Local Spread
-              </Button>
-              <Button
-                variant={mode === 'arbitrage' ? 'default' : 'outline'}
-                onClick={() => setMode('arbitrage')}
-              >
-                Cross-City Arbitrage
-              </Button>
-            </div>
-
+            <h2 className="text-lg font-semibold mb-4">Cross-City Arbitrage Opportunities</h2>
             {itemsLoading ? (
               <Skeleton className="h-96 w-full" />
             ) : (
-              mode === 'local' ? <PriceTable items={items} /> : <ArbitrageTable items={arbitrageItems} />
+              <ArbitrageTable items={arbitrageItems} />
             )}
           </div>
         </div>

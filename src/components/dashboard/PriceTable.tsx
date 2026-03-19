@@ -80,18 +80,19 @@ export function PriceTable({ items, className }: PriceTableProps) {
   const [sortField, setSortField] = useState<SortField>("spreadPercent");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [shouldPersist, setShouldPersist] = useState(true);
   const itemsPerPage = 10;
 
   // Persist filters when they change (skip on initial mount)
   const isInitialMount = useRef(true);
+  const isClearingRef = useRef(false);
+  
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    if (!shouldPersist) {
-      // Clear was clicked, don't save
+    if (isClearingRef.current) {
+      // Skip saving during clear operation
       return;
     }
     filterStorage.saveFilters({
@@ -115,7 +116,6 @@ export function PriceTable({ items, className }: PriceTableProps) {
     maxPrice,
     minSpread,
     maxSpread,
-    shouldPersist,
   ]);
 
   const filteredAndSortedItems = useMemo(() => {
@@ -253,7 +253,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
   };
 
   const clearAllFilters = () => {
-    setShouldPersist(false);
+    // Sinalizar que estamos em operação de limpeza
+    isClearingRef.current = true;
+    
+    // Limpar estado e storage transacionalmente
     setCategoryFilter("all");
     setCityFilter("all");
     setTierFilter("all");
@@ -263,7 +266,13 @@ export function PriceTable({ items, className }: PriceTableProps) {
     setMaxPrice("");
     setMinSpread("");
     setMaxSpread("");
+    setCurrentPage(1);
     filterStorage.clearFilters();
+    
+    // Reabilitar persistência após limpeza
+    setTimeout(() => {
+      isClearingRef.current = false;
+    }, 0);
   };
 
   return (

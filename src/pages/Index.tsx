@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { TopArbitragePanel } from '@/components/dashboard/TopArbitragePanel';
 import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
+import { DataSourceBadge } from '@/components/dashboard/DataSourceBadge';
+import { DegradedBanner } from '@/components/dashboard/DegradedBanner';
 import { useMarketItems } from '@/hooks/useMarketItems';
 import { useTopProfitable } from '@/hooks/useTopProfitable';
 import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
@@ -59,6 +61,11 @@ const Index = () => {
 
   return (
     <Layout>
+      {/* Degraded Banner */}
+      <div className="container mx-auto px-4 pt-4">
+        <DegradedBanner />
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="hero-gradient absolute inset-0 pointer-events-none" />
@@ -72,6 +79,8 @@ const Index = () => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               <span className="text-sm text-primary font-medium">Live Market Data</span>
+              <span className="mx-2 text-primary/30">|</span>
+              <DataSourceBadge />
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-6 animate-slide-up">
