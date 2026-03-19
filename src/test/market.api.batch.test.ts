@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const MOCK_IDS = Array.from({ length: 200 }, (_, i) => `T4_ITEM_${i}`);
 
-vi.mock('@/data/constants', () => ({
-  ITEM_IDS: MOCK_IDS,
-  ITEM_NAMES: {},
-  ITEM_CATALOG: { mock: { label: 'Mock', ids: MOCK_IDS } },
-}));
+vi.mock('@/data/constants', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/constants')>();
+
+  return {
+    ...actual,
+    ITEM_IDS: MOCK_IDS,
+    ITEM_NAMES: actual.ITEM_NAMES,
+  };
+});
 
 vi.mock('@/services/alert.storage', () => {
   function MockAlertStorageService() {

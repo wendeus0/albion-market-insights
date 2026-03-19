@@ -4,14 +4,18 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Todos os testes neste arquivo são RED — fetchWithRetry não existe ainda
 
 // Mock global necessário para AC-4 e AC-5 (evita erros de exports em mockData.ts)
-vi.mock('@/data/constants', () => ({
-  ITEM_IDS: ['T4_MAIN_SWORD'],
-  ITEM_NAMES: { T4_MAIN_SWORD: 'Broadsword T4' },
-  ITEM_CATALOG: { weapons: { label: 'Weapons', ids: ['T4_MAIN_SWORD'] } },
-  cities: ['Caerleon'],
-  tiers: ['T4'],
-  qualities: ['Normal'],
-}));
+vi.mock('@/data/constants', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/constants')>();
+
+  return {
+    ...actual,
+    ITEM_IDS: ['T4_MAIN_SWORD'],
+    ITEM_NAMES: {
+      ...actual.ITEM_NAMES,
+      T4_MAIN_SWORD: 'Broadsword T4',
+    },
+  };
+});
 
 vi.mock('@/services/alert.storage', () => {
   function AlertStorageService() {
