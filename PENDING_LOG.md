@@ -76,27 +76,41 @@
 
 ### Lote 1 — Consistência de dados, contratos e runtime (P1)
 
+#### ✅ Já Concluídos no Lote 1A:
+- [x] **Normalização de `alert.city`**: valor canônico (`all`) no domínio + labels na UI.
+- [x] **Unificação de notificações**: consolidar em Sonner + wrapper interno; descontinuar `use-toast` custom.
+
+#### 🔄 Lote 1B — Consistência de Dados (Em Andamento):
 - [ ] **Política única de frescor (15 min)**: alinhar TTL de cache, `staleTime`, textos de UI e polling.
-- [ ] **Refresh manual com cooldown local (5 min)**: bloquear spam por cliente e comunicar tempo restante.
-- [ ] **Histórico por qualidade (alvo final)**: ajustar fetch/enriquecimento para respeitar qualidade do item.
-- [ ] **Deduplicação por recência**: substituir `first occurrence wins` por regra de timestamp/confiabilidade.
-- [ ] **Normalização de `alert.city`**: valor canônico (`all`) no domínio + labels na UI.
 - [ ] **ID robusto para alertas**: migrar para `crypto.randomUUID()` com fallback seguro.
 - [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
-- [ ] **Unificação de notificações**: consolidar em Sonner + wrapper interno; descontinuar `use-toast` custom.
-- [ ] **Factory/DI para serviços**: reduzir acoplamento do selector por singleton import-time.
 - [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
 
-### Lote 2 — Refatoração estrutural e UX (P1/P2)
+#### ⏳ Itens Futuros (Lote 1C ou Lote 2):
+- [ ] **Refresh manual com cooldown local (5 min)**: já parcialmente implementado, avaliar necessidade.
+- [ ] **Histórico por qualidade (alvo final)**: ajustar fetch/enriquecimento para respeitar qualidade do item.
+- [ ] **Deduplicação por recência**: substituir `first occurrence wins` por regra de timestamp/confiabilidade.
+- [ ] **Factory/DI para serviços**: reduzir acoplamento do selector por singleton import-time.
 
+### Lote 2 — Refatoração Estrutural e UX (P1/P2) 🏗️ PRÓXIMA FEATURE ESTRUTURAL
+
+> **Nota:** Lote 2 deve ser iniciado após a conclusão do Lote 1B.  
+> Foco em arquitetura de código, separação de responsabilidades e DX.
+
+**Itens Prioritários:**
 - [ ] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação).
+- [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
 - [ ] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback).
+
+**Itens Secundários:**
 - [ ] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar.
 - [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
 - [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
 - [ ] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar).
 - [ ] **Higiene de componentes vendor**: pruning incremental de `src/components/ui/*` não usados.
-- [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
+
+**Estimativa:** 2-3 dias  
+**Pré-requisito:** Conclusão do Lote 1B
 
 ### Lote 3 — Qualidade, CI e documentação (P1/P2)
 
@@ -114,7 +128,25 @@
 
 ---
 
-## 🎯 Lote 1A — Correções de Alertas e Notificações (P1) ✅ CONCLUÍDO
+## 🎯 Lote 1B — Consistência de Dados (P1) 🔄 EM ANDAMENTO
+
+**Análise completa em:** `features/proxima-janela-analise.md`
+
+Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins de consistência interna antes de avançar para refatorações estruturais (Lote 2).
+
+### Itens em Progresso:
+
+- [ ] **Política única de frescor (15 min)**: unificar TTL de cache, `staleTime`, textos de UI e polling.
+- [ ] **ID robusto para alertas**: migrar de `Date.now()` para `crypto.randomUUID()` com fallback.
+- [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
+- [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
+
+**Estimativa:** 1 dia  
+**Próxima Feature Estrutural:** Lote 2 (Refatoração Estrutural e UX)
+
+---
+
+## ✅ Lote 1A — Correções de Alertas e Notificações (P1) CONCLUÍDO
 
 **Análise completa em:** `features/proxima-frente-analise.md`
 
