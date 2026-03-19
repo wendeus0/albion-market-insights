@@ -3,11 +3,12 @@ import { toast } from 'sonner';
 import { useMarketItems } from '@/hooks/useMarketItems';
 import { useAlerts } from '@/hooks/useAlerts';
 import { checkAlerts } from '@/services/alert.engine';
+import { DATA_FRESHNESS_MS } from '@/data/constants';
 
-const NOTIFICATION_COOLDOWN_MS = 60 * 60 * 1000; // 60 minutos
+const NOTIFICATION_COOLDOWN_MS = 60 * 60 * 1000; // 60 minutos entre notificações do mesmo alerta
 
 export function useAlertPoller() {
-  const { data: items = [] } = useMarketItems({ refetchInterval: 15 * 60 * 1000 });
+  const { data: items = [] } = useMarketItems({ refetchInterval: DATA_FRESHNESS_MS });
   const { data: alerts = [] } = useAlerts();
 
   // Rastreia última notificação por alertId para evitar spam na mesma sessão
