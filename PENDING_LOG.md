@@ -24,6 +24,60 @@
 - **TypeScript strict mode consolidação** (2026-03-19): CONCLUÍDO — ADR-006 atualizado com decisão de substituir 6 flags individuais por `strict: true` master flag; mitigações documentadas; PR #32 aberto (`feat/typescript-strict-mode-final`).
 - **Persistência de filtros do PriceTable** (2026-03-19): CONCLUÍDO — implementação de AC-5 do SPEC `enhanced-ui-filters`; serviço `filter.storage.ts` com validação defensiva; integração no `PriceTable`; 10 testes novos; 215/215 testes passando; PR #33 aberto (`feat/persist-price-filters`).
 - **README modernizado** (2026-03-19): CONCLUÍDO — atualização completa do README.md com descrição em português, funcionalidades, tech stack e links para documentação; PR #34 aberto (`docs/readme-update`).
+- **Triagem arquitetural consolidada** (2026-03-19): decisões de produto/arquitetura/qualidade aprovadas em bloco (Q01–Q70) e registradas em `QUESTIONS.md`, incluindo foco do Dashboard em arbitragem, unificação de políticas de dados e revisão do fluxo de alertas.
+- **Frente mobile mantida aberta** (2026-03-19): estratégia futura registrada para evolução mobile via PWA e/ou app nativo, sem bloquear entregas web atuais.
+- **Guardrails de refresh e API** (2026-03-19): aprovado cooldown de refresh manual (1x/5 min por cliente) + necessidade de proteção global via camada central (proxy/backend com cache compartilhado + rate limit).
+- **Feature futura de temas registrada** (2026-03-19): remover dependência parcial atual de tema e reintroduzir theming completo (light/dark/system) apenas com SPEC dedicada.
+- **Política de artefatos `dist/` confirmada** (2026-03-19): manter `dist/` ignorado no repositório; geração/publicação apenas via build local/CI.
+
+## Plano de implementação por lotes (decisões 2026-03-19)
+
+### Lote 0 — Correções críticas de confiança de dados (P0)
+
+- [ ] **Serviço real sem fallback silencioso em produção**: restringir fallback para dev/test e expor estado degradado na UI quando API falhar.
+- [ ] **Status de modo de dados visível**: badge/indicador `Mock`, `Real`, `Degraded` em `Index` e `Dashboard`.
+- [ ] **`Clear All` transacional no PriceTable**: limpar estado + storage sem quebrar persistência posterior.
+- [ ] **Contrato de alerta `change`**: migrar para variação percentual temporal de preço (não `spreadPercent` atual).
+- [ ] **Fonte correta de `Last Update`**: remover timestamp fictício inicial; exibir apenas timestamp real.
+- [ ] **Dashboard com foco único em arbitragem**: remover aba `Local Spread` e métricas placeholders associadas.
+
+### Lote 1 — Consistência de dados, contratos e runtime (P1)
+
+- [ ] **Política única de frescor (15 min)**: alinhar TTL de cache, `staleTime`, textos de UI e polling.
+- [ ] **Refresh manual com cooldown local (5 min)**: bloquear spam por cliente e comunicar tempo restante.
+- [ ] **Histórico por qualidade (alvo final)**: ajustar fetch/enriquecimento para respeitar qualidade do item.
+- [ ] **Deduplicação por recência**: substituir `first occurrence wins` por regra de timestamp/confiabilidade.
+- [ ] **Normalização de `alert.city`**: valor canônico (`all`) no domínio + labels na UI.
+- [ ] **ID robusto para alertas**: migrar para `crypto.randomUUID()` com fallback seguro.
+- [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
+- [ ] **Unificação de notificações**: consolidar em Sonner + wrapper interno; descontinuar `use-toast` custom.
+- [ ] **Factory/DI para serviços**: reduzir acoplamento do selector por singleton import-time.
+- [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
+
+### Lote 2 — Refatoração estrutural e UX (P1/P2)
+
+- [ ] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação).
+- [ ] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback).
+- [ ] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar.
+- [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
+- [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
+- [ ] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar).
+- [ ] **Higiene de componentes vendor**: pruning incremental de `src/components/ui/*` não usados.
+- [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
+
+### Lote 3 — Qualidade, CI e documentação (P1/P2)
+
+- [ ] **`quality:gate` com `typecheck` explícito** (`tsc --noEmit`) + cobertura de configs TS de toolchain.
+- [ ] **Smoke E2E obrigatório no CI** (PR), mantendo suíte completa em job dedicado quando necessário.
+- [ ] **Threshold oficial de coverage** com enforcement gradual no CI.
+- [ ] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow.
+- [ ] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza.
+- [ ] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI.
+
+### Lote 4 — Estratégia futura (não bloqueante)
+
+- [ ] **Feature futura de temas**: arquitetura light/dark/system com `ThemeProvider` completo (via SPEC dedicada).
+- [ ] **Frente mobile**: estudar roadmap PWA vs app nativo, reaproveitando contratos e componentes existentes.
 
 ## Pendências
 
