@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CACHE_KEY, CACHE_TTL_MS, readCache, writeCache, isCacheValid } from '@/services/market.cache';
 import { ApiMarketService } from '@/services/market.api';
+import { DATA_FRESHNESS_MS } from '@/data/constants';
 import type { MarketItem } from '@/data/types';
 
 vi.mock('@/services/alert.storage', () => ({
@@ -36,8 +37,9 @@ describe('market.cache — AC-1: writeCache persiste no localStorage', () => {
     expect(CACHE_KEY.length).toBeGreaterThan(0);
   });
 
-  it('CACHE_TTL_MS é exportado com valor 300000 (5 min)', () => {
-    expect(CACHE_TTL_MS).toBe(300_000);
+  it('CACHE_TTL_MS segue a política única de frescor (15 min)', () => {
+    expect(CACHE_TTL_MS).toBe(DATA_FRESHNESS_MS);
+    expect(CACHE_TTL_MS).toBe(900_000);
   });
 
   it('writeCache persiste os dados no localStorage', () => {
