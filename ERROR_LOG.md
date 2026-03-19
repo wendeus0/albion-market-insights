@@ -259,3 +259,17 @@
 - **Estado avaliado**: Baseline estável em `main` (417d6db), 269/269 testes passando, Quality Gate verde
 - **Próximo passo recomendado**: Consolidar logs com `session-close`, depois iniciar próximo item do Lote 1B
 - **Status**: SEM ERROS — sessão de consulta/triagem
+
+---
+
+### [2026-03-19 20:45] implement-feature: Lote 1B Items 3 e 4 — validação de implementações existentes
+
+- **Erro**: Nenhum erro ocorreu durante a sessão
+- **Contexto**: Validação de que Items 3 e 4 do Lote 1B já estavam implementados
+- **Item 3 (Cooldown persistente)**: Validado em `useAlertPoller.ts` — funções `loadLastFiredFromStorage()` e `saveLastFiredToStorage()` com TTL de 60min
+- **Item 4 (Runtime Node 20)**: Validado em README.md, package.json engines, e workflow CI
+- **Ação tomada**:
+  - Criados SPEC.md e REPORT.md para ambos os itens
+  - PRs #48 e #49 criados para documentação
+  - Lote 1B marcado como 100% CONCLUÍDO
+- **Status**: SEM ERROS — Lote 1B completo, próximo: Lote 2
