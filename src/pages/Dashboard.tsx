@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
@@ -39,8 +38,10 @@ const Dashboard = () => {
 
   const handleRefresh = () => {
     if (!canRefresh) {
-      toast.error('Refresh on cooldown', {
+      toast({
+        title: 'Refresh on cooldown',
         description: `Please wait ${formattedTime} before refreshing again.`,
+        variant: 'destructive',
       });
       return;
     }
@@ -48,7 +49,8 @@ const Dashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['marketItems'] });
     queryClient.invalidateQueries({ queryKey: ['lastUpdateTime'] });
     recordRefresh();
-    toast.success('Data refreshed', {
+    toast({
+      title: 'Data refreshed',
       description: 'Market prices have been updated.',
     });
   };
