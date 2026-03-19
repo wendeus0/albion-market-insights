@@ -14,6 +14,13 @@ export const qualities = ['Normal', 'Good', 'Outstanding', 'Excellent', 'Masterp
 
 export const ENCHANTMENT_LEVELS = [0, 1, 2, 3] as const;
 
+/**
+ * Política única de frescor dos dados
+ * Todas as fontes de dados (cache, queries, polling) usam 15 minutos
+ */
+export const DATA_FRESHNESS_MS = 15 * 60 * 1000; // 15 minutos
+export const CACHE_TTL_MS = DATA_FRESHNESS_MS; // Alias para clareza
+
 export interface CatalogCategory {
   label: string;
   ids: string[];

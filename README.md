@@ -23,8 +23,8 @@ Ferramenta de análise de mercado para **Albion Online**, focada em visualizaç�
 ## 📦 Instalação e Execução
 
 ### Pré-requisitos
-- Node.js (v18+)
-- npm
+- Node.js (v20+) — alinhado com CI e tooling
+- npm (v10.8.2+)
 
 ### Passos
 

@@ -46,6 +46,18 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
+/**
+ * Gera ID único para alertas usando crypto.randomUUID quando disponível
+ * Fallback seguro para browsers antigos
+ */
+function generateAlertId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback: timestamp + random string
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
 interface AlertsManagerProps {
   availableItems: MarketItem[];
   alerts: Alert[];
@@ -86,7 +98,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
   const onSubmit = (values: AlertFormValues) => {
     const item = availableItems.find(i => i.itemId === values.itemId);
     const newAlert: Alert = {
-      id: Date.now().toString(),
+      id: generateAlertId(), // ID robusto (crypto.randomUUID ou fallback)
       itemId: values.itemId,
       itemName: item?.itemName || 'Unknown Item',
       city: values.city, // Valor canônico: 'all' ou nome da cidade

@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import type { MarketItem } from '@/data/types';
+import { DATA_FRESHNESS_MS } from '@/data/constants';
 
 export const CACHE_KEY = 'albion_market_cache';
-export const CACHE_TTL_MS = 300_000; // 5 minutes
+export const CACHE_TTL_MS = DATA_FRESHNESS_MS; // 15 minutos (política única de frescor)
 
 const MarketItemCacheSchema = z.object({
   itemId: z.string(),

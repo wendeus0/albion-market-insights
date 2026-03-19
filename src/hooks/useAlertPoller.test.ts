@@ -17,9 +17,27 @@ vi.mock("@/services/alert.engine", () => ({
 import { checkAlerts } from "@/services/alert.engine";
 
 describe("useAlertPoller", () => {
+  let localStorageMock: Record<string, string> = {};
+
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.clearAllMocks();
+    
+    // Mock localStorage
+    localStorageMock = {};
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: (key: string) => localStorageMock[key] || null,
+        setItem: (key: string, value: string) => {
+          localStorageMock[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete localStorageMock[key];
+        },
+      },
+      writable: true,
+    });
+
     vi.mocked(useMarketItems).mockReturnValue({
       data: [],
       isLoading: false,
@@ -37,6 +55,7 @@ describe("useAlertPoller", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    localStorageMock = {};
   });
 
   it("não deve disparar notificações quando não há itens", () => {
@@ -181,7 +200,7 @@ describe("useAlertPoller", () => {
     renderHook(() => useAlertPoller());
 
     expect(toast.warning).toHaveBeenCalledWith(
-      "⚠️ Bag — preço abaixo de 1,500",
+      "⚠️ Bag — abaixo de 1,500",
       expect.objectContaining({
         description: "Preço atual: 1,000 em Caerleon",
         duration: 8000,
@@ -429,13 +448,14 @@ describe("useAlertPoller", () => {
         alert: mockAlerts[0],
         item: mockItems[0],
         currentPrice: 1100,
+        priceChangePercent: 10.0, // +10% de variação
       },
     ]);
 
     renderHook(() => useAlertPoller());
 
     expect(toast.warning).toHaveBeenCalledWith(
-      expect.stringContaining("variação ≥ 5%"),
+      expect.stringContaining("variação de +10.0%"),
       expect.any(Object)
     );
   });
