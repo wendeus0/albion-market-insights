@@ -12,7 +12,7 @@ export const tiers = ['T4', 'T5', 'T6', 'T7', 'T8'] as const;
 
 export const qualities = ['Normal', 'Good', 'Outstanding', 'Excellent', 'Masterpiece'] as const;
 
-export const ENCHANTMENT_LEVELS = ['@0', '@1', '@2', '@3'] as const;
+export const ENCHANTMENT_LEVELS = [0, 1, 2, 3] as const;
 
 /**
  * Política única de frescor dos dados
