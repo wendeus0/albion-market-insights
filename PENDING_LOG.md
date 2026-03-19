@@ -4,7 +4,8 @@
 
 ## Decisões incorporadas
 
-- **Lote P0 completo** (2026-03-19): Todas as correções críticas de confiança de dados implementadas em `feat/lote-p0-correcoes-criticas`.
+- **Lote P0 completo** (2026-03-19) ✅ **MERGEADO NA MAIN**
+  - Todas as correções críticas de confiança de dados implementadas
   - DataSourceBadge: indicador visual de modo de dados (Real/Mock/Degraded)
   - DegradedBanner: fallback explícito em produção (sem silêncio)
   - Clear All transacional: bug fix no PriceTable com persistência correta
@@ -12,7 +13,14 @@
   - Dashboard foco único: removida aba Local Spread, apenas arbitragem cross-city
   - Cooldown de refresh: 5 minutos entre refreshes manuais com countdown
   - 41 testes novos (total: 250+ passando)
-  - PR enviado para revisão
+  - PR aceito e mergeado em `main`
+
+- **Lote 1A — Item 2: Unificação de notificações** (2026-03-19) ✅ **MERGEADO NA MAIN**
+  - Removido sistema `use-toast` legado
+  - Migrado para Sonner em todos os componentes
+  - 5 arquivos legados deletados
+  - Testes atualizados
+  - PR aceito e mergeado em `main`
 
 - **Ativação da API Real**: O ambiente foi configurado para usar a API real (`VITE_USE_REAL_API=true`) no arquivo `.env`, substituindo o mock data padrão.
 - **Teste de integração**: Validado que `market.api.ts` é carregado quando a variável de ambiente está ativa.
@@ -92,24 +100,27 @@
 
 ---
 
-## 🎯 Próxima Frente Recomendada
+## 🎯 Lote 1A — Correções de Alertas e Notificações (P1) 🔄 EM ANDAMENTO
 
 **Análise completa em:** `features/proxima-frente-analise.md`
 
-### Recomendação: Lote 1A — Correções de Alertas e Notificações (P1)
+### Progresso
 
-**Prioridade:** 🔥 ALTA  
-**Racional:** Bugs no sistema de alertas afetam funcionalidade core e satisfação do usuário
+- [x] **Item 2: Unificação de notificações (Q14)** — ✅ **MERGEADO NA MAIN**
+  - Removido sistema `use-toast` legado
+  - Migrado para Sonner em todos os componentes
+  - 5 arquivos legados deletados
+  - Testes atualizados
 
-**Itens prioritários:**
-1. **Contrato de alerta `change` (Q07)** — UI promete "price change" mas engine usa `spreadPercent`
-2. **Unificação de notificações (Q14)** — Dois sistemas de toast causam inconsistência
-3. **Respeitar `notifications.inApp` (Q10)** — Poller ignora preferência do usuário
-4. **Normalização de `alert.city` (Q08, Q44)** — inconsistência `"all"` vs `"All Cities"`
+### Itens Pendentes
 
-**Estimativa:** 1-2 dias  
+- [ ] **Item 1: Contrato de alerta `change` (Q07)** — UI promete "price change" mas engine usa `spreadPercent`
+- [ ] **Item 3: Respeitar `notifications.inApp` (Q10)** — Poller ignora preferência do usuário  
+- [ ] **Item 4: Normalização de `alert.city` (Q08, Q44)** — inconsistência `"all"` vs `"All Cities"`
+
+**Estimativa restante:** 1 dia  
 **Impacto UX:** ⭐⭐⭐⭐⭐  
-**Status:** Aguardando aprovação para iniciar SPEC
+**Status:** 1 de 4 itens concluídos, 3 pendentes
 
 ## Pendências
 
