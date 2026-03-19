@@ -5,54 +5,55 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável em `main` — PR #31 mergeado; cobertura de componentes críticos completada; 211/211 testes passando; CI operacional com quality gate
-**Branch ativa:** `main` (HEAD em `566e7c0` após merge do PR #31)
-**Snapshot local relevante:** `ERROR_LOG.md` atualizado com resolução do incidente npm/CI; pendências marcadas como concluídas em `PENDING_LOG.md`
+**Status:** Baseline de produto estável em `main` (215/215 testes, CI operacional); sessão atual consolidou decisões arquiteturais e backlog por lotes
+**Branch ativa:** `docs/decision-batches-2026-03-19` (PR #36 aberto contra `main`)
+**Snapshot local:** Branch de docs com `PENDING_LOG.md` + `QUESTIONS.md` já commitados/push; `memory/MEMORY.md` em atualização local
 
 ---
 
 ## Stable decisions
 
-| Decisão | Status | Detalhes |
-|---------|--------|---------|
-| Camada de serviços (`src/services/`) | ✅ Fixo | Interface `MarketService`, implementações `market.api.ts` e `market.mock.ts` |
-| Hooks customizados | ✅ Fixo | `useMarketItems`, `useTopProfitable`, `useAlerts`, `useAlertPoller`, `useLastUpdateTime` — testados com >90% cobertura |
-| Alert engine + storage | ✅ Fixo | Polling via `alert.engine.ts`, persistência via `alert.storage.ts` (localStorage) |
-| shadcn/ui como biblioteca de componentes | ✅ Fixo | 59 componentes em `src/components/ui/` — não editar diretamente |
-| Testes E2E com Playwright | ✅ Fixo | 13 testes cobrindo dashboard, navegação e alertas |
-| Estrutura de governança Claude | ✅ Fixo | CLAUDE.md com `@AGENTS.md`, `.claude/` com agents, rules e hooks |
-| Endpoint de histórico de preços | ✅ Fixo | `/api/v2/stats/history` integrado em `market.api.ts` |
-| Sem debug logging em produção | ✅ Fixo | `console.*` removidos de `market.api.ts` e `NotFound.tsx`; testes garantem ausência |
-| Timeout da API | ✅ Fixo | 15 segundos — `AbortController` único compartilhado entre todos os batches |
-| ITEM_CATALOG como fonte de verdade | ✅ Fixo | `ITEM_IDS` e `ITEM_NAMES` derivados de `ITEM_CATALOG`; 17 categorias, 1.830 IDs únicos (T4-T8 + `@1/@2/@3`) |
-| Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário |
-| Retry com backoff exponencial | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado |
-| Code-splitting por rota | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB) |
-| TypeScript strict mode iteração 1 | ✅ Fixo | `noImplicitAny: true` + `strictNullChecks: true` em `tsconfig.app.json` e `tsconfig.json`; ADR-006 criado; sem supressões necessárias |
-| Cache de dados de mercado com TTL | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min (`CACHE_TTL_MS=300_000`); chave `albion_market_cache`; schema Zod valida campos completos de `MarketItem`; `writeCache` silencia `QuotaExceededError`; ADR-007 criado |
-| TypeScript strict mode iteração 2 | ✅ Fixo | 4 flags adicionais ativadas em `tsconfig.app.json`: `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`, `useUnknownInCatchVariables`; codebase continua type-safe sem supressões; 106/106 testes |
-| TypeScript strict mode iteração 3 | ✅ Fixo | `src/pages/` auditada: 5 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 6 testes adicionados em `tsconfig.strict.test.ts`; PR #20 mergeado; 112/112 testes |
-| TypeScript strict mode iteração 4 | ✅ Fixo | `src/components/` (exceto `ui/`) auditada: 8 arquivos compilam sem erros e sem `@ts-ignore`/`@ts-expect-error`; 9 testes adicionados em `tsconfig.strict.test.ts`; PR #22 mergeado; 121/121 testes; migração gradual COMPLETA |
-| Itens encantados no catálogo | ✅ Fixo | PR #24 mergeado; `ENCHANTMENT_LEVELS = [0,1,2,3]`; IDs com `@1/@2/@3`; filtro de encantamento no `PriceTable`; ADR-008 |
-| Filtros avançados no `PriceTable` | ✅ Fixo | PR #25 mergeado; min/max preço, min/max spread, botão `Clear All` e contador de filtros ativos |
-| Playwright E2E no Arch Linux | ✅ Fixo | Usar `chromium` do sistema (`/usr/bin/chromium`) via `executablePath` condicional em `playwright.config.ts`; build Ubuntu fallback não funciona no Arch; CI Ubuntu continua usando build padrão |
-| Quality Gate no CI | ✅ Fixo | Workflow `.github/workflows/quality-gate.yml` com lint → test --coverage → build; npm 10.8.2 padronizado via `packageManager` em `package.json` |
+| Decisão                                   | Status  | Detalhes                                                                                                                                        |
+| ----------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Camada de serviços (`src/services/`)      | ✅ Fixo | Interface `MarketService`, implementações `market.api.ts` e `market.mock.ts`                                                                    |
+| Hooks customizados                        | ✅ Fixo | `useMarketItems`, `useTopProfitable`, `useAlerts`, `useAlertPoller`, `useLastUpdateTime` — testados com >90% cobertura                          |
+| Alert engine + storage                    | ✅ Fixo | Polling via `alert.engine.ts`, persistência via `alert.storage.ts` (localStorage)                                                               |
+| shadcn/ui como biblioteca de componentes  | ✅ Fixo | 59 componentes em `src/components/ui/` — não editar diretamente                                                                                 |
+| Testes E2E com Playwright                 | ✅ Fixo | 13 testes cobrindo dashboard, navegação e alertas                                                                                               |
+| Estrutura de governança Claude            | ✅ Fixo | CLAUDE.md com `@AGENTS.md`, `.claude/` com agents, rules e hooks                                                                                |
+| Endpoint de histórico de preços           | ✅ Fixo | `/api/v2/stats/history` integrado em `market.api.ts`                                                                                            |
+| Sem debug logging em produção             | ✅ Fixo | `console.*` removidos de `market.api.ts` e `NotFound.tsx`; testes garantem ausência                                                             |
+| Timeout da API                            | ✅ Fixo | 15 segundos — `AbortController` único compartilhado entre todos os batches                                                                      |
+| ITEM_CATALOG como fonte de verdade        | ✅ Fixo | `ITEM_IDS` e `ITEM_NAMES` derivados de `ITEM_CATALOG`; 17 categorias, 1.830 IDs únicos (T4-T8 + `@1/@2/@3`)                                     |
+| Batch loading com concorrência controlada | ✅ Fixo | `BATCH_SIZE=100`, `HISTORY_CONCURRENCY=3`, `withConcurrency()` exportado para teste unitário                                                    |
+| Retry com backoff exponencial             | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado               |
+| Code-splitting por rota                   | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB)                                                   |
+| TypeScript strict mode                    | ✅ Fixo | `strict: true` ativado em `tsconfig.json` e `tsconfig.app.json`; ADR-006 atualizado; 215/215 testes; codebase 100% type-safe                    |
+| Cache de dados de mercado com TTL         | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min; schema Zod valida campos completos de `MarketItem`; ADR-007 criado                                   |
+| Itens encantados no catálogo              | ✅ Fixo | `ENCHANTMENT_LEVELS = [0,1,2,3]`; IDs com `@1/@2/@3`; filtro de encantamento no `PriceTable`; ADR-008                                           |
+| Filtros avançados no `PriceTable`         | ✅ Fixo | min/max preço, min/max spread, botão `Clear All`, contador de filtros ativos; persistência via `filter.storage.ts` (localStorage)               |
+| Playwright E2E no Arch Linux              | ✅ Fixo | Usar `chromium` do sistema (`/usr/bin/chromium`) via `executablePath` condicional em `playwright.config.ts`                                     |
+| Quality Gate no CI                        | ✅ Fixo | Workflow `.github/workflows/quality-gate.yml` com lint → test --coverage → build; npm 10.8.2 padronizado via `packageManager` em `package.json` |
+| Persistência de filtros                   | ✅ Fixo | `filter.storage.ts` serviço dedicado; validação defensiva; 10 testes; AC-5 do SPEC enhanced-ui-filters completo                                 |
+| Artefato `dist/`                          | ✅ Fixo | Política confirmada: manter `dist/` ignorado no Git; gerar/publicar somente via build local/CI                                                  |
 
 ---
 
 ## Active fronts
 
-- Cobertura de componentes críticos CONCLUÍDA (PR #31): PriceTable (84.67%) e AlertsManager (80.76%) acima de 80%
-- Workflow `Quality Gate` operacional no GitHub Actions com npm 10.8.2 padronizado
-- Validação defensiva de `alert.storage.ts`: CONCLUÍDA — schema Zod aplicado, 13 testes de segurança
+- PR #36 aberto (`docs/decision-batches-2026-03-19`): consolidação documental das decisões Q01–Q70 e plano de implementação por lotes
+- Plano de execução aprovado e registrado em `PENDING_LOG.md` (Lote 0 a Lote 4), com prioridade P0→P2
+- Feature de produto ainda não iniciada nesta frente; próxima etapa é abrir SPEC do Lote 0 antes de código
 
 ---
 
 ## Open decisions
 
-- **`strict: true` master flag**: migração gradual concluída; decidir se a flag agregada deve substituir a configuração fragmentada atual
-- **Persistência de filtros (AC-5)**: decidir se filtros do `PriceTable` devem sobreviver à navegação via `localStorage`
+- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
+- **Proteção global da API**: definir arquitetura da camada central (proxy/backend com cache compartilhado + rate limit) para mitigar refresh concorrente entre usuários
+- **Estratégia mobile**: frente mantida aberta (PWA e/ou app nativo), aguardando recorte em SPEC
+- **Feature futura de temas**: reintroduzir theming completo (light/dark/system) apenas com SPEC dedicada
 
 ---
 
@@ -69,88 +70,61 @@
 - Quando um PR for mergeado, criar nova branch a partir de `origin/main` — não continuar na branch antiga que divergiu
 - `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
 - `vi.stubGlobal('fetch', vi.fn())` retorna o objeto `globalThis`, não o spy — usar `globalThis.fetch as ReturnType<typeof vi.fn>` para assertions
-- `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning (será erro em versão futura do Vitest)
+- `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning
 - Hooks com estado global (ex: use-toast) precisam de função de reset entre testes — exportar `_resetXxxState()` se necessário
 - Mock de TanStack Query: usar `as ReturnType<typeof useHook>` para tipagem em testes de hooks dependentes
-- Playwright no Arch Linux: usar `chromium` do sistema; build Ubuntu fallback dos mirrors da Microsoft não funciona; configurar `executablePath` condicional em `playwright.config.ts`
-- Testes E2E devem rodar em modo mock (`VITE_USE_REAL_API=false`) para garantir dados determinísticos nos selects e formulários
-- Toast notifications geram elementos duplicados no DOM (visual + aria-live); usar `{ exact: true }` ou seletores específicos para evitar strict mode violation
+- Playwright no Arch Linux: usar `chromium` do sistema; build Ubuntu fallback dos mirrors da Microsoft não funciona
+- Testes E2E devem rodar em modo mock (`VITE_USE_REAL_API=false`) para garantir dados determinísticos
+- Toast notifications geram elementos duplicados no DOM (visual + aria-live); usar `{ exact: true }` ou seletores específicos
+- Flag `shouldPersist` necessária para controlar race condition entre `setState` e `useEffect` de persistência no Clear All
+- Cooldown de refresh no cliente não protege limite global da API; sem proxy central, múltiplos usuários ainda podem saturar upstream
+- Não versionar `dist/`; manter artefatos de build fora do controle de versão
 
 ---
 
 ## Next recommended steps
 
-1. **Avaliação de `strict: true`** — decidir ativação da flag master agora que todas as camadas já foram auditadas
-2. **UX opcional** — decidir sobre persistência dos filtros do `PriceTable`
-3. **Atualização de actions** — avaliar migração para `actions/checkout@v5` e `actions/setup-node@v5` (Node 20 deprecado a partir de 2026-06-02)
+1. **Mergear PR #36** (`docs/logs`) para consolidar trilha de decisões e backlog por lotes
+2. **Abrir SPEC do Lote 0 (P0)** e iniciar implementação das correções de confiança de dados (fallback, modo degradado, Last Update, dashboard)
+3. **Definir desenho da camada central da API** (cache compartilhado + rate limit) antes de liberar refresh manual em escala
+4. **Planejar roadmap de estratégia futura**: mobile (PWA/app) e temas (light/dark/system) via SPECs dedicadas
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** 2026-03-18
+**Sessão:** 2026-03-19
 **Trabalho realizado:**
-- PR #31 mergeado em `main`: cobertura de componentes críticos completada
-  - `PriceTable.tsx`: 76.61% → 84.67% statements
-  - `AlertsManager.tsx`: 63.46% → 80.76% statements  
-  - 6 novos testes unitários adicionados
-  - 211/211 testes passando
-- Workflow `Quality Gate` criado e operacional no GitHub Actions
-- Resolução de incidente CI: `EBADPLATFORM` em `npm ci` corrigido
-  - Regenerado `package-lock.json` com npm 10.8.2
-  - Adicionado `"packageManager": "npm@10.8.2"` em `package.json`
-  - Workflow ajustado para pinar npm antes do `npm ci`
-- Logs atualizados: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`
 
-**Estado ao encerrar:** `main` atualizado com PR #31; worktree limpo exceto logs pendentes de commit
+- Rodada completa de revisão arquitetural em blocos (Q01–Q70) com decisões aprovadas de produto, dados, UX, CI e documentação
+- Criação de `QUESTIONS.md` com trilha auditável das perguntas e decisões
+- Atualização de `PENDING_LOG.md` com decisões consolidadas e plano de implementação por lotes (Lote 0 a Lote 4)
+- Abertura da branch `docs/decision-batches-2026-03-19`, commit de docs e PR #36
+- Política de artefatos confirmada: `dist/` permanece ignorado no repositório
+
+**Estado ao encerrar:** baseline de produto permanece estável em `main`; frente atual é documental/planejamento em PR #36; execução técnica pendente de SPEC do Lote 0
 
 **Retomar por:**
+
 ```
 Read before acting:
 - `AGENTS.md`
-- `ERROR_LOG.md`
-- `PENDING_LOG.md`
 - `memory/MEMORY.md`
+- `PENDING_LOG.md`
 
 Current state:
-- `main` contém PR #31 (cobertura de componentes + quality gate)
-- HEAD em `566e7c0`: ci(npm): fix EBADPLATFORM in quality gate
-- 211/211 testes passando
-- Cobertura global: 88.59% statements / 90.17% lines
-- PriceTable: 84.67% | AlertsManager: 80.76% | ambos ≥80%
-- CI operacional: quality gate passando em toda push/PR
+- `main` contém PRs #32, #33, #34, #35 com baseline estável
+- PR #36 (`docs/decision-batches-2026-03-19`) aberto com decisões consolidadas + backlog por lotes
+- 215/215 testes passando no baseline atual
+- Política `dist/`: manter ignorado no Git
 
 Open points:
-- Decidir ativação de `strict: true` master flag (migração gradual completa)
-- Decidir sobre persistência de filtros do PriceTable
-- Avaliar upgrade de actions para Node 24 (deprecation em 2026-06-02)
+- Upgrade de actions para Node 24 (deadline 2026-06-02)
+- Avaliar atualização de shadcn/ui para eliminar warnings
+- Definir arquitetura de proteção global da API (proxy/cache/rate limit)
+- Abrir SPEC para iniciar Lote 0
 
 Recommended next front:
-- technical-triage para priorizar entre strict mode master flag, UX filtros persistentes, ou upgrade de actions
-```
-Read before acting:
-- `AGENTS.md`
-- `ERROR_LOG.md`
-- `PENDING_LOG.md`
-- `memory/MEMORY.md`
-
-Current state:
-- `main` contém PR #28 com cobertura de hooks completa
-- Branch `feat/alerts-manager-e2e` pronta para PR (commit `bdf2924`)
-- Cobertura global em 86.24% statements / 88.02% lines (acima de 80%)
-- Hooks críticos: use-toast (91%), useAlerts (100%), useAlertPoller (93.75%)
-- E2E de AlertsManager: 9/9 cenários passando
-- Gaps remanescentes: PriceTable (76.61%), AlertsManager (63.46%) em testes unitários
-- 205/205 testes passando
-
-Open points:
-- abrir PR para `feat/alerts-manager-e2e` (com 2 commits: E2E + logs)
-- elevar cobertura de PriceTable e AlertsManager para ≥80% via testes unitários
-- decidir ativação de `strict: true` master flag
-- endurecer leitura de alertas persistidos (observação LOW de segurança)
-- decidir sobre persistência de filtros do PriceTable
-
-Recommended next front:
-- git-flow-manager: commitar logs atualizados e abrir PR para `feat/alerts-manager-e2e`
-- ou implement-feature para cobertura de componentes: PriceTable.tsx + AlertsManager.tsx
+- Implementação do Lote 0 (P0) após SPEC aprovada
+- Em paralelo, preparar recorte de estratégia futura (mobile e temas)
 ```
