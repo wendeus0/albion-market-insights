@@ -84,9 +84,12 @@ describe('checkAlerts()', () => {
     expect(fired).toHaveLength(0);
   });
 
-  it('dispara alerta condition=change quando spreadPercent >= threshold', () => {
-    // Given
-    const items = [makeItem({ spreadPercent: 25 })];
+  it('dispara alerta condition=change quando variação temporal >= threshold', () => {
+    // Given - preço subiu de 40000 para 50000 (25% de variação)
+    const items = [makeItem({ 
+      sellPrice: 50000,
+      priceHistory: [40000, 45000, 48000] // baseline: 40000
+    })];
     const alerts = [makeAlert({ condition: 'change', threshold: 20 })];
 
     // When
@@ -94,11 +97,15 @@ describe('checkAlerts()', () => {
 
     // Then
     expect(fired).toHaveLength(1);
+    expect(fired[0].priceChangePercent).toBe(25);
   });
 
-  it('não dispara condition=change quando spreadPercent < threshold', () => {
-    // Given
-    const items = [makeItem({ spreadPercent: 15 })];
+  it('não dispara condition=change quando variação temporal < threshold', () => {
+    // Given - preço subiu de 48000 para 50000 (4.17% de variação)
+    const items = [makeItem({ 
+      sellPrice: 50000,
+      priceHistory: [48000, 49000] // baseline: 48000
+    })];
     const alerts = [makeAlert({ condition: 'change', threshold: 20 })];
 
     // When
@@ -108,10 +115,42 @@ describe('checkAlerts()', () => {
     expect(fired).toHaveLength(0);
   });
 
+  it('dispara alerta condition=change quando variação negativa >= threshold', () => {
+    // Given - preço caiu de 60000 para 40000 (-33.33% de variação)
+    const items = [makeItem({ 
+      sellPrice: 40000,
+      priceHistory: [60000, 55000, 50000] // baseline: 60000
+    })];
+    const alerts = [makeAlert({ condition: 'change', threshold: 30 })];
+
+    // When
+    const fired = checkAlerts(items, alerts);
+
+    // Then
+    expect(fired).toHaveLength(1);
+    expect(fired[0].priceChangePercent).toBeCloseTo(-33.33, 1);
+  });
+
   it('não dispara quando alerta está inativo (isActive: false)', () => {
     // Given
     const items = [makeItem({ sellPrice: 30000 })];
     const alerts = [makeAlert({ isActive: false, condition: 'below', threshold: 60000 })];
+
+    // When
+    const fired = checkAlerts(items, alerts);
+
+    // Then
+    expect(fired).toHaveLength(0);
+  });
+
+  it('não dispara quando notificação inApp está desabilitada', () => {
+    // Given
+    const items = [makeItem({ sellPrice: 30000 })];
+    const alerts = [makeAlert({ 
+      condition: 'below', 
+      threshold: 60000,
+      notifications: { inApp: false, email: false }
+    })];
 
     // When
     const fired = checkAlerts(items, alerts);
