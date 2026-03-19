@@ -5,6 +5,8 @@ import { TopItemsPanel } from '@/components/dashboard/TopItemsPanel';
 import { PriceTable } from '@/components/dashboard/PriceTable';
 import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
 import { TopArbitragePanel } from '@/components/dashboard/TopArbitragePanel';
+import { DataSourceBadge } from '@/components/dashboard/DataSourceBadge';
+import { DegradedBanner } from '@/components/dashboard/DegradedBanner';
 import { useMarketItems } from '@/hooks/useMarketItems';
 import { useTopProfitable } from '@/hooks/useTopProfitable';
 import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
@@ -58,6 +60,9 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        {/* Degraded Banner */}
+        <DegradedBanner />
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -68,15 +73,18 @@ const Dashboard = () => {
               Real-time price data across all Albion Online cities
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="border-primary/30"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Data
-          </Button>
+          <div className="flex items-center gap-3">
+            <DataSourceBadge />
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="border-primary/30"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}

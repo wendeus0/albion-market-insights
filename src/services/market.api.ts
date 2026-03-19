@@ -6,6 +6,7 @@ import { AlertStorageService } from './alert.storage';
 import { ITEM_IDS, ITEM_NAMES } from '@/data/constants';
 import { MockMarketService } from './market.mock';
 import { readCache, writeCache, isCacheValid } from '@/services/market.cache';
+import { dataSourceManager, shouldUseMockFallback } from './dataSource.manager';
 
 const BASE_URL = 'https://west.albion-online-data.com/api/v2/stats/prices';
 const HISTORY_URL = 'https://west.albion-online-data.com/api/v2/stats/history';
@@ -109,7 +110,8 @@ export async function withConcurrency<T>(
 export class ApiMarketService implements MarketService {
   private storage = new AlertStorageService();
   private fallback = new MockMarketService();
-  private cachedLastUpdate: string = new Date().toISOString();
+  private cachedLastUpdate: string | null = null;
+  private hasSuccessfulFetch = false;
 
   private async fetchPricesBatch(itemIds: string[], signal?: AbortSignal): Promise<AlbionPriceRecord[]> {
     const locationsParam = LOCATIONS.join(',');
@@ -162,6 +164,8 @@ export class ApiMarketService implements MarketService {
     const cached = readCache();
     if (cached && isCacheValid(cached)) {
       this.cachedLastUpdate = cached.cachedAt;
+      this.hasSuccessfulFetch = true;
+      dataSourceManager.setReal();
       return cached.data;
     }
 
@@ -193,10 +197,19 @@ export class ApiMarketService implements MarketService {
       });
 
       if (allPriceRecords.length === 0) {
-        return this.fallback.getItems();
+        // Nenhum dado retornado da API
+        if (shouldUseMockFallback()) {
+          dataSourceManager.setMock();
+          return this.fallback.getItems();
+        } else {
+          dataSourceManager.setDegraded('API retornou dados vazios');
+          throw new Error('API returned empty data');
+        }
       }
 
       this.cachedLastUpdate = new Date().toISOString();
+      this.hasSuccessfulFetch = true;
+      dataSourceManager.setReal();
 
       const items = allPriceRecords
         .map(record => albionRecordToMarketItem(record))
@@ -215,9 +228,17 @@ export class ApiMarketService implements MarketService {
 
       writeCache(result);
       return result;
-    } catch {
+    } catch (error) {
       clearTimeout(timeoutId);
-      return this.fallback.getItems();
+      
+      if (shouldUseMockFallback()) {
+        dataSourceManager.setMock();
+        return this.fallback.getItems();
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+        dataSourceManager.setDegraded(errorMessage);
+        throw error;
+      }
     }
   }
 
@@ -228,8 +249,8 @@ export class ApiMarketService implements MarketService {
       .slice(0, limit);
   }
 
-  async getLastUpdateTime(): Promise<string> {
-    return this.cachedLastUpdate;
+  async getLastUpdateTime(): Promise<string | null> {
+    return this.hasSuccessfulFetch ? this.cachedLastUpdate : null;
   }
 
   async getAlerts(): Promise<Alert[]> {
