@@ -161,10 +161,10 @@ describe('checkAlerts()', () => {
     expect(fired).toHaveLength(0);
   });
 
-  it('dispara para "All Cities" independente da cidade do item', () => {
+  it('dispara para "all" (todas as cidades) independente da cidade do item', () => {
     // Given
     const items = [makeItem({ city: 'Bridgewatch', sellPrice: 30000 })];
-    const alerts = [makeAlert({ city: 'All Cities', condition: 'below', threshold: 60000 })];
+    const alerts = [makeAlert({ city: 'all', condition: 'below', threshold: 60000 })];
 
     // When
     const fired = checkAlerts(items, alerts);

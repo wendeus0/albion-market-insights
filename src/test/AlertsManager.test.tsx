@@ -235,7 +235,7 @@ describe('AlertsManager', () => {
         expect.objectContaining({
           itemId: 'ITEM_0001',
           itemName: 'Clarent Blade',
-          city: 'All Cities',
+          city: 'all',
           condition: 'below',
           threshold: 25000,
           isActive: true,

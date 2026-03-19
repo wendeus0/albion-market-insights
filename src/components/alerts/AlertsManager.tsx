@@ -89,7 +89,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
       id: Date.now().toString(),
       itemId: values.itemId,
       itemName: item?.itemName || 'Unknown Item',
-      city: values.city === 'all' ? 'All Cities' : values.city,
+      city: values.city, // Valor canônico: 'all' ou nome da cidade
       condition: values.condition,
       threshold: values.threshold,
       isActive: true,
@@ -124,6 +124,10 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
       case 'above': return `Price above ${alert.threshold.toLocaleString()}`;
       case 'change': return `Price change ≥ ${alert.threshold}%`;
     }
+  };
+
+  const getCityLabel = (city: string) => {
+    return city === 'all' ? 'All Cities' : city;
   };
 
   const uniqueItems = Array.from(
@@ -397,7 +401,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-foreground">{alert.itemName}</p>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      {alert.city}
+                      {getCityLabel(alert.city)}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-0.5">
