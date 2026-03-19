@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import {
   Bell,
   Plus,
@@ -43,7 +44,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface AlertsManagerProps {
@@ -55,7 +55,6 @@ interface AlertsManagerProps {
 
 export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast } = useToast();
 
   const form = useForm<AlertFormValues>({
     resolver: zodResolver(alertFormSchema),
@@ -72,18 +71,15 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
 
   const toggleAlert = (alert: Alert) => {
     onSaveAlert({ ...alert, isActive: !alert.isActive });
-    toast({
-      title: 'Alert updated',
+    toast.success('Alert updated', {
       description: 'Your alert status has been changed.',
     });
   };
 
   const deleteAlert = (id: string) => {
     onDeleteAlert(id);
-    toast({
-      title: 'Alert deleted',
+    toast.success('Alert deleted', {
       description: 'Your price alert has been removed.',
-      variant: 'destructive',
     });
   };
 
@@ -105,8 +101,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
     setIsDialogOpen(false);
     form.reset();
 
-    toast({
-      title: 'Alert created!',
+    toast.success('Alert created!', {
       description: `You'll be notified when ${item?.itemName} price ${
         values.condition === 'below' ? 'drops below' :
         values.condition === 'above' ? 'goes above' : 'changes by'

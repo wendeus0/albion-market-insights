@@ -3,11 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AlertsManager } from '@/components/alerts/AlertsManager';
 import type { Alert, MarketItem } from '@/data/types';
+import { toast } from 'sonner';
 
-const toastSpy = vi.fn();
-
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: toastSpy }),
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 const mockItems: MarketItem[] = [
@@ -74,7 +78,7 @@ describe('AlertsManager', () => {
   }
 
   beforeEach(() => {
-    toastSpy.mockClear();
+    vi.clearAllMocks();
   });
 
   it('renderiza lista de alertas', () => {
@@ -120,8 +124,9 @@ describe('AlertsManager', () => {
 
     // Then
     expect(onDeleteAlert).toHaveBeenCalledWith('1');
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Alert deleted', variant: 'destructive' })
+    expect(toast.success).toHaveBeenCalledWith(
+      'Alert deleted',
+      expect.objectContaining({ description: expect.any(String) })
     );
   });
 
@@ -139,8 +144,9 @@ describe('AlertsManager', () => {
     expect(onSaveAlert).toHaveBeenCalledWith(
       expect.objectContaining({ id: '1', isActive: false })
     );
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Alert updated' })
+    expect(toast.success).toHaveBeenCalledWith(
+      'Alert updated',
+      expect.objectContaining({ description: expect.any(String) })
     );
   });
 
@@ -264,9 +270,10 @@ describe('AlertsManager', () => {
           threshold: 12,
         })
       );
-      expect(toastSpy).toHaveBeenCalledWith(
+      expect(toast.success).toHaveBeenCalledWith(
+        'Alert created!',
         expect.objectContaining({
-          title: 'Alert created!',
+          description: expect.any(String),
           description: expect.stringContaining('12%'),
         })
       );

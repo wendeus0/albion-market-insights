@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
@@ -11,13 +12,11 @@ import { useRefreshCooldown } from '@/hooks/useRefreshCooldown';
 import { TrendingUp, LayoutDashboard, Zap, Clock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { buildCrossCityArbitrage } from '@/lib/arbitrage';
 
 const Dashboard = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { data: items = [], isLoading: itemsLoading } = useMarketItems();
   const { data: lastUpdate, isLoading: timeLoading } = useLastUpdateTime();
   const { canRefresh, formattedTime, recordRefresh } = useRefreshCooldown();
@@ -40,10 +39,8 @@ const Dashboard = () => {
 
   const handleRefresh = () => {
     if (!canRefresh) {
-      toast({
-        title: 'Refresh on cooldown',
+      toast.error('Refresh on cooldown', {
         description: `Please wait ${formattedTime} before refreshing again.`,
-        variant: 'destructive',
       });
       return;
     }
@@ -51,8 +48,7 @@ const Dashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['marketItems'] });
     queryClient.invalidateQueries({ queryKey: ['lastUpdateTime'] });
     recordRefresh();
-    toast({
-      title: 'Data refreshed',
+    toast.success('Data refreshed', {
       description: 'Market prices have been updated.',
     });
   };
