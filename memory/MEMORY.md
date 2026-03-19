@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline de produto estável em `main` (215/215 testes, CI operacional); sessão atual consolidou decisões arquiteturais e backlog por lotes
-**Branch ativa:** `docs/decision-batches-2026-03-19` (PR #36 aberto contra `main`)
-**Snapshot local:** Branch de docs com `PENDING_LOG.md` + `QUESTIONS.md` já commitados/push; `memory/MEMORY.md` em atualização local
+**Status:** Baseline estável em `main` após os merges dos PRs #43 e #42; `Quality Gate` restaurado e 269/269 testes passando no estado atual validado
+**Branch ativa:** `feat/alerts-manager-hooks` (já mergeada em `origin/main` em `417d6db`; worktree local contém apenas atualizações de logs)
+**Snapshot local:** `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` em atualização local após estabilização do CI e merge do refactor de alertas
 
 ---
 
@@ -29,21 +29,23 @@
 | Retry com backoff exponencial             | ✅ Fixo | `fetchWithRetry` exportado; `RETRY_MAX_ATTEMPTS=3`, `RETRY_BASE_DELAY_MS=500ms`; retry em 429/5xx/network; AbortSignal respeitado               |
 | Code-splitting por rota                   | ✅ Fixo | `React.lazy()` + `Suspense` em `src/App.tsx`; `NotFound` estática; bundle 393 kB (era 523 kB)                                                   |
 | TypeScript strict mode                    | ✅ Fixo | `strict: true` ativado em `tsconfig.json` e `tsconfig.app.json`; ADR-006 atualizado; 215/215 testes; codebase 100% type-safe                    |
-| Cache de dados de mercado com TTL         | ✅ Fixo | `src/services/market.cache.ts`; TTL 5 min; schema Zod valida campos completos de `MarketItem`; ADR-007 criado                                   |
+| Cache de dados de mercado com TTL         | ✅ Fixo | `src/services/market.cache.ts`; TTL 15 min alinhado à política única de frescor (`DATA_FRESHNESS_MS`); schema Zod valida campos completos de `MarketItem`; ADR-007 criado |
 | Itens encantados no catálogo              | ✅ Fixo | `ENCHANTMENT_LEVELS = [0,1,2,3]`; IDs com `@1/@2/@3`; filtro de encantamento no `PriceTable`; ADR-008                                           |
 | Filtros avançados no `PriceTable`         | ✅ Fixo | min/max preço, min/max spread, botão `Clear All`, contador de filtros ativos; persistência via `filter.storage.ts` (localStorage)               |
 | Playwright E2E no Arch Linux              | ✅ Fixo | Usar `chromium` do sistema (`/usr/bin/chromium`) via `executablePath` condicional em `playwright.config.ts`                                     |
 | Quality Gate no CI                        | ✅ Fixo | Workflow `.github/workflows/quality-gate.yml` com lint → test --coverage → build; npm 10.8.2 padronizado via `packageManager` em `package.json` |
 | Persistência de filtros                   | ✅ Fixo | `filter.storage.ts` serviço dedicado; validação defensiva; 10 testes; AC-5 do SPEC enhanced-ui-filters completo                                 |
 | Artefato `dist/`                          | ✅ Fixo | Política confirmada: manter `dist/` ignorado no Git; gerar/publicar somente via build local/CI                                                  |
+| AlertsManager modularizado                | ✅ Fixo | PR #42 mergeado; regras separadas em `useAlertsForm`, `useAlertsFeedback` e `useAlertsUI`; `AlertsManager.tsx` reduzido e com responsabilidades isoladas |
+| Quality Gate restaurado                   | ✅ Fixo | PR #43 mergeado; mocks de `@/data/constants` em testes de API corrigidos via mock parcial com `importOriginal`; CI voltou a ficar verde         |
 
 ---
 
 ## Active fronts
 
-- PR #36 aberto (`docs/decision-batches-2026-03-19`): consolidação documental das decisões Q01–Q70 e plano de implementação por lotes
-- Plano de execução aprovado e registrado em `PENDING_LOG.md` (Lote 0 a Lote 4), com prioridade P0→P2
-- Feature de produto ainda não iniciada nesta frente; próxima etapa é abrir SPEC do Lote 0 antes de código
+- Baseline técnica estabilizada após regressões em testes resolvidas e PRs #43/#42 mergeados em `main`
+- Backlog por lotes permanece válido em `PENDING_LOG.md`; próxima frente técnica continua sendo Lote 1B ou upgrade de actions para Node 24
+- Worktree local está suja apenas por atualizações documentais de sessão (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`)
 
 ---
 
@@ -71,6 +73,8 @@
 - `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
 - `vi.stubGlobal('fetch', vi.fn())` retorna o objeto `globalThis`, não o spy — usar `globalThis.fetch as ReturnType<typeof vi.fn>` para assertions
 - `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning
+- Mocks parciais de `@/data/constants` devem preservar exports reais com `importOriginal`/`vi.importActual`; omitir novos exports como `DATA_FRESHNESS_MS` derruba imports em cascata nos testes de `market.api`
+- Não sobrescrever `DATA_FRESHNESS_MS`/`CACHE_TTL_MS` em testes sem necessidade; mock contraditório de TTL gerou falha no PR #42 após o merge do fix do `Quality Gate`
 - Hooks com estado global (ex: use-toast) precisam de função de reset entre testes — exportar `_resetXxxState()` se necessário
 - Mock de TanStack Query: usar `as ReturnType<typeof useHook>` para tipagem em testes de hooks dependentes
 - Playwright no Arch Linux: usar `chromium` do sistema; build Ubuntu fallback dos mirrors da Microsoft não funciona
@@ -84,10 +88,10 @@
 
 ## Next recommended steps
 
-1. **Mergear PR #36** (`docs/logs`) para consolidar trilha de decisões e backlog por lotes
-2. **Abrir SPEC do Lote 0 (P0)** e iniciar implementação das correções de confiança de dados (fallback, modo degradado, Last Update, dashboard)
+1. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
+2. **Abrir SPEC do próximo item do Lote 1B** e retomar a frente de consistência de dados sem reabrir a baseline
 3. **Definir desenho da camada central da API** (cache compartilhado + rate limit) antes de liberar refresh manual em escala
-4. **Planejar roadmap de estratégia futura**: mobile (PWA/app) e temas (light/dark/system) via SPECs dedicadas
+4. **Consolidar docs de sessão** (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) em branch apropriada após revisão
 
 ---
 
@@ -96,13 +100,13 @@
 **Sessão:** 2026-03-19
 **Trabalho realizado:**
 
-- Rodada completa de revisão arquitetural em blocos (Q01–Q70) com decisões aprovadas de produto, dados, UX, CI e documentação
-- Criação de `QUESTIONS.md` com trilha auditável das perguntas e decisões
-- Atualização de `PENDING_LOG.md` com decisões consolidadas e plano de implementação por lotes (Lote 0 a Lote 4)
-- Abertura da branch `docs/decision-batches-2026-03-19`, commit de docs e PR #36
-- Política de artefatos confirmada: `dist/` permanece ignorado no repositório
+- Investigado `Quality Gate` falhando no GitHub Actions e isolada a causa raiz em mocks desatualizados de `@/data/constants`
+- Criado e publicado fix no PR #43; mergeado em `main` com commit `7e55598`
+- Ajustado o PR #42 após novo erro de teste (`market.cache.test.ts` com mock contraditório de TTL); commit `73e517c`
+- Validado `npm run quality:gate` com sucesso na branch do PR #42; PR #42 posteriormente mergeado em `main` (`417d6db`)
+- `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` colocados em atualização para refletir a estabilização da baseline
 
-**Estado ao encerrar:** baseline de produto permanece estável em `main`; frente atual é documental/planejamento em PR #36; execução técnica pendente de SPEC do Lote 0
+**Estado ao encerrar:** `origin/main` em `417d6db` com baseline verde e refactor de alertas mergeado; worktree local contém apenas atualizações documentais
 
 **Retomar por:**
 
@@ -113,18 +117,17 @@ Read before acting:
 - `PENDING_LOG.md`
 
 Current state:
-- `main` contém PRs #32, #33, #34, #35 com baseline estável
-- PR #36 (`docs/decision-batches-2026-03-19`) aberto com decisões consolidadas + backlog por lotes
-- 215/215 testes passando no baseline atual
+- `origin/main` contém PRs #42 e #43 mergeados
+- `Quality Gate` validado com 269/269 testes e build OK no estado corrente
 - Política `dist/`: manter ignorado no Git
 
 Open points:
 - Upgrade de actions para Node 24 (deadline 2026-06-02)
 - Avaliar atualização de shadcn/ui para eliminar warnings
 - Definir arquitetura de proteção global da API (proxy/cache/rate limit)
-- Abrir SPEC para iniciar Lote 0
+- Abrir SPEC do próximo item de Lote 1B
 
 Recommended next front:
-- Implementação do Lote 0 (P0) após SPEC aprovada
-- Em paralelo, preparar recorte de estratégia futura (mobile e temas)
+- Fix/infra para actions Node 24
+- ou SPEC + execução do próximo item de consistência de dados do Lote 1B
 ```
