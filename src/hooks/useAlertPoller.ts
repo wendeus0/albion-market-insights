@@ -20,6 +20,9 @@ export function useAlertPoller() {
     const now = Date.now();
 
     for (const { alert, item, currentPrice } of fired) {
+      // Respeitar preferência de notificação inApp do usuário
+      if (!alert.notifications?.inApp) continue;
+
       const lastTime = lastFiredAt.current[alert.id] ?? 0;
       if (now - lastTime < NOTIFICATION_COOLDOWN_MS) continue;
 

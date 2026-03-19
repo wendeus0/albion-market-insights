@@ -17,11 +17,13 @@ export const alertFormSchema = z.object({
 
 export type AlertFormValues = z.infer<typeof alertFormSchema>;
 
+// Schema para persistência de alertas
+// city deve ser 'all' ou uma cidade válida
 export const alertSchema = z.object({
   id: z.string(),
   itemId: z.string(),
   itemName: z.string(),
-  city: z.string(),
+  city: z.enum(['all', ...cities] as [string, ...string[]]),
   condition: z.enum(['below', 'above', 'change']),
   threshold: z.number(),
   isActive: z.boolean(),
