@@ -219,7 +219,7 @@
 - **Erro**: A UI do AlertsManager prometia "Price change ≥ X%" mas a engine (`alert.engine.ts`) disparava o alerta baseado em `item.spreadPercent`, que é o spread entre buy/sell price, não a variação temporal do preço
 - **Causa**: Implementação inicial confundiu "change" (variação de preço ao longo do tempo) com spread percentual
 - **Impacto**: Usuários recebiam alertas incorretos — o alerta disparava quando o spread era alto, não quando o preço variava
-- **Ação tomada**: 
+- **Ação tomada**:
   - Criada função `calculatePriceChangePercent()` que calcula variação usando `priceHistory`
   - Engine agora usa variação temporal real para condição `change`
   - Toast atualizado para mostrar a variação real (+25.0%, -15.3%, etc.)
@@ -249,3 +249,13 @@
   - Mantida a validação contra a política real de frescor de 15 minutos
   - `npm run quality:gate` reexecutado com sucesso na branch `feat/alerts-manager-hooks`
 - **Status**: RESOLVIDO — commit `73e517c` enviado para o PR #42
+
+---
+
+### [2026-03-19 19:30] technical-triage — sessão de avaliação do próximo passo
+
+- **Erro**: Nenhum erro ocorreu durante a sessão
+- **Contexto**: Avaliação do estado atual do projeto via `technical-triage` após merges dos PRs #42 e #43
+- **Estado avaliado**: Baseline estável em `main` (417d6db), 269/269 testes passando, Quality Gate verde
+- **Próximo passo recomendado**: Consolidar logs com `session-close`, depois iniciar próximo item do Lote 1B
+- **Status**: SEM ERROS — sessão de consulta/triagem
