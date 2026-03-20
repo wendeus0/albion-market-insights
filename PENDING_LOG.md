@@ -18,6 +18,7 @@
   - Artefatos iniciais: `SPEC.md` (gates de promoção) e `REPORT.md` (estado da validação)
   - Estratégia: Node 20 permanece default; Node 24 segue em lane paralela até cumprir critérios de estabilidade
   - Gate 1 (CI lane bootstrap): falha inicial por sintaxe YAML no workflow (`matrix.node-version`); correção aplicada para `matrix.node_version` + hardening do step de runtime para bloco multiline
+  - Gate 2 (primeira execução de lane): Node 24 verde e Node 20 falhou por leitura rígida de `coverage-summary.json`; fallback para `coverage-final.json` aplicado no enforcement de threshold
 
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados

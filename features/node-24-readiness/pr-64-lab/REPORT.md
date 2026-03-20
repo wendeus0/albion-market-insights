@@ -1,7 +1,7 @@
 # REPORT — PR 64 Lab (Node 24 Validation)
 
 ## Status
-EM_ANDAMENTO (GATE 1 EM CORREÇÃO)
+EM_ANDAMENTO (GATE 1 CONCLUÍDO, GATE 2 EM EXECUÇÃO)
 
 ## Objetivo
 Validar Node 24 em lane paralela com isolamento controlado antes de promoção para o runtime principal.
@@ -28,10 +28,22 @@ Validar Node 24 em lane paralela com isolamento controlado antes de promoção p
 - Ajuste adicional no comando de runtime para evitar ambiguidade de parser YAML (substituído por bloco multiline)
 - Rollback permanece documentado para lane Node 24
 
+## GATE 2 — Resultado da lane paralela (2026-03-20)
+- Run validado com jobs iniciados: `23343859250`
+- Node 24: `success` (job `quality-gate (24)`)
+- Node 20: `failure` (job `quality-gate (20)`)
+- Falha do Node 20 não foi de código de produto: step `Enforce coverage threshold (gradual)` não encontrou `coverage-summary.json`
+- Evidência de execução: quality gate + smoke E2E passaram; quebra ocorreu apenas na leitura do artefato de cobertura
+
+## Correção aplicada no Gate 2
+- Enforcement de coverage no workflow agora aceita fallback para `coverage/coverage-final.json`
+- Quando `coverage-summary.json` existir, mantém caminho preferencial
+- Quando não existir, calcula `% statements` a partir de `coverage-final.json` e aplica threshold (88%)
+
 ## Próximas verificações
-1. Reexecutar pipeline do PR #64 com YAML válido
-2. Coletar resultado por lane (Node 20 e Node 24)
-3. Medir taxa de sucesso comparada com baseline e registrar divergências
+1. Reexecutar pipeline com fallback de coverage
+2. Confirmar green simultâneo de Node 20 e Node 24
+3. Consolidar amostra mínima de estabilidade para decisão de promoção
 
 ## Decisão pendente
 Promover Node 24 para default somente após cumprir os gates de estabilidade.
