@@ -12,6 +12,12 @@
   - Janela 5 (P2): PR #61 aberto — relatório técnico de prontidão Node 24 em `features/node-24-readiness/REPORT.md`
   - Issues abertas direto no GitHub conforme combinado: #59 (flakiness da suíte sob cobertura) e #60 (tracking de migração Node 24)
 
+- **PR #64 mantido aberto com laboratório interno no Albion** (2026-03-20) 🔄 **EM VALIDAÇÃO CONTROLADA**
+  - Decisão: não criar repositório externo neste momento; experimento ficará dentro de `albion-market-insights`
+  - Pasta dedicada criada: `features/node-24-readiness/pr-64-lab/`
+  - Artefatos iniciais: `SPEC.md` (gates de promoção) e `REPORT.md` (estado da validação)
+  - Estratégia: Node 20 permanece default; Node 24 segue em lane paralela até cumprir critérios de estabilidade
+
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
   - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
