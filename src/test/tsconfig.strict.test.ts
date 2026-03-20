@@ -32,22 +32,37 @@ describe("tsconfig.json — strict mode iteração 5 (consolidação)", () => {
   });
 });
 
+function runTscNoEmit(): string {
+  try {
+    execSync("node ./node_modules/typescript/bin/tsc --noEmit", {
+      cwd: resolve(process.cwd()),
+      stdio: "pipe",
+      timeout: 60_000,
+    });
+    return "";
+  } catch (err: unknown) {
+    const stdout =
+      (err as { stdout?: Buffer; stderr?: Buffer }).stdout?.toString() ?? "";
+    const stderr =
+      (err as { stdout?: Buffer; stderr?: Buffer }).stderr?.toString() ?? "";
+    return `${stdout}\n${stderr}`;
+  }
+}
+
 describe("src/pages/ — strict mode iteração 3 (AC-1): compilação limpa", () => {
-  it("tsc --noEmit não deve reportar erros em src/pages/", () => {
-    let output = "";
-    try {
-      execSync("npx tsc --noEmit 2>&1", { cwd: resolve(process.cwd()) });
-    } catch (err: unknown) {
-      output =
-        (err as { stdout?: Buffer; stderr?: Buffer }).stdout?.toString() ?? "";
-    }
-    const pageErrors = output
-      .split("\n")
-      .filter(
-        (line) => line.includes("src/pages/") && line.includes("error TS"),
-      );
-    expect(pageErrors).toHaveLength(0);
-  });
+  it(
+    "tsc --noEmit não deve reportar erros em src/pages/",
+    () => {
+      const output = runTscNoEmit();
+      const pageErrors = output
+        .split("\n")
+        .filter(
+          (line) => line.includes("src/pages/") && line.includes("error TS"),
+        );
+      expect(pageErrors).toHaveLength(0);
+    },
+    60_000,
+  );
 });
 
 describe("src/pages/ — strict mode iteração 3 (AC-2): sem supressões de tipo", () => {
@@ -65,24 +80,22 @@ describe("src/pages/ — strict mode iteração 3 (AC-2): sem supressões de tip
 });
 
 describe("src/components/ — strict mode iteração 4 (AC-1): compilação limpa", () => {
-  it("tsc --noEmit não deve reportar erros em src/components/ (exceto ui/)", () => {
-    let output = "";
-    try {
-      execSync("npx tsc --noEmit 2>&1", { cwd: resolve(process.cwd()) });
-    } catch (err: unknown) {
-      output =
-        (err as { stdout?: Buffer; stderr?: Buffer }).stdout?.toString() ?? "";
-    }
-    const componentErrors = output
-      .split("\n")
-      .filter(
-        (line) =>
-          line.includes("src/components/") &&
-          !line.includes("src/components/ui/") &&
-          line.includes("error TS"),
-      );
-    expect(componentErrors).toHaveLength(0);
-  });
+  it(
+    "tsc --noEmit não deve reportar erros em src/components/ (exceto ui/)",
+    () => {
+      const output = runTscNoEmit();
+      const componentErrors = output
+        .split("\n")
+        .filter(
+          (line) =>
+            line.includes("src/components/") &&
+            !line.includes("src/components/ui/") &&
+            line.includes("error TS"),
+        );
+      expect(componentErrors).toHaveLength(0);
+    },
+    60_000,
+  );
 });
 
 function getComponentFiles(dir: string, files: string[] = []): string[] {

@@ -138,6 +138,7 @@
 - [ ] **`quality:gate` com `typecheck` explícito** (`tsc --noEmit`) + cobertura de configs TS de toolchain.
 - [ ] **Smoke E2E obrigatório no CI** (PR), mantendo suíte completa em job dedicado quando necessário.
 - [ ] **Threshold oficial de coverage** com enforcement gradual no CI.
+- [x] **Frente #59 — estabilização de flakies em testes** (2026-03-20): timeout global de teste ampliado para 20s + hookTimeout 30s em `vite.config.ts`; `tsconfig.strict.test.ts` migrou de `npx tsc` para binário local do TypeScript com timeout explícito de 60s por caso; `PriceTable.persistence.test.tsx` estabilizado no fluxo de seleção de categoria (`listbox` + `within`) para evitar timeout intermitente no Radix Select; `npm test` e `quality:gate` verdes (`323/323` testes).
 - [ ] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow.
 - [ ] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza.
 - [ ] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI.

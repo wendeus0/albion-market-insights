@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PriceTable } from "@/components/dashboard/PriceTable";
 import type { MarketItem } from "@/data/types";
@@ -66,7 +66,10 @@ describe("PriceTable — persistência de filtros (AC-5)", () => {
         name: /category/i,
       });
       await user.click(categorySelect);
-      await user.click(await screen.findByRole("option", { name: /swords/i }));
+
+      const listbox = await screen.findByRole("listbox");
+      const swordsOption = within(listbox).getByText(/swords/i);
+      await user.click(swordsOption);
 
       const saved = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
       expect(saved.categoryFilter).toBe("swords");
