@@ -4,6 +4,14 @@
 
 ## Decisões incorporadas
 
+- **Execução das 5 janelas lógicas em branches isoladas** (2026-03-20) 🔄 **EM PR / SEM CONFLITO DE BRANCH**
+  - Janela 1 (P0): branch documental dedicada `docs/sprint-followup-2026-03-20` para centralizar `PENDING_LOG.md`, `ERROR_LOG.md` e `memory/MEMORY.md`
+  - Janela 2 (P1): PR #56 aberto — cobertura de hooks extraídos (`usePriceTableFilters.ts` e `usePriceTablePagination.ts`) elevada no recorte para 100% statements/lines/functions
+  - Janela 3 (P1): PR #57 aberto — cobertura de UI elevada (`Navbar.tsx` 100%, `Dashboard.tsx` 90.9%, `ArbitrageTable.tsx` 98.21%)
+  - Janela 4 (P2): PR #58 aberto — `typecheck` explícito no `quality:gate`, smoke E2E no CI e threshold inicial de coverage
+  - Janela 5 (P2): PR #61 aberto — relatório técnico de prontidão Node 24 em `features/node-24-readiness/REPORT.md`
+  - Issues abertas direto no GitHub conforme combinado: #59 (flakiness da suíte sob cobertura) e #60 (tracking de migração Node 24)
+
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
   - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
@@ -135,10 +143,11 @@
 
 ### Lote 3 — Qualidade, CI e documentação (P1/P2)
 
-- [ ] **`quality:gate` com `typecheck` explícito** (`tsc --noEmit`) + cobertura de configs TS de toolchain.
-- [ ] **Smoke E2E obrigatório no CI** (PR), mantendo suíte completa em job dedicado quando necessário.
-- [ ] **Threshold oficial de coverage** com enforcement gradual no CI.
-- [x] **Frente #59 — estabilização de flakies em testes** (2026-03-20): timeout global de teste ampliado para 20s + hookTimeout 30s em `vite.config.ts`; `tsconfig.strict.test.ts` migrou de `npx tsc` para binário local do TypeScript com timeout explícito de 60s por caso; `PriceTable.persistence.test.tsx` estabilizado no fluxo de seleção de categoria (`listbox` + `within`) para evitar timeout intermitente no Radix Select; `npm test` e `quality:gate` verdes (`323/323` testes).
+- [x] **`quality:gate` com `typecheck` explícito** (`tsc --noEmit`) + cobertura de configs TS de toolchain. (PR #58 mergeado)
+- [x] **Smoke E2E obrigatório no CI** (PR), mantendo suíte completa em job dedicado quando necessário. (PR #58 mergeado)
+- [x] **Threshold oficial de coverage** com enforcement gradual no CI. (PR #58 mergeado; threshold inicial 88%)
+- [x] **Frente #59 — estabilização de flakies em testes** (2026-03-20): timeout global de teste ampliado para 20s + hookTimeout 30s em `vite.config.ts`; `tsconfig.strict.test.ts` migrou de `npx tsc` para binário local do TypeScript com timeout explícito de 60s por caso; `PriceTable.persistence.test.tsx` estabilizado no fluxo de seleção de categoria (`listbox` + `within`) para evitar timeout intermitente no Radix Select; `npm test` e `quality:gate` verdes (`323/323` testes, PR #63 mergeado).
+
 - [ ] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow.
 - [ ] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza.
 - [ ] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI.
@@ -271,11 +280,11 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 
 ## 🎯 Próximas 5 Janelas Lógicas (definidas 2026-03-20)
 
-1. **P0 — Publicar artefatos de fechamento do sprint**: Commitar logs consolidados e limpar worktree
-2. **P1 — Cobertura de hooks extraídos**: `usePriceTablePagination.ts` (55.55% → ≥80%)
-3. **P1 — Cobertura de componentes UI**: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx`
-4. **P2 — Lote 3 (CI/Qualidade)**: `typecheck` explícito, smoke E2E obrigatório, threshold coverage
-5. **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02
+1. [x] **P0 — Publicar artefatos de fechamento do sprint**: Commitar logs consolidados e limpar worktree (em branch documental dedicada)
+2. [x] **P1 — Cobertura de hooks extraídos**: `usePriceTablePagination.ts` (55.55% → ≥80%) e reforço de `usePriceTableFilters.ts` (PR #56 aberto)
+3. [x] **P1 — Cobertura de componentes UI**: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx` (PR #57 aberto)
+4. [x] **P2 — Lote 3 (CI/Qualidade)**: `typecheck` explícito, smoke E2E obrigatório, threshold coverage (PR #58 aberto)
+5. [x] **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02 (PR #61 aberto + issue #60)
 
 ## Pontos de atenção
 
