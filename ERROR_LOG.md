@@ -273,3 +273,16 @@
   - PRs #48 e #49 criados para documentação
   - Lote 1B marcado como 100% CONCLUÍDO
 - **Status**: SEM ERROS — Lote 1B completo, próximo: Lote 2
+
+---
+
+### [2026-03-20 01:40] sprint-close — Lote 2 refatoração estrutural
+
+- **Erro**: Nenhum erro ocorreu durante o fechamento do sprint
+- **Contexto**: Encerramento do sprint após implementação do Lote 2 com extração estrutural da `PriceTable`, layout compartilhado por rota, commit e abertura do PR #51
+- **Ação tomada**:
+  - `npm run quality:gate` executado com sucesso (`280/280` testes, build OK)
+  - `features/lote-2-refatoracao-estrutural/REPORT.md` gerado com `READY_FOR_COMMIT`
+  - Commit `188c146` criado na branch `feat/lote-2-refatoracao-estrutural`
+  - PR #51 aberto para revisão
+- **Status**: SEM ERROS — sprint encerrado com baseline local validada

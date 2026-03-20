@@ -4,6 +4,13 @@
 
 ## Decisões incorporadas
 
+- **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
+  - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
+  - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
+  - `PriceTable.tsx` validada com 83.33% statements coverage após a refatoração
+  - `quality:gate` validado com sucesso (`280/280` testes)
+  - ADR-010 criado para registrar a convenção estrutural adotada no sprint
+
 - **Lote P0 completo** (2026-03-19) ✅ **MERGEADO NA MAIN**
   - Todas as correções críticas de confiança de dados implementadas
   - DataSourceBadge: indicador visual de modo de dados (Real/Mock/Degraded)
@@ -105,27 +112,26 @@
 - [ ] **Deduplicação por recência**: substituir `first occurrence wins` por regra de timestamp/confiabilidade.
 - [ ] **Factory/DI para serviços**: reduzir acoplamento do selector por singleton import-time.
 
-### Lote 2 — Refatoração Estrutural e UX (P1/P2) 🏗️ PRÓXIMA FEATURE ESTRUTURAL
+### Lote 2 — Refatoração Estrutural e UX (P1/P2) ✅ CONCLUÍDO / MERGEADO
 
-> **Nota:** Lote 2 deve ser iniciado após a conclusão do Lote 1B.  
-> Foco em arquitetura de código, separação de responsabilidades e DX.
+> Foco concluído em arquitetura de código, separação de responsabilidades e DX.
 
 **Itens Prioritários:**
 
-- [ ] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação).
-- [ ] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas.
+- [x] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação). ✅ PR #51
+- [x] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas. ✅ PR #51
 - [x] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback). ✅ **CONCLUÍDO e mergeado na `main` em 2026-03-19 (PR #42)**
 
 **Itens Secundários:**
 
-- [ ] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar.
+- [x] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar. ✅ consolidada no PR #51
 - [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
 - [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
 - [ ] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar).
 - [ ] **Higiene de componentes vendor**: pruning incremental de `src/components/ui/*` não usados.
 
 **Estimativa:** 2-3 dias  
-**Pré-requisito:** Conclusão do Lote 1B
+**Status de saída:** implementação concluída e mergeada na `main` via PR #51
 
 ### Lote 3 — Qualidade, CI e documentação (P1/P2)
 
@@ -161,7 +167,15 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 
 ---
 
-## 🏗️ Lote 2 — Refatoração Estrutural e UX (P1/P2) 🔄 EM ANDAMENTO
+## 🏗️ Lote 2 — Refatoração Estrutural e UX (P1/P2) ✅ IMPLEMENTADO
+
+### Sprint close (2026-03-20)
+
+- [x] `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` extraídos
+- [x] `AppLayout` via rota-pai implementado em `src/App.tsx`
+- [x] `REPORT.md` gerado com `READY_FOR_COMMIT`
+- [x] PR #51 aberto: `refactor(lote-2): extract table state and shared layout`
+- [x] Review e merge do PR #51
 
 ### Item 3: AlertsManager Hooks ✅ CONCLUÍDO
 
@@ -254,9 +268,10 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 ## Pontos de atenção
 
 - **Worktree local sujo**: existem mudanças fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`; não sobrescrever sem validar contexto.
-- **Cobertura atual**: `npx vitest run --coverage` resultou em 86.24% statements / 88.02% lines; hooks de alertas agora estão acima de 90%. Gaps remanescentes: `PriceTable` (76.61%) e `AlertsManager` (63.46%).
+- **Cobertura atual**: `npm run quality:gate` no encerramento do sprint resultou em 89.22% statements / 90.77% lines. Gaps mais relevantes abaixo de 80%: `usePriceTablePagination.ts` (55.55%), `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%) e `App.tsx` (75%).
 - **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
 - **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.
 - **Qualidade da baseline** (2026-03-19): `Quality Gate` restaurado após os merges dos PRs #43 e #42; monitorar apenas novas regressões introduzidas por features futuras.
 - **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data.
 - **Avaliação futura de `node-version: 24` no job do projeto**: antes de migrar o runtime do CI, comparar desempenho e estabilidade contra Node 20 (`npm ci`, `quality:gate`, tempo total, consumo de memória e compatibilidade de dependências).
+- **Worktree local sujo por cobertura**: artefatos em `coverage/` continuam fora do escopo e não devem ser commitados.
