@@ -28,6 +28,12 @@
   - README atualizado com política de runtime em observação
   - Novos documentos de governança: `docs/architecture/STORAGE_POLICY.md` e `docs/architecture/ARTIFACT_POLICY.md`
 
+- **Janela 7 — Lote 1B (itens P1 de consistência)** (2026-03-20) ✅ **CONCLUÍDA**
+  - Política única de frescor confirmada em código e testes (`DATA_FRESHNESS_MS = 15 min`)
+  - ID robusto para alertas confirmado (`crypto.randomUUID()` + fallback)
+  - Cooldown persistente de alertas confirmado com armazenamento local e expiração
+  - Validação direcionada executada: `35/35` testes verdes (`market.cache`, `useAlertsForm`, `useAlertPoller`)
+
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
   - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
@@ -124,9 +130,9 @@
 
 #### 🔄 Lote 1B — Consistência de Dados (Em Andamento):
 
-- [ ] **Política única de frescor (15 min)**: alinhar TTL de cache, `staleTime`, textos de UI e polling.
-- [ ] **ID robusto para alertas**: migrar para `crypto.randomUUID()` com fallback seguro.
-- [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
+- [x] **Política única de frescor (15 min)**: TTL/cache/query/polling unificados via `DATA_FRESHNESS_MS` (`900_000ms`) e cobertura validada em testes. (2026-03-20)
+- [x] **ID robusto para alertas**: `crypto.randomUUID()` com fallback seguro ativo em `useAlertsForm` e testes cobrindo ambos os caminhos. (2026-03-20)
+- [x] **Cooldown de alerta persistente**: estado de último disparo persistido em `localStorage` (`albion_alerts_last_fired`) com limpeza por expiração. (2026-03-20)
 - [x] **Runtime padronizado em Node 20**: alinhado historicamente e evoluído para validação paralela Node 20/24 com rollback explícito (Gate Frente 5, 2026-03-20).
 
 #### ⏳ Itens Futuros (Lote 1C ou Lote 2):
@@ -183,9 +189,9 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 
 ### Itens em Progresso:
 
-- [ ] **Política única de frescor (15 min)**: unificar TTL de cache, `staleTime`, textos de UI e polling.
-- [ ] **ID robusto para alertas**: migrar de `Date.now()` para `crypto.randomUUID()` com fallback.
-- [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
+- [x] **Política única de frescor (15 min)**: unificar TTL de cache, `staleTime`, textos de UI e polling. (2026-03-20)
+- [x] **ID robusto para alertas**: migrar de `Date.now()` para `crypto.randomUUID()` com fallback. (2026-03-20)
+- [x] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta. (2026-03-20)
 - [x] **Runtime padronizado em Node 20**: alinhado historicamente e evoluído para validação paralela Node 20/24 com rollback explícito (Gate Frente 5, 2026-03-20).
 
 **Estimativa:** 1 dia  
