@@ -264,14 +264,25 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - [x] **Lote 1B — Item 3: Cooldown persistente** (2026-03-19): ✅ **VALIDADO** — implementação já existia em `useAlertPoller.ts`; PR #48 criado com documentação; funções `loadLastFiredFromStorage()` e `saveLastFiredToStorage()` validadas; 8 testes passando.
 - [x] **Lote 1B — Item 4: Runtime Node 20** (2026-03-19): ✅ **VALIDADO** — README, package.json engines, e workflow CI já alinhados; PR #49 criado com documentação.
 - [x] **LOTE 1B 100% CONCLUÍDO** (2026-03-19): ✅ Todos os 4 itens validados e documentados; próxima frente: Lote 2 (Refatoração Estrutural e UX).
+- [x] **LOTE 2 CONCLUÍDO E MERGEADO** (2026-03-20): ✅ Refatoração estrutural da PriceTable extraída para hooks + layout compartilhado por rota; PR #51 mergeado na main; ADR-010 criado.
+- [x] **COBERTURA PÓS-REFATORAÇÃO CONCLUÍDA** (2026-03-20): ✅ PR #54 mergeado — 4 módulos críticos com cobertura ≥80%; gaps remanescentes identificados.
+- [x] **SPRINT CLOSE — Triagem das 5 próximas janelas** (2026-03-20): ✅ Análise via `technical-triage` consolidada; baseline validada com 292/292 testes; handoff preparado.
+
+## 🎯 Próximas 5 Janelas Lógicas (definidas 2026-03-20)
+
+1. **P0 — Publicar artefatos de fechamento do sprint**: Commitar logs consolidados e limpar worktree
+2. **P1 — Cobertura de hooks extraídos**: `usePriceTablePagination.ts` (55.55% → ≥80%)
+3. **P1 — Cobertura de componentes UI**: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx`
+4. **P2 — Lote 3 (CI/Qualidade)**: `typecheck` explícito, smoke E2E obrigatório, threshold coverage
+5. **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02
 
 ## Pontos de atenção
 
-- **Worktree local sujo**: existem mudanças fora do sprint em `AGENTS.md`, `.claude/rules/quality.md`, `.env` e `.opencode/`; não sobrescrever sem validar contexto.
-- **Cobertura atual**: `npm run quality:gate` no encerramento do sprint resultou em 89.22% statements / 90.77% lines. Gaps mais relevantes abaixo de 80%: `usePriceTablePagination.ts` (55.55%), `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%) e `App.tsx` (75%).
+- **Worktree local suja**: logs de sessão (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) modificados e aguardando commit documental do sprint-close.
+- **Cobertura atual** (pós-PR #54): 292/292 testes passando. Gaps mais relevantes abaixo de 80%: `usePriceTablePagination.ts` (55.55%), `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%) e `App.tsx` (75%).
 - **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
 - **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.
-- **Qualidade da baseline** (2026-03-19): `Quality Gate` restaurado após os merges dos PRs #43 e #42; monitorar apenas novas regressões introduzidas por features futuras.
-- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data.
+- **Qualidade da baseline** (2026-03-20): `Quality Gate` estável; baseline validada com 292 testes passando.
+- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data (janela #5).
 - **Avaliação futura de `node-version: 24` no job do projeto**: antes de migrar o runtime do CI, comparar desempenho e estabilidade contra Node 20 (`npm ci`, `quality:gate`, tempo total, consumo de memória e compatibilidade de dependências).
 - **Worktree local sujo por cobertura**: artefatos em `coverage/` continuam fora do escopo e não devem ser commitados.

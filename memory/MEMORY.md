@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Sprint encerrado com Lote 2 mergeado na `main`, artefatos de fechamento consolidados e baseline preservada
-**Branch ativa:** `docs/sprint-close-lote-2` — branch documental criada após o merge do PR #51 para registrar o fechamento do sprint
-**Snapshot local:** worktree contém artefatos documentais de fechamento (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`, ADR-010) e artefatos de `coverage/` fora de escopo
+**Status:** ✅ Sprint fechado com Lote 2 mergeado na `main`, PR #54 (cobertura pós-refatoração) integrado, e handoff consolidado
+**Branch ativa:** `main` — sprint-close executado, logs atualizados, próximas 5 janelas definidas
+**Snapshot local:** worktree contém modificações documentais pós-sprint (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) aguardando commit documental
 
 ---
 
@@ -39,7 +39,7 @@
 | AlertsManager modularizado                | ✅ Fixo | PR #42 mergeado; regras separadas em `useAlertsForm`, `useAlertsFeedback` e `useAlertsUI`; `AlertsManager.tsx` reduzido e com responsabilidades isoladas                  |
 | Quality Gate restaurado                   | ✅ Fixo | PR #43 mergeado; mocks de `@/data/constants` em testes de API corrigidos via mock parcial com `importOriginal`; CI voltou a ficar verde                                   |
 | Layout compartilhado por rota             | ✅ Fixo | `AppLayout` centraliza `Layout` para `Index`, `Dashboard`, `Alerts` e `About`; páginas renderizam apenas conteúdo de rota                                                 |
-| Extração estrutural da PriceTable         | ✅ Fixo | `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` isolam estado local; `PriceTable.tsx` permanece acima de 80% de cobertura                         |
+| Extração estrutural da PriceTable         | ✅ Fixo | `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` isolam estado local; 100% cobertura em hooks extraídos                                            |
 
 ---
 
@@ -47,8 +47,10 @@
 
 - ✅ **LOTE 1B 100% CONCLUÍDO**: itens 3 e 4 validados e documentados nos PRs #48 e #49
 - ✅ **LOTE 2 CONCLUÍDO E MERGEADO**: refatoração estrutural integrada à `main` via PR #51
-- Baseline validada localmente com `quality:gate` e `280/280` testes passando no fechamento do sprint
-- Próxima frente sugerida após merge: Lote 3 (qualidade, CI e documentação) ou mitigação dos gaps de cobertura do sprint
+- ✅ **COBERTURA PÓS-REFATORAÇÃO CONCLUÍDA**: PR #54 mergeado — 4 módulos críticos com cobertura ≥80%
+- ✅ **SPRINT CLOSE EXECUTADO**: triagem técnica consolidada, 5 próximas janelas definidas
+- Baseline validada: 292/292 testes passando, build OK
+- Próximas frentes priorizadas: publicar artefatos sprint → cobertura hooks → cobertura UI → Lote 3 CI/qualidade → preparação Node 24
 
 ---
 
@@ -92,32 +94,32 @@
 
 ---
 
-## Next recommended steps
+## Next recommended steps (5 janelas definidas em 2026-03-20)
 
-1. **Publicar os artefatos de fechamento do sprint** em uma PR documental limpa
-2. **Abrir a próxima frente técnica mais barata**: reforçar cobertura em `usePriceTablePagination.ts`, `Dashboard.tsx` e `ArbitrageTable.tsx`
-3. **Planejar o Lote 3** (qualidade, CI e documentação), priorizando `typecheck` explícito no `quality:gate`
-4. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
+1. **P0 — Publicar artefatos do sprint**: Commitar logs atualizados (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) e limpar worktree
+2. **P1 — Cobertura de hooks extraídos**: Aumentar `usePriceTablePagination.ts` de 55.55% para ≥80%
+3. **P1 — Cobertura de componentes UI**: `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%)
+4. **P2 — Lote 3 (CI/Qualidade)**: Adicionar `typecheck` explícito, smoke E2E obrigatório no CI, threshold de coverage
+5. **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** 2026-03-20 (sprint-close)
+**Sprint:** Sprint Lote 2 (encerrado 2026-03-20)  
 **Trabalho realizado:**
 
-- ✅ **LOTE 2 IMPLEMENTADO**: `PriceTable` modularizada em hooks e `Layout` compartilhado por rota
-- ✅ `quality:gate` validado no fim do sprint com `280/280` testes
-- ✅ PR #51 mergeado na `main` a partir do commit `188c146`
-- ✅ ADR-010 criado para registrar a convenção estrutural do sprint
-- ✅ Logs de sessão e memória consolidados
+- ✅ **LOTE 2 MERGEADO**: `PriceTable` modularizada em hooks + `AppLayout` via rota-pai; PR #51
+- ✅ **COBERTURA PÓS-REFATORAÇÃO**: PR #54 mergeado — 4 módulos críticos ≥80%
+- ✅ **SPRINT CLOSE**: `technical-triage` executado, 5 janelas lógicas definidas
+- ✅ **Logs consolidados**: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md` atualizados
+- Baseline validada: 292/292 testes passando, build OK
 
 **Estado ao encerrar:**
 
-- `origin/main` já contém o Lote 2 mergeado
-- branch documental `docs/sprint-close-lote-2` preparada para registrar o fechamento do sprint
-- Cobertura global do sprint em 89.22% statements; `PriceTable.tsx` em 83.33%
-- Worktree local suja apenas por artefatos de cobertura
+- Branch `main` com logs pós-sprint modificados aguardando commit documental
+- Cobertura global estável; gaps identificados abaixo de 80% mapeados
+- Próximos passos claros e priorizados (P0 → P1 → P2)
 
 **Retomar por:**
 
@@ -128,13 +130,16 @@ Read before acting:
 - `PENDING_LOG.md`
 
 Current state:
-- ✅ LOTE 1B concluído
-- ✅ LOTE 2 implementado e mergeado na `main`
-- Baseline validada localmente: `quality:gate` verde, `280/280` testes
+- ✅ LOTE 2 concluído e mergeado na `main`
+- ✅ PR #54 (cobertura) integrado
+- ✅ Sprint-close executado, 5 janelas definidas
+- Baseline: 292/292 testes, build OK
+- Worktree: logs documentais modificados aguardando commit
 
 Recommended next front:
-1. 📦 Publicar os artefatos de fechamento do sprint
-2. 🧪 Atacar os gaps de cobertura mais baratos: `usePriceTablePagination.ts`, `Dashboard.tsx`, `ArbitrageTable.tsx`
-3. 🚀 Planejar o Lote 3 com foco em `typecheck` explícito no `quality:gate`
-4. Alternativa: preparar a migração de actions para Node 24
+1. 📦 SPRINT CLOSE — Commitar logs via `git-flow-manager`
+2. 🧪 Cobertura: `usePriceTablePagination.ts` (55.55% → ≥80%)
+3. 🎨 Cobertura UI: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx`
+4. 🔧 Lote 3: CI/qualidade com `typecheck` explícito
+5. ⏫ Preparação Node 24 (deadline 2026-06-02)
 ```
