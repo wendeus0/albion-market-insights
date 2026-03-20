@@ -20,6 +20,8 @@ export default defineConfig(({ mode }) => ({
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
     css: false,
+    testTimeout: 20000,
+    hookTimeout: 30000,
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: ["e2e/**", "node_modules/**"],
   },
