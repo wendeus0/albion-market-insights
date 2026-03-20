@@ -299,3 +299,15 @@
   - Identificação de gaps de cobertura: usePriceTablePagination.ts (55.55%), Navbar.tsx (58.33%), Dashboard.tsx (68.18%), ArbitrageTable.tsx (69.64%)
   - Definição das 5 próximas janelas: (1) publicar artefatos sprint, (2) cobertura hooks, (3) cobertura UI, (4) Lote 3 CI/qualidade, (5) preparação Node 24
 - **Status**: SEM ERROS — triagem concluída, próximo passo definido
+
+---
+
+### [2026-03-20 08:50] janela-4-lote-3 — flakiness na suíte completa sob cobertura
+
+- **Erro**: Execução local de `npm run quality:gate` apresentou múltiplos timeouts intermitentes em diferentes arquivos de teste quando rodando suíte completa com cobertura
+- **Causa**: Indício de instabilidade/flakiness de baseline sob carga (concorrência/tempo de execução), sem evidência de regressão única de lógica introduzida na mudança de CI
+- **Ação tomada**:
+  - Mantido escopo da PR #58 em hardening de pipeline (`typecheck`, smoke E2E, threshold inicial de coverage)
+  - Aberta issue de acompanhamento #59 para estabilização da suíte
+  - Referência cruzada adicionada na PR #58
+- **Status**: ESCALADO — acompanhamento por issue #59

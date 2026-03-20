@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** ✅ Sprint fechado com Lote 2 mergeado na `main`, PR #54 (cobertura pós-refatoração) integrado, e handoff consolidado
-**Branch ativa:** `main` — sprint-close executado, logs atualizados, próximas 5 janelas definidas
-**Snapshot local:** worktree contém modificações documentais pós-sprint (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) aguardando commit documental
+**Status:** 🔄 Execução das 5 janelas concluída em branches isoladas, com PRs abertos (#56, #57, #58, #61) e branch documental ativa
+**Branch ativa:** `docs/sprint-followup-2026-03-20` — centralização incremental de logs e memória durante as frentes
+**Snapshot local:** mudanças de documentação desta sessão prontas para commit na branch documental
 
 ---
 
@@ -49,8 +49,9 @@
 - ✅ **LOTE 2 CONCLUÍDO E MERGEADO**: refatoração estrutural integrada à `main` via PR #51
 - ✅ **COBERTURA PÓS-REFATORAÇÃO CONCLUÍDA**: PR #54 mergeado — 4 módulos críticos com cobertura ≥80%
 - ✅ **SPRINT CLOSE EXECUTADO**: triagem técnica consolidada, 5 próximas janelas definidas
-- Baseline validada: 292/292 testes passando, build OK
-- Próximas frentes priorizadas: publicar artefatos sprint → cobertura hooks → cobertura UI → Lote 3 CI/qualidade → preparação Node 24
+- Baseline recente por frente validada com recortes direcionados de cobertura/CI
+- PRs ativos da rodada: #56 (hooks), #57 (UI), #58 (CI/qualidade), #61 (Node 24 readiness)
+- Issues ativas da rodada: #59 (flakiness suíte completa), #60 (tracking migração Node 24)
 
 ---
 
@@ -96,11 +97,10 @@
 
 ## Next recommended steps (5 janelas definidas em 2026-03-20)
 
-1. **P0 — Publicar artefatos do sprint**: Commitar logs atualizados (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) e limpar worktree
-2. **P1 — Cobertura de hooks extraídos**: Aumentar `usePriceTablePagination.ts` de 55.55% para ≥80%
-3. **P1 — Cobertura de componentes UI**: `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%)
-4. **P2 — Lote 3 (CI/Qualidade)**: Adicionar `typecheck` explícito, smoke E2E obrigatório no CI, threshold de coverage
-5. **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02
+1. **Acompanhar CI e reviews dos PRs abertos**: #56, #57, #58, #61
+2. **Atacar issue #59 (flakiness)** para restaurar previsibilidade da suíte completa em cobertura
+3. **Executar fase 1 da issue #60**: job paralelo Node 24 não bloqueante no CI
+4. **Publicar merge da branch documental** após revisão dos registros da sessão
 
 ---
 
