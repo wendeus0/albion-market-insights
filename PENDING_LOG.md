@@ -4,6 +4,15 @@
 
 ## Decisões incorporadas
 
+- **Hotfix CI PR #67 — coverage summary ausente no step de threshold** (2026-03-20) ✅ **CONCLUÍDO**
+  - Causa raiz: workflow esperava `coverage/coverage-summary.json`, mas a configuração de teste não forçava `json-summary` no reporter
+  - Correção aplicada em `vite.config.ts`:
+    - `test.coverage.reporter = ["text", "html", "json-summary"]`
+  - Resultado: arquivo `coverage/coverage-summary.json` garantido em execução com `--coverage`
+  - Validação local:
+    - `npm run test -- --coverage` gerou `coverage-summary.json`
+    - `npm run quality:gate` passou completo
+
 - **Contrato de autonomia v1 — Execução Opção A (Frente A) + registro de bloqueios C/D** (2026-03-20) ✅ **CONCLUÍDO EM BRANCH `feat/frente-a-tier-naming`**
   - Frente A implementada via TDD em `ITEM_NAMES`: nomenclatura por tier com nome completo
     - T1 Beginner's, T2 Novice's, T3 Journeyman's, T4 Adept's, T5 Expert's, T6 Master's, T7 Grandmaster's, T8 Elder's

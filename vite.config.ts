@@ -24,5 +24,8 @@ export default defineConfig(({ mode }) => ({
     hookTimeout: 30000,
     include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: ["e2e/**", "node_modules/**"],
+    coverage: {
+      reporter: ["text", "html", "json-summary"],
+    },
   },
 }));
