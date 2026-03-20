@@ -91,6 +91,39 @@ describe("PriceTable — filtros de faixa (AC1, AC2)", () => {
     expect(screen.getByPlaceholderText(/max spread/i)).toBeInTheDocument();
   });
 
+  it("exibe feedback quando min price > max price", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    await user.type(screen.getByPlaceholderText(/min price/i), "90000");
+    await user.type(screen.getByPlaceholderText(/max price/i), "50000");
+
+    expect(
+      screen.getByText(/min price cannot be greater than max price/i),
+    ).toBeInTheDocument();
+  });
+
+  it("remove feedback quando faixa de preço volta a ser válida", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const minPriceInput = screen.getByPlaceholderText(/min price/i);
+    const maxPriceInput = screen.getByPlaceholderText(/max price/i);
+
+    await user.type(minPriceInput, "90000");
+    await user.type(maxPriceInput, "50000");
+    expect(
+      screen.getByText(/min price cannot be greater than max price/i),
+    ).toBeInTheDocument();
+
+    await user.clear(minPriceInput);
+    await user.type(minPriceInput, "40000");
+
+    expect(
+      screen.queryByText(/min price cannot be greater than max price/i),
+    ).not.toBeInTheDocument();
+  });
+
   it("filtra itens por faixa de preço", async () => {
     const user = userEvent.setup();
     render(<PriceTable items={mockItems} />);

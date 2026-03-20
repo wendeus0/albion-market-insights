@@ -34,6 +34,12 @@
   - Cooldown persistente de alertas confirmado com armazenamento local e expiração
   - Validação direcionada executada: `35/35` testes verdes (`market.cache`, `useAlertsForm`, `useAlertPoller`)
 
+- **Janela 8 — UX/Consistência da camada de arbitragem** (2026-03-20) ✅ **CONCLUÍDA**
+  - Feedback de UX para faixas inválidas na `PriceTable` (`min > max`) com mensagem explícita e estilo de erro
+  - Home (`Index`) alinhada para fonte única de arbitragem derivada de `marketItems` (sem fallback misto)
+  - Paginação adicionada na `ArbitrageTable` com navegação e resumo de intervalo exibido
+  - Cobertura de regressão adicionada/ajustada: `PriceTable.test.tsx`, `ArbitrageTable.test.tsx`, `Index.arbitrage.test.tsx`
+
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
   - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
@@ -155,9 +161,9 @@
 **Itens Secundários:**
 
 - [x] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar. ✅ consolidada no PR #51
-- [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
-- [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
-- [ ] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar).
+- [x] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX. (2026-03-20)
+- [x] **Arbitragem na Home com fonte única**: removido fallback semântico misto; Home usa somente arbitragem derivada de `marketItems`. (2026-03-20)
+- [x] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar). (2026-03-20)
 - [ ] **Higiene de componentes vendor**: pruning incremental de `src/components/ui/*` não usados.
 
 **Estimativa:** 2-3 dias  

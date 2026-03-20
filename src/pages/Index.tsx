@@ -17,13 +17,11 @@ import { ArbitrageTable } from "@/components/dashboard/ArbitrageTable";
 import { DataSourceBadge } from "@/components/dashboard/DataSourceBadge";
 import { DegradedBanner } from "@/components/dashboard/DegradedBanner";
 import { useMarketItems } from "@/hooks/useMarketItems";
-import { useTopProfitable } from "@/hooks/useTopProfitable";
 import { useLastUpdateTime } from "@/hooks/useLastUpdateTime";
 import { buildCrossCityArbitrage } from "@/lib/arbitrage";
 
 const Index = () => {
   const { data: items = [] } = useMarketItems();
-  const { data: topItems = [] } = useTopProfitable(5);
   const { data: lastUpdate } = useLastUpdateTime();
   const arbitrageItems = useMemo(() => buildCrossCityArbitrage(items), [items]);
   const previewItems = arbitrageItems.slice(0, 8);
@@ -193,11 +191,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Top Arbitrage Panel */}
             <TopArbitragePanel
-              items={
-                arbitrageItems.length > 0
-                  ? arbitrageItems
-                  : buildCrossCityArbitrage(topItems)
-              }
+              items={arbitrageItems}
               className="lg:col-span-1"
             />
 

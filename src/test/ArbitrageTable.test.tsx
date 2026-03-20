@@ -40,6 +40,28 @@ describe('ArbitrageTable refinements', () => {
     expect(screen.getByPlaceholderText(/min net profit/i)).toBeInTheDocument();
   });
 
+  it('exibe controles de paginação quando há muitos itens', () => {
+    const manyItems: ArbitrageOpportunity[] = Array.from({ length: 24 }, (_, i) => ({
+      itemId: `T4_ITEM_${i}`,
+      itemName: `Item ${i}`,
+      tier: 'T4',
+      quality: 'Normal',
+      buyCity: 'Martlock',
+      buyPrice: 1000 + i,
+      sellCity: 'Caerleon',
+      sellPrice: 2000 + i,
+      netProfit: 500 + i,
+      netProfitPercent: 10 + i,
+      timestamp: '2026-03-17T10:00:00.000Z',
+    }));
+
+    render(<ArbitrageTable items={manyItems} />);
+
+    expect(screen.getByText(/showing 1 to 10 of 24 opportunities/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: '1' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: '2' }).length).toBeGreaterThan(0);
+  });
+
   it('deve exibir input para roi minimo', () => {
     render(<ArbitrageTable items={mockItems} />);
 
@@ -76,5 +98,29 @@ describe('ArbitrageTable refinements', () => {
 
     expect(screen.getByText('Great Holy Staff T8 .3')).toBeInTheDocument();
     expect(screen.queryByText('Broadsword T5')).not.toBeInTheDocument();
+  });
+
+  it('permite navegar para a página seguinte da arbitrage table', async () => {
+    const user = userEvent.setup();
+    const manyItems: ArbitrageOpportunity[] = Array.from({ length: 24 }, (_, i) => ({
+      itemId: `T4_ITEM_${i}`,
+      itemName: `Item ${i}`,
+      tier: 'T4',
+      quality: 'Normal',
+      buyCity: 'Martlock',
+      buyPrice: 1000 + i,
+      sellCity: 'Caerleon',
+      sellPrice: 2000 + i,
+      netProfit: 500 + i,
+      netProfitPercent: 10 + i,
+      timestamp: '2026-03-17T10:00:00.000Z',
+    }));
+
+    render(<ArbitrageTable items={manyItems} />);
+
+    const pageTwoButtons = screen.getAllByRole('button', { name: '2' });
+    await user.click(pageTwoButtons[0]);
+
+    expect(screen.getByText(/showing 11 to 20 of 24 opportunities/i)).toBeInTheDocument();
   });
 });
