@@ -1,7 +1,7 @@
 # REPORT — PR 64 Lab (Node 24 Validation)
 
 ## Status
-EM_ANDAMENTO (GATE 1 CONCLUÍDO, GATE 2 EM EXECUÇÃO)
+EM_ANDAMENTO (GATE 1 E GATE 2 CONCLUÍDOS)
 
 ## Objetivo
 Validar Node 24 em lane paralela com isolamento controlado antes de promoção para o runtime principal.
@@ -40,10 +40,18 @@ Validar Node 24 em lane paralela com isolamento controlado antes de promoção p
 - Quando `coverage-summary.json` existir, mantém caminho preferencial
 - Quando não existir, calcula `% statements` a partir de `coverage-final.json` e aplica threshold (88%)
 
+## Reexecução pós-correção (2026-03-20)
+- Run: `23344041067`
+- SHA: `494ef8b`
+- Resultado final: `success`
+- Lanes:
+  - `quality-gate (20)`: success
+  - `quality-gate (24)`: success
+
 ## Próximas verificações
-1. Reexecutar pipeline com fallback de coverage
-2. Confirmar green simultâneo de Node 20 e Node 24
-3. Consolidar amostra mínima de estabilidade para decisão de promoção
+1. Acumular janela de estabilidade contínua (ex.: 1-2 semanas)
+2. Monitorar regressões/flakiness com comparação diária entre Node 20 e 24
+3. Preparar PR de promoção (Node 24 default) apenas após critérios de estabilidade
 
 ## Decisão pendente
 Promover Node 24 para default somente após cumprir os gates de estabilidade.
