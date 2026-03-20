@@ -89,6 +89,12 @@
   - paginação adicionada na `ArbitrageTable`
   - testes de regressão atualizados
 
+## Janela 9 — Concluída (2026-03-20)
+- Pruning de UI concluído: removidos 34 componentes sem referência em src/components/ui/*.
+- Guard-rails executados: npm run lint, npm run typecheck e npm run test verdes.
+- Resultado de suíte: 35 arquivos de teste, 333 testes passando.
+- Observação: mantido PR #64 aberto como lane de observação controlada.
+
 ## Marcos históricos consolidados
 
 - Lote P0 concluído e mergeado
