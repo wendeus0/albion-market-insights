@@ -126,8 +126,17 @@ describe("Dashboard", () => {
     });
   });
 
-  it("deve mostrar toast de erro ao tentar refresh em cooldown", async () => {
-    // Mock para começar podendo refresh
+  it("deve desabilitar refresh durante loading mesmo com cooldown liberado", () => {
+    mockUseMarketItems.mockReturnValue({
+      data: [],
+      isLoading: true,
+    } as ReturnType<typeof useMarketItems>);
+
+    mockUseLastUpdateTime.mockReturnValue({
+      data: null,
+      isLoading: false,
+    } as ReturnType<typeof useLastUpdateTime>);
+
     mockUseRefreshCooldown.mockReturnValue({
       canRefresh: true,
       timeRemaining: 0,
@@ -136,41 +145,30 @@ describe("Dashboard", () => {
       refreshState: { canRefresh: true, timeRemaining: 0, lastRefresh: 0 },
     } as ReturnType<typeof useRefreshCooldown>);
 
-    const { rerender } = render(
+    render(
       <MemoryRouter>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    // Clicar no refresh
-    const refreshButton = screen.getByRole("button", { name: /refresh data/i });
-    fireEvent.click(refreshButton);
+    const refreshButton = screen.getByRole("button");
+    expect(refreshButton).toBeDisabled();
+  });
 
-    // Agora mockar como se estivesse em cooldown
-    mockUseRefreshCooldown.mockReturnValue({
-      canRefresh: false,
-      timeRemaining: 299000,
-      formattedTime: "04:59",
-      recordRefresh: vi.fn(),
-      refreshState: {
-        canRefresh: false,
-        timeRemaining: 299000,
-        lastRefresh: Date.now(),
-      },
-    } as ReturnType<typeof useRefreshCooldown>);
+  it("deve exibir fallback para Last Update quando não há timestamp", () => {
+    mockUseLastUpdateTime.mockReturnValue({
+      data: null,
+      isLoading: false,
+    } as ReturnType<typeof useLastUpdateTime>);
 
-    rerender(
+    render(
       <MemoryRouter>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    // Tentar clicar novamente
-    const cooldownButton = screen.getByRole("button", { name: /04:59/i });
-    expect(cooldownButton).toBeDisabled();
-
-    // O toast de erro não é chamado porque o botão está desabilitado
-    // Isso é o comportamento correto - o usuário não pode clicar
+    expect(screen.getByText("Last Update")).toBeInTheDocument();
+    expect(screen.getByText("...")).toBeInTheDocument();
   });
 
   it("deve mostrar skeleton enquanto carrega", () => {
