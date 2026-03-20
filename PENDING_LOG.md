@@ -4,6 +4,22 @@
 
 ## Decisões incorporadas
 
+- **Contrato de autonomia v1 — Execução Opção A (Frente A) + registro de bloqueios C/D** (2026-03-20) ✅ **CONCLUÍDO EM BRANCH `feat/frente-a-tier-naming`**
+  - Frente A implementada via TDD em `ITEM_NAMES`: nomenclatura por tier com nome completo
+    - T1 Beginner's, T2 Novice's, T3 Journeyman's, T4 Adept's, T5 Expert's, T6 Master's, T7 Grandmaster's, T8 Elder's
+  - Badge `Tx` preservado (sem alteração de layout da tabela/listagens)
+  - Testes adicionados/ajustados para contrato de nomenclatura:
+    - `src/test/catalog.test.ts` (novos cenários de prefixo por tier e sufixo de encantamento)
+    - `src/test/market.api.test.ts` (expect alinhado para nome legível novo)
+  - Issues de bloqueio registradas para frentes futuras:
+    - #65 Frente C bloqueada (ausência de infraestrutura auth dual): https://github.com/wendeus0/albion-market-insights/issues/65
+    - #66 Frente D bloqueada (ausência de backend de entrega Discord): https://github.com/wendeus0/albion-market-insights/issues/66
+  - Gates executados:
+    - lint: ok (0 erro, 7 warnings conhecidos de vendor/ui)
+    - typecheck: ok
+    - test: ok (35 arquivos, 330 testes)
+    - build: ok
+
 - **Execução das 5 janelas lógicas em branches isoladas** (2026-03-20) 🔄 **EM PR / SEM CONFLITO DE BRANCH**
   - Janela 1 (P0): branch documental dedicada `docs/sprint-followup-2026-03-20` para centralizar `PENDING_LOG.md`, `ERROR_LOG.md` e `memory/MEMORY.md`
   - Janela 2 (P1): PR #56 aberto — cobertura de hooks extraídos (`usePriceTableFilters.ts` e `usePriceTablePagination.ts`) elevada no recorte para 100% statements/lines/functions

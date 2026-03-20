@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ITEM_IDS, ITEM_CATALOG, ENCHANTMENT_LEVELS } from '@/data/constants';
+import { ITEM_IDS, ITEM_CATALOG, ENCHANTMENT_LEVELS, ITEM_NAMES } from '@/data/constants';
 
 describe('ITEM_CATALOG integrity', () => {
   it('ITEM_IDS tem ≥400 IDs únicos (AC1)', () => {
@@ -34,22 +34,18 @@ describe('ITEM_CATALOG enchanted items', () => {
   });
 
   it('deve gerar IDs com encantamentos (@1, @2, @3)', () => {
-    // Verifica que existem IDs com sufixo @1, @2, @3
     const enchantedIds = ITEM_IDS.filter(id => id.includes('@'));
     expect(enchantedIds.length).toBeGreaterThan(0);
-    
-    // Verifica que há IDs com cada nível de encantamento
+
     expect(ITEM_IDS.some(id => id.endsWith('@1'))).toBe(true);
     expect(ITEM_IDS.some(id => id.endsWith('@2'))).toBe(true);
     expect(ITEM_IDS.some(id => id.endsWith('@3'))).toBe(true);
   });
 
   it('cada item base deve ter variantes encantadas na mesma categoria', () => {
-    // Pega uma categoria como exemplo (swords)
     const swordsCategory = ITEM_CATALOG['swords'];
     expect(swordsCategory).toBeDefined();
-    
-    // Verifica que T4_MAIN_SWORD existe e tem variantes encantadas
+
     const baseId = 'T4_MAIN_SWORD';
     expect(swordsCategory.ids).toContain(baseId);
     expect(swordsCategory.ids).toContain('T4_MAIN_SWORD@1');
@@ -58,16 +54,29 @@ describe('ITEM_CATALOG enchanted items', () => {
   });
 
   it('deve ter ~4x mais IDs com encantamentos (AC-1, AC-2)', () => {
-    // Com 450 IDs base, deve ter ~1800 com encantamentos
     expect(ITEM_IDS.length).toBeGreaterThanOrEqual(1500);
   });
 
   it('IDs encantados devem seguir formato correto', () => {
     const enchantedIds = ITEM_IDS.filter(id => id.includes('@'));
-    
+
     for (const id of enchantedIds) {
-      // Formato: T4_MAIN_SWORD@1, T5_2H_AXE@2, etc.
       expect(id).toMatch(/^T[4-8]_.+@[1-3]$/);
     }
+  });
+});
+
+describe('ITEM_NAMES tier naming', () => {
+  it('usa prefixo de tier por extenso para item base (Frente A)', () => {
+    expect(ITEM_NAMES['T4_MAIN_SWORD']).toBe("Adept's Broadsword");
+    expect(ITEM_NAMES['T5_MAIN_SWORD']).toBe("Expert's Broadsword");
+    expect(ITEM_NAMES['T6_MAIN_SWORD']).toBe("Master's Broadsword");
+    expect(ITEM_NAMES['T7_MAIN_SWORD']).toBe("Grandmaster's Broadsword");
+    expect(ITEM_NAMES['T8_MAIN_SWORD']).toBe("Elder's Broadsword");
+  });
+
+  it('mantem sufixo de encantamento apos o nome completo', () => {
+    expect(ITEM_NAMES['T4_MAIN_SWORD@1']).toBe("Adept's Broadsword .1");
+    expect(ITEM_NAMES['T8_MAIN_SWORD@3']).toBe("Elder's Broadsword .3");
   });
 });

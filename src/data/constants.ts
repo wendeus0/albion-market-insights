@@ -260,19 +260,34 @@ const TYPE_LABELS: Record<string, string> = {
   'ROCK': 'Rock',
 };
 
+const TIER_FULL_NAMES: Record<string, string> = {
+  T1: "Beginner's",
+  T2: "Novice's",
+  T3: "Journeyman's",
+  T4: "Adept's",
+  T5: "Expert's",
+  T6: "Master's",
+  T7: "Grandmaster's",
+  T8: "Elder's",
+};
+
 export const ITEM_NAMES: Record<string, string> = Object.fromEntries(
   ITEM_IDS.map(id => {
     const tier = id.match(/^(T\d)/)?.[1] ?? '';
-    // Extrai o tipo e o nível de encantamento (se houver)
+    const tierPrefix = TIER_FULL_NAMES[tier] ?? tier;
+
     const enchantMatch = id.match(/@([0-3])$/);
-    const enchantLevel = enchantMatch ? parseInt(enchantMatch[1]) : 0;
+    const enchantLevel = enchantMatch ? parseInt(enchantMatch[1], 10) : 0;
     const type = id.replace(/^T\d_/, '').replace(/@[0-3]$/, '');
     const label = TYPE_LABELS[type];
     const enchantSuffix = enchantLevel > 0 ? ` .${enchantLevel}` : '';
-    if (label) return [id, `${label} ${tier}${enchantSuffix}`];
+
+    if (label) return [id, `${tierPrefix} ${label}${enchantSuffix}`.trim()];
+
     const fallback = type
       .replace(/_/g, ' ')
       .replace(/\b(\w)/g, (_, c: string) => c.toUpperCase());
-    return [id, `${fallback} ${tier}${enchantSuffix}`];
+
+    return [id, `${tierPrefix} ${fallback}${enchantSuffix}`.trim()];
   })
 );

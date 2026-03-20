@@ -154,7 +154,7 @@ describe('ApiMarketService', () => {
       const items = await service.getItems();
 
       // Then
-      expect(items[0].itemName).toBe('Broadsword T4');
+      expect(items[0].itemName).toBe("Adept's Broadsword");
     });
   });
 
