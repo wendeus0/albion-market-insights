@@ -111,7 +111,7 @@
 - [ ] **Política única de frescor (15 min)**: alinhar TTL de cache, `staleTime`, textos de UI e polling.
 - [ ] **ID robusto para alertas**: migrar para `crypto.randomUUID()` com fallback seguro.
 - [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
-- [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
+- [x] **Runtime padronizado em Node 20**: alinhado historicamente e evoluído para validação paralela Node 20/24 com rollback explícito (Gate Frente 5, 2026-03-20).
 
 #### ⏳ Itens Futuros (Lote 1C ou Lote 2):
 
@@ -170,7 +170,7 @@ Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins 
 - [ ] **Política única de frescor (15 min)**: unificar TTL de cache, `staleTime`, textos de UI e polling.
 - [ ] **ID robusto para alertas**: migrar de `Date.now()` para `crypto.randomUUID()` com fallback.
 - [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
-- [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
+- [x] **Runtime padronizado em Node 20**: alinhado historicamente e evoluído para validação paralela Node 20/24 com rollback explícito (Gate Frente 5, 2026-03-20).
 
 **Estimativa:** 1 dia  
 **Próxima Feature Estrutural:** Lote 2 (Refatoração Estrutural e UX)

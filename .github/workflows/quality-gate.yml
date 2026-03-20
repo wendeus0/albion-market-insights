@@ -14,6 +14,10 @@ concurrency:
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 24]
 
     steps:
       - name: Checkout repository
@@ -22,14 +26,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: npm
 
       - name: Pin npm version
         run: npm install --global npm@10.8.2
 
       - name: Show runtime versions
-        run: node --version && npm --version
+        run: echo "Node matrix: ${{ matrix.node-version }}" && node --version && npm --version
 
       - name: Install dependencies
         run: npm ci
@@ -44,6 +48,7 @@ jobs:
         run: npm run test:e2e:smoke
 
       - name: Enforce coverage threshold (gradual)
+        if: matrix.node-version == 20
         run: |
           SUMMARY_FILE="coverage/coverage-summary.json"
           if [ ! -f "$SUMMARY_FILE" ]; then
@@ -72,4 +77,10 @@ jobs:
           NODE
         env:
           THRESHOLD: "88"
+
+      - name: Node 24 rollback hint
+        if: matrix.node-version == 24
+        run: |
+          echo "Node 24 validation lane enabled."
+          echo "Rollback imediato: editar matrix para [20] e reexecutar pipeline."
 
