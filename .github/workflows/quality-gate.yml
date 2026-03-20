@@ -36,3 +36,40 @@ jobs:
 
       - name: Run quality gate
         run: npm run quality:gate
+
+      - name: Install Playwright browser (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E smoke tests
+        run: npm run test:e2e:smoke
+
+      - name: Enforce coverage threshold (gradual)
+        run: |
+          SUMMARY_FILE="coverage/coverage-summary.json"
+          if [ ! -f "$SUMMARY_FILE" ]; then
+            echo "Coverage summary not found at $SUMMARY_FILE"
+            exit 1
+          fi
+
+          THRESHOLD=88
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+          const pct = summary.total?.statements?.pct;
+          const threshold = Number(process.env.THRESHOLD || '88');
+
+          if (typeof pct !== 'number') {
+            console.error('Could not read statements coverage percentage');
+            process.exit(1);
+          }
+
+          console.log(`Statements coverage: ${pct}% (threshold: ${threshold}%)`);
+          if (pct < threshold) {
+            console.error(`Coverage below threshold: ${pct}% < ${threshold}%`);
+            process.exit(1);
+          }
+          NODE
+        env:
+          THRESHOLD: "88"
+
