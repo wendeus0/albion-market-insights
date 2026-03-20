@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   ArrowUpDown,
   ArrowUp,
@@ -27,206 +27,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePriceTableFilters } from "@/hooks/usePriceTableFilters";
+import { usePriceTablePagination } from "@/hooks/usePriceTablePagination";
+import { usePriceTableSort, type SortField } from "@/hooks/usePriceTableSort";
 import { cn } from "@/lib/utils";
-import { filterStorage } from "@/services/filter.storage";
 
 interface PriceTableProps {
   items: MarketItem[];
   className?: string;
 }
 
-type SortField =
-  | "itemName"
-  | "city"
-  | "sellPrice"
-  | "buyPrice"
-  | "spread"
-  | "spreadPercent"
-  | "timestamp";
-type SortDirection = "asc" | "desc";
-
 export function PriceTable({ items, className }: PriceTableProps) {
-  // Load persisted filters on mount
-  const persistedFilters = filterStorage.getFilters();
-
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<
-    CatalogCategoryKey | "all"
-  >((persistedFilters.categoryFilter as CatalogCategoryKey | "all") || "all");
-  const [cityFilter, setCityFilter] = useState<string>(
-    persistedFilters.cityFilter || "all",
-  );
-  const [tierFilter, setTierFilter] = useState<string>(
-    persistedFilters.tierFilter || "all",
-  );
-  const [qualityFilter, setQualityFilter] = useState<string>(
-    persistedFilters.qualityFilter || "all",
-  );
-  const [enchantFilter, setEnchantFilter] = useState<string>(
-    persistedFilters.enchantFilter || "all",
-  );
-  const [minPrice, setMinPrice] = useState<string>(
-    persistedFilters.minPrice || "",
-  );
-  const [maxPrice, setMaxPrice] = useState<string>(
-    persistedFilters.maxPrice || "",
-  );
-  const [minSpread, setMinSpread] = useState<string>(
-    persistedFilters.minSpread || "",
-  );
-  const [maxSpread, setMaxSpread] = useState<string>(
-    persistedFilters.maxSpread || "",
-  );
-  const [sortField, setSortField] = useState<SortField>("spreadPercent");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const {
+    filters,
+    filteredItems,
+    hasActiveFilters,
+    activeFilterCount,
+    setSearch,
+    setCategoryFilter,
+    setCityFilter,
+    setTierFilter,
+    setQualityFilter,
+    setEnchantFilter,
+    setMinPrice,
+    setMaxPrice,
+    setMinSpread,
+    setMaxSpread,
+    clearAllFilters,
+  } = usePriceTableFilters(items);
+  const { sortField, sortDirection, sortedItems, handleSort } =
+    usePriceTableSort(filteredItems);
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    visiblePages,
+    setCurrentPage,
+    goToPreviousPage,
+    goToNextPage,
+  } = usePriceTablePagination(sortedItems, itemsPerPage);
 
-  // Persist filters when they change (skip on initial mount)
-  const isInitialMount = useRef(true);
-  const isClearingRef = useRef(false);
-  
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (isClearingRef.current) {
-      // Skip saving during clear operation
-      return;
-    }
-    filterStorage.saveFilters({
-      categoryFilter,
-      cityFilter,
-      tierFilter,
-      qualityFilter,
-      enchantFilter,
-      minPrice,
-      maxPrice,
-      minSpread,
-      maxSpread,
-    });
+    setCurrentPage(1);
   }, [
-    categoryFilter,
-    cityFilter,
-    tierFilter,
-    qualityFilter,
-    enchantFilter,
-    minPrice,
-    maxPrice,
-    minSpread,
-    maxSpread,
+    filters.search,
+    filters.categoryFilter,
+    filters.cityFilter,
+    filters.tierFilter,
+    filters.qualityFilter,
+    filters.enchantFilter,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minSpread,
+    filters.maxSpread,
+    setCurrentPage,
   ]);
-
-  const filteredAndSortedItems = useMemo(() => {
-    let result = [...items];
-
-    // Apply filters
-    if (categoryFilter !== "all") {
-      const ids = new Set(ITEM_CATALOG[categoryFilter].ids);
-      result = result.filter((item) => ids.has(item.itemId));
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.itemName.toLowerCase().includes(searchLower) ||
-          item.itemId.toLowerCase().includes(searchLower),
-      );
-    }
-
-    if (cityFilter !== "all") {
-      result = result.filter((item) => item.city === cityFilter);
-    }
-
-    if (tierFilter !== "all") {
-      result = result.filter((item) => item.tier === tierFilter);
-    }
-
-    if (qualityFilter !== "all") {
-      result = result.filter((item) => item.quality === qualityFilter);
-    }
-
-    if (enchantFilter !== "all") {
-      const enchantLevel = parseInt(enchantFilter);
-      result = result.filter((item) => {
-        const itemEnchantLevel = item.itemId.match(/@([0-3])$/)?.[1];
-        return itemEnchantLevel
-          ? parseInt(itemEnchantLevel) === enchantLevel
-          : enchantLevel === 0;
-      });
-    }
-
-    if (minPrice) {
-      result = result.filter((item) => item.sellPrice >= parseInt(minPrice));
-    }
-
-    if (maxPrice) {
-      result = result.filter((item) => item.sellPrice <= parseInt(maxPrice));
-    }
-
-    if (minSpread) {
-      result = result.filter(
-        (item) => item.spreadPercent >= parseInt(minSpread),
-      );
-    }
-
-    if (maxSpread) {
-      result = result.filter(
-        (item) => item.spreadPercent <= parseInt(maxSpread),
-      );
-    }
-
-    // Apply sorting
-    result.sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
-
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        return sortDirection === "asc"
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
-      }
-
-      if (typeof aVal === "number" && typeof bVal === "number") {
-        return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
-      }
-
-      return 0;
-    });
-
-    return result;
-  }, [
-    items,
-    search,
-    categoryFilter,
-    cityFilter,
-    tierFilter,
-    qualityFilter,
-    enchantFilter,
-    minPrice,
-    maxPrice,
-    minSpread,
-    maxSpread,
-    sortField,
-    sortDirection,
-  ]);
-
-  const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
-  const paginatedItems = filteredAndSortedItems.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDirection("desc");
-    }
-  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US").format(price);
@@ -243,8 +99,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field)
+    if (sortField !== field) {
       return <ArrowUpDown className="h-3 w-3 opacity-50" />;
+    }
+
     return sortDirection === "asc" ? (
       <ArrowUp className="h-3 w-3 text-primary" />
     ) : (
@@ -252,39 +110,15 @@ export function PriceTable({ items, className }: PriceTableProps) {
     );
   };
 
-  const clearAllFilters = () => {
-    // Sinalizar que estamos em operação de limpeza
-    isClearingRef.current = true;
-    
-    // Limpar estado e storage transacionalmente
-    setCategoryFilter("all");
-    setCityFilter("all");
-    setTierFilter("all");
-    setQualityFilter("all");
-    setEnchantFilter("all");
-    setMinPrice("");
-    setMaxPrice("");
-    setMinSpread("");
-    setMaxSpread("");
-    setCurrentPage(1);
-    filterStorage.clearFilters();
-    
-    // Reabilitar persistência após limpeza
-    setTimeout(() => {
-      isClearingRef.current = false;
-    }, 0);
-  };
-
   return (
     <div className={cn("glass-card overflow-hidden", className)}>
-      {/* Filters Bar */}
       <div className="p-4 border-b border-border/50">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by item name or ID..."
-              value={search}
+              value={filters.search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-muted/50 border-border/50"
             />
@@ -292,9 +126,9 @@ export function PriceTable({ items, className }: PriceTableProps) {
 
           <div className="flex flex-wrap gap-2">
             <Select
-              value={categoryFilter}
-              onValueChange={(v) =>
-                setCategoryFilter(v as CatalogCategoryKey | "all")
+              value={filters.categoryFilter}
+              onValueChange={(value) =>
+                setCategoryFilter(value as CatalogCategoryKey | "all")
               }
             >
               <SelectTrigger
@@ -310,15 +144,15 @@ export function PriceTable({ items, className }: PriceTableProps) {
                     CatalogCategoryKey,
                     { label: string },
                   ][]
-                ).map(([key, cat]) => (
+                ).map(([key, category]) => (
                   <SelectItem key={key} value={key}>
-                    {cat.label}
+                    {category.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select value={cityFilter} onValueChange={setCityFilter}>
+            <Select value={filters.cityFilter} onValueChange={setCityFilter}>
               <SelectTrigger
                 className="w-[140px] bg-muted/50 border-border/50"
                 aria-label="City"
@@ -336,7 +170,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectContent>
             </Select>
 
-            <Select value={tierFilter} onValueChange={setTierFilter}>
+            <Select value={filters.tierFilter} onValueChange={setTierFilter}>
               <SelectTrigger className="w-[100px] bg-muted/50 border-border/50">
                 <SelectValue placeholder="Tier" />
               </SelectTrigger>
@@ -350,7 +184,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectContent>
             </Select>
 
-            <Select value={qualityFilter} onValueChange={setQualityFilter}>
+            <Select
+              value={filters.qualityFilter}
+              onValueChange={setQualityFilter}
+            >
               <SelectTrigger className="w-[130px] bg-muted/50 border-border/50">
                 <SelectValue placeholder="Quality" />
               </SelectTrigger>
@@ -364,7 +201,10 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectContent>
             </Select>
 
-            <Select value={enchantFilter} onValueChange={setEnchantFilter}>
+            <Select
+              value={filters.enchantFilter}
+              onValueChange={setEnchantFilter}
+            >
               <SelectTrigger className="w-[130px] bg-muted/50 border-border/50">
                 <SelectValue placeholder="Enchantment" />
               </SelectTrigger>
@@ -382,14 +222,14 @@ export function PriceTable({ items, className }: PriceTableProps) {
               <Input
                 type="number"
                 placeholder="Min price"
-                value={minPrice}
+                value={filters.minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 className="w-[100px] bg-muted/50 border-border/50"
               />
               <Input
                 type="number"
                 placeholder="Max price"
-                value={maxPrice}
+                value={filters.maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 className="w-[100px] bg-muted/50 border-border/50"
               />
@@ -399,28 +239,20 @@ export function PriceTable({ items, className }: PriceTableProps) {
               <Input
                 type="number"
                 placeholder="Min spread %"
-                value={minSpread}
+                value={filters.minSpread}
                 onChange={(e) => setMinSpread(e.target.value)}
                 className="w-[100px] bg-muted/50 border-border/50"
               />
               <Input
                 type="number"
                 placeholder="Max spread %"
-                value={maxSpread}
+                value={filters.maxSpread}
                 onChange={(e) => setMaxSpread(e.target.value)}
                 className="w-[100px] bg-muted/50 border-border/50"
               />
             </div>
 
-            {(categoryFilter !== "all" ||
-              cityFilter !== "all" ||
-              tierFilter !== "all" ||
-              qualityFilter !== "all" ||
-              enchantFilter !== "all" ||
-              minPrice ||
-              maxPrice ||
-              minSpread ||
-              maxSpread) && (
+            {hasActiveFilters && (
               <Button
                 variant="outline"
                 size="sm"
@@ -433,38 +265,15 @@ export function PriceTable({ items, className }: PriceTableProps) {
           </div>
         </div>
 
-        {/* Active filters indicator */}
-        {(categoryFilter !== "all" ||
-          cityFilter !== "all" ||
-          tierFilter !== "all" ||
-          qualityFilter !== "all" ||
-          enchantFilter !== "all" ||
-          minPrice ||
-          maxPrice ||
-          minSpread ||
-          maxSpread) && (
+        {hasActiveFilters && (
           <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <span className="font-medium">
-              {
-                [
-                  categoryFilter !== "all",
-                  cityFilter !== "all",
-                  tierFilter !== "all",
-                  qualityFilter !== "all",
-                  enchantFilter !== "all",
-                  minPrice,
-                  maxPrice,
-                  minSpread,
-                  maxSpread,
-                ].filter(Boolean).length
-              }{" "}
-              filter active
+              {activeFilterCount} filter active
             </span>
           </div>
         )}
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -611,62 +420,43 @@ export function PriceTable({ items, className }: PriceTableProps) {
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="p-4 border-t border-border/50 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(
-              currentPage * itemsPerPage,
-              filteredAndSortedItems.length,
-            )}{" "}
-            of {filteredAndSortedItems.length} items
+            {Math.min(currentPage * itemsPerPage, sortedItems.length)} of{" "}
+            {sortedItems.length} items
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={goToPreviousPage}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let page;
-                if (totalPages <= 5) {
-                  page = i + 1;
-                } else if (currentPage <= 3) {
-                  page = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  page = totalPages - 4 + i;
-                } else {
-                  page = currentPage - 2 + i;
-                }
-
-                return (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={cn(
-                      "w-8 h-8 p-0",
-                      currentPage === page &&
-                        "bg-primary text-primary-foreground",
-                    )}
-                  >
-                    {page}
-                  </Button>
-                );
-              })}
+              {visiblePages.map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className={cn(
+                    "w-8 h-8 p-0",
+                    currentPage === page &&
+                      "bg-primary text-primary-foreground",
+                  )}
+                >
+                  {page}
+                </Button>
+              ))}
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
+              onClick={goToNextPage}
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />

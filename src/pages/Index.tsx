@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   TrendingUp,
   Bell,
@@ -9,18 +9,17 @@ import {
   Shield,
   Clock,
   ChevronRight,
-} from 'lucide-react';
-import { Layout } from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { TopArbitragePanel } from '@/components/dashboard/TopArbitragePanel';
-import { ArbitrageTable } from '@/components/dashboard/ArbitrageTable';
-import { DataSourceBadge } from '@/components/dashboard/DataSourceBadge';
-import { DegradedBanner } from '@/components/dashboard/DegradedBanner';
-import { useMarketItems } from '@/hooks/useMarketItems';
-import { useTopProfitable } from '@/hooks/useTopProfitable';
-import { useLastUpdateTime } from '@/hooks/useLastUpdateTime';
-import { buildCrossCityArbitrage } from '@/lib/arbitrage';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import { TopArbitragePanel } from "@/components/dashboard/TopArbitragePanel";
+import { ArbitrageTable } from "@/components/dashboard/ArbitrageTable";
+import { DataSourceBadge } from "@/components/dashboard/DataSourceBadge";
+import { DegradedBanner } from "@/components/dashboard/DegradedBanner";
+import { useMarketItems } from "@/hooks/useMarketItems";
+import { useTopProfitable } from "@/hooks/useTopProfitable";
+import { useLastUpdateTime } from "@/hooks/useLastUpdateTime";
+import { buildCrossCityArbitrage } from "@/lib/arbitrage";
 
 const Index = () => {
   const { data: items = [] } = useMarketItems();
@@ -28,15 +27,16 @@ const Index = () => {
   const { data: lastUpdate } = useLastUpdateTime();
   const arbitrageItems = useMemo(() => buildCrossCityArbitrage(items), [items]);
   const previewItems = arbitrageItems.slice(0, 8);
-  const averageRoi = arbitrageItems.length > 0
-    ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
-    : '0.0%';
+  const averageRoi =
+    arbitrageItems.length > 0
+      ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
+      : "0.0%";
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
   };
@@ -44,24 +44,24 @@ const Index = () => {
   const features = [
     {
       icon: Zap,
-      title: 'Real-Time Data',
-      description: 'Prices updated every 15 minutes from all major cities.',
+      title: "Real-Time Data",
+      description: "Prices updated every 15 minutes from all major cities.",
     },
     {
       icon: Shield,
-      title: 'Smart Alerts',
-      description: 'Set custom price alerts and never miss a trading opportunity.',
+      title: "Smart Alerts",
+      description:
+        "Set custom price alerts and never miss a trading opportunity.",
     },
     {
       icon: Clock,
-      title: 'Price History',
-      description: 'Track price trends and make informed trading decisions.',
+      title: "Price History",
+      description: "Track price trends and make informed trading decisions.",
     },
   ];
 
   return (
-    <Layout>
-      {/* Degraded Banner */}
+    <>
       <div className="container mx-auto px-4 pt-4">
         <DegradedBanner />
       </div>
@@ -78,23 +78,31 @@ const Index = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              <span className="text-sm text-primary font-medium">Live Market Data</span>
+              <span className="text-sm text-primary font-medium">
+                Live Market Data
+              </span>
               <span className="mx-2 text-primary/30">|</span>
               <DataSourceBadge />
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-6 animate-slide-up">
-              Track Albion Online{' '}
-              <span className="gradient-text">Market Prices</span>{' '}
-              in Real Time
+              Track Albion Online{" "}
+              <span className="gradient-text">Market Prices</span> in Real Time
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '0.1s' }}>
-              Monitor prices across all cities, analyze profit margins, and set up
-              price alerts. Make smarter trading decisions with data-driven insights.
+            <p
+              className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up"
+              style={{ animationDelay: "0.1s" }}
+            >
+              Monitor prices across all cities, analyze profit margins, and set
+              up price alerts. Make smarter trading decisions with data-driven
+              insights.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up"
+              style={{ animationDelay: "0.2s" }}
+            >
               <Button
                 asChild
                 size="lg"
@@ -152,7 +160,7 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard
               title="Total Items Tracked"
-              value={items.length || '...'}
+              value={items.length || "..."}
               subtitle="Across all cities"
               icon={TrendingUp}
             />
@@ -171,7 +179,7 @@ const Index = () => {
             />
             <StatsCard
               title="Last Update"
-              value={lastUpdate ? formatTime(lastUpdate) : '...'}
+              value={lastUpdate ? formatTime(lastUpdate) : "..."}
               subtitle="Updates every 15 min"
               icon={Clock}
             />
@@ -184,12 +192,21 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Top Arbitrage Panel */}
-            <TopArbitragePanel items={arbitrageItems.length > 0 ? arbitrageItems : buildCrossCityArbitrage(topItems)} className="lg:col-span-1" />
+            <TopArbitragePanel
+              items={
+                arbitrageItems.length > 0
+                  ? arbitrageItems
+                  : buildCrossCityArbitrage(topItems)
+              }
+              className="lg:col-span-1"
+            />
 
             {/* Quick Stats */}
             <div className="lg:col-span-2 glass-card p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-foreground">Market Overview</h3>
+                <h3 className="font-semibold text-foreground">
+                  Market Overview
+                </h3>
                 <Link
                   to="/dashboard"
                   className="text-sm text-primary hover:underline flex items-center gap-1"
@@ -205,23 +222,33 @@ const Index = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-2xl font-mono font-semibold text-success">
-                    {previewItems[0] ? `+${previewItems[0].netProfitPercent.toFixed(1)}%` : '0.0%'}
+                    {previewItems[0]
+                      ? `+${previewItems[0].netProfitPercent.toFixed(1)}%`
+                      : "0.0%"}
                   </p>
                   <p className="text-xs text-muted-foreground">Best ROI</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-2xl font-mono font-semibold text-foreground">{arbitrageItems.length}</p>
+                  <p className="text-2xl font-mono font-semibold text-foreground">
+                    {arbitrageItems.length}
+                  </p>
                   <p className="text-xs text-muted-foreground">Active Routes</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-2xl font-mono font-semibold text-foreground">
-                    {previewItems[0] ? `${Math.round(previewItems[0].buyPrice / 1000)}K` : '0K'}
+                    {previewItems[0]
+                      ? `${Math.round(previewItems[0].buyPrice / 1000)}K`
+                      : "0K"}
                   </p>
-                  <p className="text-xs text-muted-foreground">Best Buy Price</p>
+                  <p className="text-xs text-muted-foreground">
+                    Best Buy Price
+                  </p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-2xl font-mono font-semibold text-foreground">
-                    {previewItems[0] ? `${Math.round(previewItems[0].netProfit / 1000)}K` : '0K'}
+                    {previewItems[0]
+                      ? `${Math.round(previewItems[0].netProfit / 1000)}K`
+                      : "0K"}
                   </p>
                   <p className="text-xs text-muted-foreground">Net Profit</p>
                 </div>
@@ -240,7 +267,8 @@ const Index = () => {
                 Live Market Data
               </h2>
               <p className="text-muted-foreground text-sm mt-1">
-                Preview the best cross-city routes before opening the full dashboard
+                Preview the best cross-city routes before opening the full
+                dashboard
               </p>
             </div>
             <Button asChild variant="outline" className="border-primary/30">
@@ -253,7 +281,7 @@ const Index = () => {
           <ArbitrageTable items={previewItems} />
         </div>
       </section>
-    </Layout>
+    </>
   );
 };
 
