@@ -5,9 +5,9 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Baseline estável em `main` após os merges dos PRs #43 e #42; `Quality Gate` restaurado e 269/269 testes passando no estado atual validado
-**Branch ativa:** `feat/alerts-manager-hooks` (já mergeada em `origin/main` em `417d6db`; worktree local contém apenas atualizações de logs)
-**Snapshot local:** `ERROR_LOG.md`, `PENDING_LOG.md` e `memory/MEMORY.md` em atualização local após estabilização do CI e merge do refactor de alertas
+**Status:** Sprint encerrado com Lote 2 mergeado na `main`, artefatos de fechamento consolidados e baseline preservada
+**Branch ativa:** `docs/sprint-close-lote-2` — branch documental criada após o merge do PR #51 para registrar o fechamento do sprint
+**Snapshot local:** worktree contém artefatos documentais de fechamento (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`, ADR-010) e artefatos de `coverage/` fora de escopo
 
 ---
 
@@ -38,15 +38,17 @@
 | Artefato `dist/`                          | ✅ Fixo | Política confirmada: manter `dist/` ignorado no Git; gerar/publicar somente via build local/CI                                                                            |
 | AlertsManager modularizado                | ✅ Fixo | PR #42 mergeado; regras separadas em `useAlertsForm`, `useAlertsFeedback` e `useAlertsUI`; `AlertsManager.tsx` reduzido e com responsabilidades isoladas                  |
 | Quality Gate restaurado                   | ✅ Fixo | PR #43 mergeado; mocks de `@/data/constants` em testes de API corrigidos via mock parcial com `importOriginal`; CI voltou a ficar verde                                   |
+| Layout compartilhado por rota             | ✅ Fixo | `AppLayout` centraliza `Layout` para `Index`, `Dashboard`, `Alerts` e `About`; páginas renderizam apenas conteúdo de rota                                                 |
+| Extração estrutural da PriceTable         | ✅ Fixo | `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` isolam estado local; `PriceTable.tsx` permanece acima de 80% de cobertura                         |
 
 ---
 
 ## Active fronts
 
-- ✅ **LOTE 1B 100% CONCLUÍDO** (2026-03-19): Todos os 4 itens validados — Items 3 e 4 já estavam implementados, PRs #48 e #49 criados para documentação
-- **Próxima frente: LOTE 2** — Refatoração Estrutural e UX (extrair regras da PriceTable, rota com layout compartilhado)
-- Baseline estável em `main` com 269/269 testes passando
-- PR #47 (logs), #48 (Item 3), #49 (Item 4) abertos e aguardando review
+- ✅ **LOTE 1B 100% CONCLUÍDO**: itens 3 e 4 validados e documentados nos PRs #48 e #49
+- ✅ **LOTE 2 CONCLUÍDO E MERGEADO**: refatoração estrutural integrada à `main` via PR #51
+- Baseline validada localmente com `quality:gate` e `280/280` testes passando no fechamento do sprint
+- Próxima frente sugerida após merge: Lote 3 (qualidade, CI e documentação) ou mitigação dos gaps de cobertura do sprint
 
 ---
 
@@ -58,6 +60,7 @@
 - **Proteção global da API**: definir arquitetura da camada central (proxy/backend com cache compartilhado + rate limit) para mitigar refresh concorrente entre usuários
 - **Estratégia mobile**: frente mantida aberta (PWA e/ou app nativo), aguardando recorte em SPEC
 - **Feature futura de temas**: reintroduzir theming completo (light/dark/system) apenas com SPEC dedicada
+- **Cobertura dos hooks extraídos no sprint**: decidir se `usePriceTablePagination.ts` precisa de reforço imediato antes do próximo lote funcional
 
 ---
 
@@ -85,37 +88,36 @@
 - Flag `shouldPersist` necessária para controlar race condition entre `setState` e `useEffect` de persistência no Clear All
 - Cooldown de refresh no cliente não protege limite global da API; sem proxy central, múltiplos usuários ainda podem saturar upstream
 - Não versionar `dist/`; manter artefatos de build fora do controle de versão
+- Não incluir artefatos de `coverage/` em commits/PRs; eles continuam sujando a worktree após `quality:gate`
 
 ---
 
 ## Next recommended steps
 
-1. **Iniciar LOTE 2 — Refatoração Estrutural e UX**:
-   - Extrair regras da `PriceTable` para hooks/serviços puros (filtros, sort, persistência, paginação)
-   - Implementar rota com layout compartilhado para reduzir repetição de `Layout` nas páginas
-   - Validar cobertura de testes após refatoração
-2. **Review e merge dos PRs abertos**: #47 (logs), #48 (Item 3), #49 (Item 4)
-3. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
-4. **Definir desenho da camada central da API** (cache compartilhado + rate limit) antes de liberar refresh manual em escala
+1. **Publicar os artefatos de fechamento do sprint** em uma PR documental limpa
+2. **Abrir a próxima frente técnica mais barata**: reforçar cobertura em `usePriceTablePagination.ts`, `Dashboard.tsx` e `ArbitrageTable.tsx`
+3. **Planejar o Lote 3** (qualidade, CI e documentação), priorizando `typecheck` explícito no `quality:gate`
+4. **Atualizar workflow para actions compatíveis com Node 24** antes da depreciação de 2026-06-02
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** 2026-03-19 (encerramento/consolidação)
+**Sessão:** 2026-03-20 (sprint-close)
 **Trabalho realizado:**
 
-- ✅ **LOTE 1B 100% CONCLUÍDO**: Todos os 4 itens validados e documentados
-  - Item 3 (Cooldown persistente): Validado em `useAlertPoller.ts`, PR #48 criado
-  - Item 4 (Runtime Node 20): Validado em README/package.json/CI, PR #49 criado
-- PR #47 (consolidação de logs) também aberto
-- Logs atualizados: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`
+- ✅ **LOTE 2 IMPLEMENTADO**: `PriceTable` modularizada em hooks e `Layout` compartilhado por rota
+- ✅ `quality:gate` validado no fim do sprint com `280/280` testes
+- ✅ PR #51 mergeado na `main` a partir do commit `188c146`
+- ✅ ADR-010 criado para registrar a convenção estrutural do sprint
+- ✅ Logs de sessão e memória consolidados
 
 **Estado ao encerrar:**
 
-- `origin/main` estável com baseline verde (269/269 testes)
-- 3 PRs abertos aguardando review (#47, #48, #49)
-- Lote 1B completo, pronto para Lote 2
+- `origin/main` já contém o Lote 2 mergeado
+- branch documental `docs/sprint-close-lote-2` preparada para registrar o fechamento do sprint
+- Cobertura global do sprint em 89.22% statements; `PriceTable.tsx` em 83.33%
+- Worktree local suja apenas por artefatos de cobertura
 
 **Retomar por:**
 
@@ -126,19 +128,13 @@ Read before acting:
 - `PENDING_LOG.md`
 
 Current state:
-- ✅ LOTE 1B 100% CONCLUÍDO (todos os 4 itens validados)
-- 3 PRs abertos: #47 (logs), #48 (Item 3), #49 (Item 4)
-- Baseline estável: 269/269 testes, Quality Gate verde
+- ✅ LOTE 1B concluído
+- ✅ LOTE 2 implementado e mergeado na `main`
+- Baseline validada localmente: `quality:gate` verde, `280/280` testes
 
 Recommended next front:
-1. 🎯 PRIMEIRO: Review e merge dos PRs #47, #48, #49
-2. 🚀 DEPOIS: Iniciar LOTE 2 (Refatoração Estrutural e UX)
-   - Extrair regras da PriceTable
-   - Rota com layout compartilhado
-3. Alternativa: Upgrade de workflow para Node 24 (deadline 2026-06-02)
-
-Lote 2 items prioritários (ver PENDING_LOG.md):
-- Extrair regras da PriceTable para hooks/serviços
-- Rota com layout compartilhado
-- Persistência de tabela (filtros + ordenação)
+1. 📦 Publicar os artefatos de fechamento do sprint
+2. 🧪 Atacar os gaps de cobertura mais baratos: `usePriceTablePagination.ts`, `Dashboard.tsx`, `ArbitrageTable.tsx`
+3. 🚀 Planejar o Lote 3 com foco em `typecheck` explícito no `quality:gate`
+4. Alternativa: preparar a migração de actions para Node 24
 ```
