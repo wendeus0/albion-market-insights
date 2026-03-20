@@ -161,4 +161,19 @@ describe("ArbitrageTable", () => {
     expect(screen.getByText("+45.0%")).toBeInTheDocument();
     expect(screen.getByText("+37.5%")).toBeInTheDocument();
   });
+
+  it("deve permitir ordenação pelos demais cabeçalhos", () => {
+    render(<ArbitrageTable items={mockItems} />);
+
+    fireEvent.click(screen.getByText("Buy In"));
+    fireEvent.click(screen.getByText("Buy Price"));
+    fireEvent.click(screen.getByText("Sell In"));
+    fireEvent.click(screen.getByText("Sell Price"));
+    fireEvent.click(screen.getByText("Net Profit"));
+    fireEvent.click(screen.getByText("Updated"));
+
+    expect(screen.getByText("Broadsword T4")).toBeInTheDocument();
+    expect(screen.getByText("Battleaxe T5")).toBeInTheDocument();
+    expect(screen.getByText("Heavy Mace T6")).toBeInTheDocument();
+  });
 });
