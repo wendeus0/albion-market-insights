@@ -25,6 +25,7 @@ Validar Node 24 em lane paralela com isolamento controlado antes de promoção p
 ## Correção aplicada no gate
 - Workflow ajustado para usar chave compatível no matrix: `node_version`
 - Referências atualizadas para `${{ matrix.node_version }}` em setup/logs/conditions
+- Ajuste adicional no comando de runtime para evitar ambiguidade de parser YAML (substituído por bloco multiline)
 - Rollback permanece documentado para lane Node 24
 
 ## Próximas verificações
