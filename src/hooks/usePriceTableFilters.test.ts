@@ -66,6 +66,65 @@ describe("usePriceTableFilters", () => {
     expect(result.current.hasActiveFilters).toBe(true);
   });
 
+  it("deve aplicar filtros de tier, quality, enchant e ranges numéricos", () => {
+    const { result } = renderHook(() => usePriceTableFilters(mockItems));
+
+    act(() => {
+      result.current.setTierFilter("T4");
+      result.current.setQualityFilter("Outstanding");
+      result.current.setEnchantFilter("2");
+      result.current.setMinPrice("60000");
+      result.current.setMaxPrice("70000");
+      result.current.setMinSpread("20");
+      result.current.setMaxSpread("35");
+    });
+
+    expect(result.current.filteredItems).toHaveLength(1);
+    expect(result.current.filteredItems[0]?.itemId).toBe("T4_BAG@2");
+    expect(result.current.activeFilterCount).toBe(7);
+  });
+
+  it("deve suportar enchant 0 para itens sem sufixo", () => {
+    const { result } = renderHook(() => usePriceTableFilters(mockItems));
+
+    act(() => {
+      result.current.setEnchantFilter("0");
+    });
+
+    expect(result.current.filteredItems).toHaveLength(1);
+    expect(result.current.filteredItems[0]?.itemId).toBe("T4_MAIN_SWORD");
+  });
+
+  it("deve persistir somente filtros persistíveis no storage", () => {
+    const { result } = renderHook(() => usePriceTableFilters(mockItems));
+
+    act(() => {
+      result.current.setSearch("bag");
+      result.current.setCategoryFilter("bags");
+      result.current.setCityFilter("Martlock");
+      result.current.setTierFilter("T4");
+      result.current.setQualityFilter("Outstanding");
+      result.current.setEnchantFilter("2");
+      result.current.setMinPrice("60000");
+      result.current.setMaxPrice("70000");
+      result.current.setMinSpread("20");
+      result.current.setMaxSpread("35");
+    });
+
+    const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+
+    expect(persisted.search).toBeUndefined();
+    expect(persisted.categoryFilter).toBe("bags");
+    expect(persisted.cityFilter).toBe("Martlock");
+    expect(persisted.tierFilter).toBe("T4");
+    expect(persisted.qualityFilter).toBe("Outstanding");
+    expect(persisted.enchantFilter).toBe("2");
+    expect(persisted.minPrice).toBe("60000");
+    expect(persisted.maxPrice).toBe("70000");
+    expect(persisted.minSpread).toBe("20");
+    expect(persisted.maxSpread).toBe("35");
+  });
+
   it("deve limpar filtros e remover persistencia ao executar clearAllFilters", () => {
     const { result } = renderHook(() => usePriceTableFilters(mockItems));
 
