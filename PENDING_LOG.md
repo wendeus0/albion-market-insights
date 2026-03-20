@@ -21,6 +21,13 @@
   - Gate 2 (primeira execução de lane): Node 24 verde e Node 20 falhou por leitura rígida de `coverage-summary.json`; fallback para `coverage-final.json` aplicado no enforcement de threshold
   - Reexecução pós-correção (run `23344041067`): lanes Node 20 e Node 24 verdes simultaneamente (status `success`)
 
+- **Janela 6 — Drift de documentação e governança** (2026-03-20) ✅ **CONCLUÍDA**
+  - `CONTEXT.md` atualizado para refletir estado operacional real (quality gate, lanes de runtime, restrições vigentes)
+  - ADR-003 e ADR-005 revisados com última revisão em 2026-03-20
+  - ADR-011 criado para formalizar estratégia Node 20 default + Node 24 em observação
+  - README atualizado com política de runtime em observação
+  - Novos documentos de governança: `docs/architecture/STORAGE_POLICY.md` e `docs/architecture/ARTIFACT_POLICY.md`
+
 - **Lote 2 — Refatoração Estrutural e UX** (2026-03-20) ✅ **MERGEADO NA MAIN via PR #51**
   - `PriceTable` delega filtros, ordenação e paginação para hooks dedicados
   - Novo `AppLayout` via rota-pai elimina repetição manual de `Layout` nas páginas principais
@@ -157,9 +164,9 @@
 - [x] **Threshold oficial de coverage** com enforcement gradual no CI. (PR #58 mergeado; threshold inicial 88%)
 - [x] **Frente #59 — estabilização de flakies em testes** (2026-03-20): timeout global de teste ampliado para 20s + hookTimeout 30s em `vite.config.ts`; `tsconfig.strict.test.ts` migrou de `npx tsc` para binário local do TypeScript com timeout explícito de 60s por caso; `PriceTable.persistence.test.tsx` estabilizado no fluxo de seleção de categoria (`listbox` + `within`) para evitar timeout intermitente no Radix Select; `npm test` e `quality:gate` verdes (`323/323` testes, PR #63 mergeado).
 
-- [ ] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow.
-- [ ] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza.
-- [ ] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI.
+- [x] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow. (2026-03-20)
+- [x] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza. (2026-03-20, `docs/architecture/STORAGE_POLICY.md`)
+- [x] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI. (2026-03-20, `docs/architecture/ARTIFACT_POLICY.md`)
 
 ### Lote 4 — Estratégia futura (não bloqueante)
 
