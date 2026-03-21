@@ -1,6 +1,6 @@
 # SPEC — Fechar Gap de Cobertura em Branches
 
-**Status:** Draft
+**Status:** Approved
 **Data:** 2026-03-21
 **Autor:** Claude
 **Débito:** P2 — qualidade técnica
@@ -41,6 +41,8 @@ Branches não cobertas representam caminhos de erro, validações e casos de bor
 **Given** que `sparkline.tsx` tem 47% de branch coverage
 **When** adicionamos testes para casos de borda
 **Then** cobertura de branches deve atingir ≥90%
+
+_Status de retomada (2026-03-21): já concluído em execução anterior._
 
 ### AC-2: PriceTable.tsx com 90%+ branches
 

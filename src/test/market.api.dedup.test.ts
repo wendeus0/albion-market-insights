@@ -227,4 +227,281 @@ describe("ApiMarketService - deduplicacao por recencia", () => {
       timestamp: "2026-03-21T09:00:00",
     });
   });
+
+  it("deve manter registro atual quando candidato for mais antigo", async () => {
+    let priceCallIndex = 0;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/stats/prices/")) {
+          priceCallIndex += 1;
+
+          if (priceCallIndex === 1) {
+            return Promise.resolve({
+              ok: true,
+              json: vi.fn().mockResolvedValue([
+                {
+                  item_id: "T4_ITEM_0",
+                  city: "Caerleon",
+                  quality: 1,
+                  sell_price_min: 55_000,
+                  sell_price_min_date: "2026-03-21T11:00:00",
+                  buy_price_max: 44_000,
+                  buy_price_max_date: "2026-03-21T11:00:00",
+                },
+              ]),
+            });
+          }
+
+          return Promise.resolve({
+            ok: true,
+            json: vi.fn().mockResolvedValue([
+              {
+                item_id: "T4_ITEM_0",
+                city: "Caerleon",
+                quality: 1,
+                sell_price_min: 50_000,
+                sell_price_min_date: "2026-03-21T09:00:00",
+                buy_price_max: 40_000,
+                buy_price_max_date: "2026-03-21T09:00:00",
+              },
+            ]),
+          });
+        }
+
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue([]),
+        });
+      }),
+    );
+
+    const items = await service.getItems();
+
+    expect(items).toHaveLength(1);
+    expect(items[0].sellPrice).toBe(55_000);
+    expect(items[0].buyPrice).toBe(44_000);
+    expect(items[0].timestamp).toBe("2026-03-21T11:00:00");
+  });
+
+  it("deve manter registro atual quando candidato tiver menor completude de preco", async () => {
+    let priceCallIndex = 0;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/stats/prices/")) {
+          priceCallIndex += 1;
+
+          if (priceCallIndex === 1) {
+            return Promise.resolve({
+              ok: true,
+              json: vi.fn().mockResolvedValue([
+                {
+                  item_id: "T4_ITEM_0",
+                  city: "Caerleon",
+                  quality: 1,
+                  sell_price_min: 55_000,
+                  sell_price_min_date: "2026-03-21T10:00:00",
+                  buy_price_max: 44_000,
+                  buy_price_max_date: "2026-03-21T10:00:00",
+                },
+              ]),
+            });
+          }
+
+          return Promise.resolve({
+            ok: true,
+            json: vi.fn().mockResolvedValue([
+              {
+                item_id: "T4_ITEM_0",
+                city: "Caerleon",
+                quality: 1,
+                sell_price_min: 55_000,
+                sell_price_min_date: "2026-03-21T10:00:00",
+                buy_price_max: 0,
+                buy_price_max_date: "2026-03-21T10:00:00",
+              },
+            ]),
+          });
+        }
+
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue([]),
+        });
+      }),
+    );
+
+    const items = await service.getItems();
+
+    expect(items).toHaveLength(1);
+    expect(items[0].buyPrice).toBe(44_000);
+  });
+
+  it("deve preferir candidato com maior confianca de timestamp quando recencia empata", async () => {
+    let priceCallIndex = 0;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/stats/prices/")) {
+          priceCallIndex += 1;
+
+          if (priceCallIndex === 1) {
+            return Promise.resolve({
+              ok: true,
+              json: vi.fn().mockResolvedValue([
+                {
+                  item_id: "T4_ITEM_0",
+                  city: "Caerleon",
+                  quality: 1,
+                  sell_price_min: 52_000,
+                  sell_price_min_date: "invalid-date",
+                  buy_price_max: 41_000,
+                  buy_price_max_date: "2026-03-21T10:00:00",
+                },
+              ]),
+            });
+          }
+
+          return Promise.resolve({
+            ok: true,
+            json: vi.fn().mockResolvedValue([
+              {
+                item_id: "T4_ITEM_0",
+                city: "Caerleon",
+                quality: 1,
+                sell_price_min: 56_000,
+                sell_price_min_date: "2026-03-21T10:00:00",
+                buy_price_max: 45_000,
+                buy_price_max_date: "2026-03-21T09:00:00",
+              },
+            ]),
+          });
+        }
+
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue([]),
+        });
+      }),
+    );
+
+    const items = await service.getItems();
+
+    expect(items).toHaveLength(1);
+    expect(items[0].sellPrice).toBe(56_000);
+    expect(items[0].buyPrice).toBe(45_000);
+  });
+
+  it("deve manter atual quando candidato tiver menor confianca de timestamp", async () => {
+    let priceCallIndex = 0;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/stats/prices/")) {
+          priceCallIndex += 1;
+
+          if (priceCallIndex === 1) {
+            return Promise.resolve({
+              ok: true,
+              json: vi.fn().mockResolvedValue([
+                {
+                  item_id: "T4_ITEM_0",
+                  city: "Caerleon",
+                  quality: 1,
+                  sell_price_min: 57_000,
+                  sell_price_min_date: "2026-03-21T10:00:00",
+                  buy_price_max: 46_000,
+                  buy_price_max_date: "2026-03-21T09:00:00",
+                },
+              ]),
+            });
+          }
+
+          return Promise.resolve({
+            ok: true,
+            json: vi.fn().mockResolvedValue([
+              {
+                item_id: "T4_ITEM_0",
+                city: "Caerleon",
+                quality: 1,
+                sell_price_min: 53_000,
+                sell_price_min_date: "invalid-date",
+                buy_price_max: 42_000,
+                buy_price_max_date: "2026-03-21T10:00:00",
+              },
+            ]),
+          });
+        }
+
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue([]),
+        });
+      }),
+    );
+
+    const items = await service.getItems();
+
+    expect(items).toHaveLength(1);
+    expect(items[0].sellPrice).toBe(57_000);
+    expect(items[0].buyPrice).toBe(46_000);
+  });
+
+  it("deve descartar registros invalidos durante parse do batch de precos", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/stats/prices/")) {
+          return Promise.resolve({
+            ok: true,
+            json: vi.fn().mockResolvedValue([
+              {
+                item_id: "T4_ITEM_0",
+                city: "Caerleon",
+                quality: 1,
+                sell_price_min: 50_000,
+                sell_price_min_date: "2026-03-21T10:00:00",
+                buy_price_max: 40_000,
+                buy_price_max_date: "2026-03-21T09:00:00",
+              },
+              {
+                item_id: "INVALID",
+                city: "Caerleon",
+                quality: 99,
+              },
+            ]),
+          });
+        }
+
+        return Promise.resolve({
+          ok: true,
+          json: vi.fn().mockResolvedValue([]),
+        });
+      }),
+    );
+
+    const items = await service.getItems();
+
+    expect(items).toHaveLength(1);
+    expect(items[0].itemId).toBe("T4_ITEM_0");
+  });
+
+  it("deve retornar mapa vazio quando fetchHistoryBatch receber arrays vazios", async () => {
+    const map = await (
+      service as unknown as {
+        fetchHistoryBatch: (
+          itemIds: string[],
+          city: "Caerleon",
+          qualities: number[],
+        ) => Promise<Map<string, number[]>>;
+      }
+    ).fetchHistoryBatch([], "Caerleon", []);
+
+    expect(map.size).toBe(0);
+  });
 });

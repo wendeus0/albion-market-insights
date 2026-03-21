@@ -1,93 +1,79 @@
 # REPORT — Cobertura de Branches
 
-**Status:** IN_PROGRESS (AC-1 completo, AC-2/3 parcial)
+**Status:** READY_FOR_COMMIT
 **Data:** 2026-03-21
-**Branch:** feature/coverage-branches-gap
+**Branch:** feat/coverage-branches-gap-ac2-ac4
 **Tipo:** implement-feature
 **Referência:** P2 qualidade — fechar gap de branches de 84%→90%
 
 ---
 
-## Progresso Atual
+## Objetivo
 
-### Cobertura Global
+Retomar a frente `coverage-branches-gap` para concluir AC-2, AC-3 e AC-4, elevando cobertura de branches nos módulos críticos e ultrapassando 90% global.
 
-| Métrica      | Antes  | Depois     | Meta    |
-| ------------ | ------ | ---------- | ------- |
-| Statements   | 95.17% | 94.07%     | 90%     |
-| **Branches** | 84%    | **86.71%** | **90%** |
-| Functions    | 93.15% | 94.04%     | 90%     |
-| Lines        | 95.26% | 95.70%     | 90%     |
+## Resultado
 
-**Faltam:** 19 branches para atingir 90%
-
----
+| Métrica      |      Antes |     Depois |    Meta |
+| ------------ | ---------: | ---------: | ------: |
+| Statements   |     94.07% |     95.83% |     90% |
+| **Branches** | **86.71%** | **90.28%** | **90%** |
+| Functions    |     94.04% |     94.64% |     90% |
+| Lines        |     95.70% |     96.92% |     90% |
 
 ## Critérios de Aceite
 
-| AC   | Descrição                        | Status      | Branches           |
-| ---- | -------------------------------- | ----------- | ------------------ |
-| AC-1 | sparkline.tsx com 90%+ branches  | ✅ Completo | 47%→100%           |
-| AC-2 | PriceTable.tsx com 90%+ branches | 🔄 Parcial  | 76% (9 uncovered)  |
-| AC-3 | market.api.ts com 90%+ branches  | 🔄 Pendente | 78% (16 uncovered) |
-| AC-4 | Cobertura global ≥90%            | 🔄 Parcial  | 86.71% → meta 90%  |
+| AC   | Descrição                          | Status                   | Evidência       |
+| ---- | ---------------------------------- | ------------------------ | --------------- |
+| AC-1 | `sparkline.tsx` com 90%+ branches  | ✅ Concluído previamente | 100% mantido    |
+| AC-2 | `PriceTable.tsx` com 90%+ branches | ✅ Concluído             | 76.31% → 100%   |
+| AC-3 | `market.api.ts` com 90%+ branches  | ✅ Concluído             | 78.94% → 94.73% |
+| AC-4 | Cobertura global de branches ≥90%  | ✅ Concluído             | 86.71% → 90.28% |
 
----
+## Mudanças Aplicadas
 
-## Mudanças Realizadas
+- `features/coverage-branches-gap/SPEC.md`
+  - status promovido para `Approved`
+  - anotação de retomada para AC-1 já concluído
+- `src/test/PriceTable.test.tsx`
+  - novos cenários para branching de `formatTime` (minutos/horas)
+  - teste de ordenação por cidade
+  - teste de feedback de faixa inválida de spread
+  - teste de variação de cor para `spreadPercent` médio/baixo
+- `src/test/market.api.dedup.test.ts`
+  - cenários adicionais de deduplicação por recência/completude/confiança
+  - cenário com timestamps inválidos (caminho `parseTimestamp` defensivo)
+  - cenário de descarte de registros inválidos em parse
+  - cenário para retorno imediato de histórico com arrays vazios
+- `src/test/market.api.test.ts`
+  - limpeza de cache (`localStorage`) por teste para evitar bypass de fluxo
+  - cenário de `getLastUpdateTime()` antes de fetch bem-sucedido
+  - cenário de fallback desabilitado com estado degradado
 
-### AC-1: sparkline.tsx ✅ (Commit1)
+## Validações Executadas
 
-Arquivo: `src/test/sparkline.test.tsx` — 15 testes
-
-- `data` undefined/null/vazio/1 elemento/2+ elementos
-- `range = 0` (todos valores iguais)
-- Tendência positiva/negativa/neutra
-- Cor explícita vs tendência
-
-### AC-2/3: Arbitrage + DataSource (Commit 2)
-
-Arquivos:
-
-- `src/test/arbitrage.test.ts` — +3 testes
-- `src/test/dataSource.manager.test.ts` — +1 teste
-- `src/test/PriceTable.test.tsx` — +4 testes
-
-Branches cobertos:
-
-- arbitrage.ts: 84%→ 92%
-- dataSource.manager.ts: mantido
-
----
-
-## Próximos Passos
-
-1. **AC-2**: Adicionar mais testes para PriceTable.tsx
-   - Branches de onClick handlers
-
-2. **AC-3**: Adicionar testes para market.api.ts
-   - Branches de error/retry
-   - Branches de deduplicação
-
-3. **AC-4**: Verificar cobertura global atingiu 90%
-
----
-
-## Commits
-
-```
-785f8ef test(coverage): add sparkline tests for branch coverage (AC-1)
-6e85155 test(coverage): add tests for branch coverage (AC-2/3 partial)
+```bash
+npx vitest run src/test/PriceTable.test.tsx src/test/market.api.dedup.test.ts src/test/market.api.test.ts
+npm run test -- --coverage
+npm run quality:gate
 ```
 
----
+- `quality:gate`: PASS
+- `lint`: PASS
+- `typecheck`: PASS
+- `test`: 394/394 PASS
+- `build`: PASS
 
-## Cobertura por Arquivo
+## Code Review
 
-| Arquivo           | Branches | Uncovered |
-| ----------------- | -------- | --------- |
-| sparkline.tsx     | 100%     | 0         |
-| arbitrage.ts      | 92%      | 2         |
-| PriceTable.tsx    | 76%      | 9         |
-| market.api.ts     | 78%      | 16        |
-| AlertsManager.tsx | 76%      | 9         |
+- Veredito: `REVIEW_OK`
+- Sem blockers de lógica, escopo ou convenções para a frente atual
+
+## Security Review
+
+- `security-review` **não acionada** (skip justificado)
+- Motivo: alteração restrita a testes + documentação de SPEC/REPORT; sem mudanças em CI/CD, auth/secrets, infraestrutura, API pública ou automações
+
+## Riscos Residuais
+
+- Nenhum risco funcional novo identificado (mudanças sem impacto em runtime de produção)
