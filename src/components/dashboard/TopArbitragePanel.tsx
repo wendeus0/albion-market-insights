@@ -1,5 +1,6 @@
 import { ArrowUpRight, Route, ShoppingCart } from 'lucide-react';
 import type { ArbitrageOpportunity } from '@/data/types';
+import { ItemIcon } from '@/components/items/ItemIcon';
 import { cn } from '@/lib/utils';
 
 interface TopArbitragePanelProps {
@@ -34,6 +35,7 @@ export function TopArbitragePanel({ items, className }: TopArbitragePanelProps) 
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
+                <ItemIcon itemId={item.itemId} itemName={item.itemName} />
                 <p className="font-medium text-sm text-foreground truncate">{item.itemName}</p>
                 <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                   {item.tier}
