@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 // Mock dos hooks
 vi.mock("@/hooks/useMarketItems", () => ({
@@ -17,7 +17,7 @@ vi.mock("@/hooks/useRefreshCooldown", () => ({
   useRefreshCooldown: vi.fn(),
 }));
 
-vi.mock("@/components/ui/sonner", () => ({
+vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),

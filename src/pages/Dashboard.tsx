@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { buildCrossCityArbitrage } from "@/lib/arbitrage";
 
