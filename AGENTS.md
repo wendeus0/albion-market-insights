@@ -53,6 +53,7 @@ Meta-skill: `implement-feature`
 8. Não editar `src/components/ui/` (shadcn/ui)
 9. Não fazer polling agressivo à API
 10. Antes de `session-open`, `session-close`, `sprint-close` ou `memory-curator` quando o estado de branches/PRs impactar a memória, executar `.claude/scripts/git-sync-check.sh`
+11. `memory-curator` neste projeto usa formato de índice; ver `.claude/rules/memory.md`
 
 ### Guardrail de Memória Durável
 
