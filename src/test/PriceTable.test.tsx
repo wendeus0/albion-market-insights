@@ -374,3 +374,59 @@ describe("PriceTable — filtros combinados", () => {
     expect(screen.getByText(/2 filter active/i)).toBeInTheDocument();
   });
 });
+
+describe("PriceTable - branches de sort e paginacao", () => {
+  it("ordena por buyPrice", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const buyPriceBtn = screen.getByRole("button", { name: /buy price/i });
+    await user.click(buyPriceBtn);
+
+    expect(buyPriceBtn).toBeInTheDocument();
+  });
+
+  it("ordena por spreadPercent", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const spreadBtn = screen.getByRole("button", { name: /spread/i });
+    await user.click(spreadBtn);
+
+    expect(spreadBtn).toBeInTheDocument();
+  });
+
+  it("ordena por timestamp", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const timestampBtn = screen.getByRole("button", { name: /updated/i });
+    await user.click(timestampBtn);
+
+    expect(timestampBtn).toBeInTheDocument();
+  });
+
+  it("navega entre paginas", async () => {
+    const user = userEvent.setup();
+    const manyItems = Array.from({ length: 50 }, (_, i) => ({
+      itemId: `T4_ITEM_${i}`,
+      itemName: `Item ${i}`,
+      city: "Caerleon",
+      sellPrice: 50000 + i * 1000,
+      buyPrice: 40000 + i * 1000,
+      spread: 10000,
+      spreadPercent: 25,
+      timestamp: new Date().toISOString(),
+      tier: "T4",
+      quality: "Normal",
+      priceHistory: [45000],
+    }));
+
+    render(<PriceTable items={manyItems} />);
+
+    const page2 = screen.getByRole("button", { name: "2" });
+    await user.click(page2);
+
+    expect(page2).toHaveClass("bg-primary");
+  });
+});

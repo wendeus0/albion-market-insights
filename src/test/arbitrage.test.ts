@@ -1,67 +1,206 @@
-import { describe, it, expect } from 'vitest';
-import type { MarketItem } from '@/data/types';
-import { buildCrossCityArbitrage, MARKET_TAX_RATE } from '@/lib/arbitrage';
+import { describe, it, expect } from "vitest";
+import type { MarketItem } from "@/data/types";
+import { buildCrossCityArbitrage, MARKET_TAX_RATE } from "@/lib/arbitrage";
 
-const baseTimestamp = '2026-03-17T10:00:00.000Z';
+const baseTimestamp = "2026-03-17T10:00:00.000Z";
 
 function makeItem(overrides: Partial<MarketItem>): MarketItem {
   return {
-    itemId: 'T8_2H_HOLYSTAFF_HELL@3',
-    itemName: 'Great Holy Staff T8 .3',
-    city: 'Martlock',
+    itemId: "T8_2H_HOLYSTAFF_HELL@3",
+    itemName: "Great Holy Staff T8 .3",
+    city: "Martlock",
     sellPrice: 5_900_000,
     buyPrice: 1,
     spread: 5_899_999,
     spreadPercent: 589999900,
     timestamp: baseTimestamp,
-    tier: 'T8',
-    quality: 'Good',
+    tier: "T8",
+    quality: "Good",
     priceHistory: [5_700_000, 5_800_000, 5_900_000],
     ...overrides,
   };
 }
 
-describe('buildCrossCityArbitrage', () => {
-  it('deve expor taxa de mercado fixa de 6.5%', () => {
+describe("buildCrossCityArbitrage", () => {
+  it("deve expor taxa de mercado fixa de 6.5%", () => {
     expect(MARKET_TAX_RATE).toBe(0.065);
   });
 
-  it('deve montar oportunidade com menor sell price e maior buy price em cidade diferente', () => {
+  it("deve montar oportunidade com menor sell price e maior buy price em cidade diferente", () => {
     const opportunities = buildCrossCityArbitrage([
-      makeItem({ city: 'Martlock', sellPrice: 5_900_000, buyPrice: 1 }),
-      makeItem({ city: 'Caerleon', sellPrice: 7_500_000, buyPrice: 7_200_000 }),
-      makeItem({ city: 'Bridgewatch', sellPrice: 6_300_000, buyPrice: 6_100_000 }),
+      makeItem({ city: "Martlock", sellPrice: 5_900_000, buyPrice: 1 }),
+      makeItem({ city: "Caerleon", sellPrice: 7_500_000, buyPrice: 7_200_000 }),
+      makeItem({
+        city: "Bridgewatch",
+        sellPrice: 6_300_000,
+        buyPrice: 6_100_000,
+      }),
     ]);
 
     expect(opportunities).toHaveLength(1);
     expect(opportunities[0]).toMatchObject({
-      buyCity: 'Martlock',
-      sellCity: 'Caerleon',
+      buyCity: "Martlock",
+      sellCity: "Caerleon",
       buyPrice: 5_900_000,
       sellPrice: 7_200_000,
       netProfit: 832_000,
     });
   });
 
-  it('deve excluir oportunidades com lucro liquido menor ou igual a zero', () => {
+  it("deve excluir oportunidades com lucro liquido menor ou igual a zero", () => {
     const opportunities = buildCrossCityArbitrage([
-      makeItem({ itemId: 'T6_MAIN_AXE', itemName: 'Battleaxe T6', tier: 'T6', quality: 'Normal', city: 'Bridgewatch', sellPrice: 100_000, buyPrice: 90_000 }),
-      makeItem({ itemId: 'T6_MAIN_AXE', itemName: 'Battleaxe T6', tier: 'T6', quality: 'Normal', city: 'Thetford', sellPrice: 110_000, buyPrice: 100_000 }),
+      makeItem({
+        itemId: "T6_MAIN_AXE",
+        itemName: "Battleaxe T6",
+        tier: "T6",
+        quality: "Normal",
+        city: "Bridgewatch",
+        sellPrice: 100_000,
+        buyPrice: 90_000,
+      }),
+      makeItem({
+        itemId: "T6_MAIN_AXE",
+        itemName: "Battleaxe T6",
+        tier: "T6",
+        quality: "Normal",
+        city: "Thetford",
+        sellPrice: 110_000,
+        buyPrice: 100_000,
+      }),
     ]);
 
     expect(opportunities).toEqual([]);
   });
 
-  it('deve ordenar oportunidades por maior percentual de lucro liquido', () => {
+  it("deve ordenar oportunidades por maior percentual de lucro liquido", () => {
     const opportunities = buildCrossCityArbitrage([
-      makeItem({ itemId: 'T8_2H_HOLYSTAFF_HELL@3', itemName: 'Great Holy Staff T8 .3', city: 'Martlock', sellPrice: 5_900_000, buyPrice: 1 }),
-      makeItem({ itemId: 'T8_2H_HOLYSTAFF_HELL@3', itemName: 'Great Holy Staff T8 .3', city: 'Caerleon', sellPrice: 7_500_000, buyPrice: 7_200_000 }),
-      makeItem({ itemId: 'T5_MAIN_SWORD', itemName: 'Broadsword T5', tier: 'T5', quality: 'Normal', city: 'Lymhurst', sellPrice: 50_000, buyPrice: 40_000 }),
-      makeItem({ itemId: 'T5_MAIN_SWORD', itemName: 'Broadsword T5', tier: 'T5', quality: 'Normal', city: 'Bridgewatch', sellPrice: 60_000, buyPrice: 70_000 }),
+      makeItem({
+        itemId: "T8_2H_HOLYSTAFF_HELL@3",
+        itemName: "Great Holy Staff T8 .3",
+        city: "Martlock",
+        sellPrice: 5_900_000,
+        buyPrice: 1,
+      }),
+      makeItem({
+        itemId: "T8_2H_HOLYSTAFF_HELL@3",
+        itemName: "Great Holy Staff T8 .3",
+        city: "Caerleon",
+        sellPrice: 7_500_000,
+        buyPrice: 7_200_000,
+      }),
+      makeItem({
+        itemId: "T5_MAIN_SWORD",
+        itemName: "Broadsword T5",
+        tier: "T5",
+        quality: "Normal",
+        city: "Lymhurst",
+        sellPrice: 50_000,
+        buyPrice: 40_000,
+      }),
+      makeItem({
+        itemId: "T5_MAIN_SWORD",
+        itemName: "Broadsword T5",
+        tier: "T5",
+        quality: "Normal",
+        city: "Bridgewatch",
+        sellPrice: 60_000,
+        buyPrice: 70_000,
+      }),
     ]);
 
     expect(opportunities).toHaveLength(2);
-    expect(opportunities[0].itemId).toBe('T5_MAIN_SWORD');
-    expect(opportunities[0].netProfitPercent).toBeGreaterThan(opportunities[1].netProfitPercent);
+    expect(opportunities[0].itemId).toBe("T5_MAIN_SWORD");
+    expect(opportunities[0].netProfitPercent).toBeGreaterThan(
+      opportunities[1].netProfitPercent,
+    );
+  });
+
+  it("deve excluir oportunidades na mesma cidade", () => {
+    const opportunities = buildCrossCityArbitrage([
+      makeItem({
+        itemId: "T4_BAG",
+        itemName: "Bag T4",
+        city: "Caerleon",
+        sellPrice: 10_000,
+        buyPrice: 8_000,
+      }),
+      makeItem({
+        itemId: "T4_BAG",
+        itemName: "Bag T4",
+        city: "Caerleon",
+        sellPrice: 12_000,
+        buyPrice: 15_000,
+      }),
+    ]);
+
+    expect(opportunities).toEqual([]);
+  });
+
+  it("deve excluir oportunidades com preco zero", () => {
+    const opportunities = buildCrossCityArbitrage([
+      makeItem({
+        itemId: "T4_BAG",
+        itemName: "Bag T4",
+        city: "Martlock",
+        sellPrice: 0,
+        buyPrice: 15_000,
+      }),
+      makeItem({
+        itemId: "T4_BAG",
+        itemName: "Bag T4",
+        city: "Caerleon",
+        sellPrice: 15_000,
+        buyPrice: 0,
+      }),
+    ]);
+
+    expect(opportunities).toEqual([]);
+  });
+
+  it("deve ordenar por lucro liquido quando percentuais sao iguais", () => {
+    const opportunities = buildCrossCityArbitrage([
+      makeItem({
+        itemId: "T4_ITEM_A",
+        itemName: "Item A",
+        tier: "T4",
+        quality: "Normal",
+        city: "Martlock",
+        sellPrice: 100_000,
+        buyPrice: 1,
+      }),
+      makeItem({
+        itemId: "T4_ITEM_A",
+        itemName: "Item A",
+        tier: "T4",
+        quality: "Normal",
+        city: "Caerleon",
+        sellPrice: 200_000,
+        buyPrice: 187_000,
+      }),
+      makeItem({
+        itemId: "T4_ITEM_B",
+        itemName: "Item B",
+        tier: "T4",
+        quality: "Normal",
+        city: "Bridgewatch",
+        sellPrice: 1_000_000,
+        buyPrice: 1,
+      }),
+      makeItem({
+        itemId: "T4_ITEM_B",
+        itemName: "Item B",
+        tier: "T4",
+        quality: "Normal",
+        city: "Thetford",
+        sellPrice: 2_000_000,
+        buyPrice: 1_870_000,
+      }),
+    ]);
+
+    expect(opportunities).toHaveLength(2);
+    expect(opportunities[0].itemId).toBe("T4_ITEM_B");
+    expect(opportunities[0].netProfit).toBeGreaterThan(
+      opportunities[1].netProfit,
+    );
   });
 });
