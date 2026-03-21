@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
 import type { ArbitrageOpportunity } from '@/data/types';
 import { Input } from '@/components/ui/input';
+import { ItemIcon } from '@/components/items/ItemIcon';
 import { cn } from '@/lib/utils';
 
 interface ArbitrageTableProps {
@@ -205,13 +206,16 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
                   className="border-b border-border/30 hover:bg-muted/30 transition-colors"
                 >
                   <td className="p-3">
-                    <div>
-                      <p className="font-medium text-sm text-foreground">{item.itemName}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                          {item.tier}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{item.quality}</span>
+                    <div className="flex items-center gap-2">
+                      <ItemIcon itemId={item.itemId} itemName={item.itemName} />
+                      <div>
+                        <p className="font-medium text-sm text-foreground">{item.itemName}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                            {item.tier}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{item.quality}</span>
+                        </div>
                       </div>
                     </div>
                   </td>

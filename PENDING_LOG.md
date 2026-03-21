@@ -4,6 +4,24 @@
 
 ## Decisões incorporadas
 
+- **Contrato de autonomia v1 — Execução Opção A (Frente B: ícones híbridos)** (2026-03-20) ✅ **CONCLUÍDO EM BRANCH `feat/frente-b-icon-fallback`**
+  - Estratégia híbrida aplicada: CDN primária (`render.albiononline.com`) + fallback local (`/placeholder.svg`) em falha de carregamento
+  - Novo componente reutilizável:
+    - `src/components/items/ItemIcon.tsx`
+    - `src/components/items/itemIcon.utils.ts`
+  - Pontos de UI atualizados para exibir ícone de item:
+    - `ArbitrageTable`, `PriceTable`, `TopArbitragePanel`, `TopItemsPanel`
+  - Testes adicionados:
+    - `src/components/items/ItemIcon.test.tsx` (4 cenários: URL CDN, render primário, fallback em erro, reset ao trocar item)
+  - Gates executados:
+    - lint: ok (0 erro, 7 warnings conhecidos de vendor/ui)
+    - typecheck: ok
+    - test: ok (36 arquivos, 337 testes)
+    - build: ok
+  - Registro de obstáculos das frentes futuras atualizado em issues abertas:
+    - #65 (Frente C): comentário de atualização do bloqueio em 2026-03-20 — ausência de infraestrutura auth dual
+    - #66 (Frente D): comentário de atualização do bloqueio em 2026-03-20 — ausência de backend de entrega/observabilidade Discord
+
 - **Hotfix CI PR #67 — coverage summary ausente no step de threshold** (2026-03-20) ✅ **CONCLUÍDO**
   - Causa raiz: workflow esperava `coverage/coverage-summary.json`, mas a configuração de teste não forçava `json-summary` no reporter
   - Correção aplicada em `vite.config.ts`:

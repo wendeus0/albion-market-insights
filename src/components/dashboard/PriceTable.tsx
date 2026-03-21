@@ -30,6 +30,7 @@ import {
 import { usePriceTableFilters } from "@/hooks/usePriceTableFilters";
 import { usePriceTablePagination } from "@/hooks/usePriceTablePagination";
 import { usePriceTableSort, type SortField } from "@/hooks/usePriceTableSort";
+import { ItemIcon } from "@/components/items/ItemIcon";
 import { cn } from "@/lib/utils";
 
 interface PriceTableProps {
@@ -354,6 +355,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
                 >
                   <td className="p-3">
                     <div className="flex items-center gap-2">
+                      <ItemIcon itemId={item.itemId} itemName={item.itemName} />
                       <div>
                         <p className="font-medium text-sm text-foreground">
                           {item.itemName}
