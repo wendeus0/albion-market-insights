@@ -20,6 +20,91 @@ export const HISTORY_CONCURRENCY = 3;
 export const RETRY_MAX_ATTEMPTS = 3;
 export const RETRY_BASE_DELAY_MS = 500;
 
+function parseTimestamp(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function getRecordRecency(record: AlbionPriceRecord): number {
+  return Math.max(
+    parseTimestamp(record.sell_price_min_date),
+    parseTimestamp(record.buy_price_max_date),
+  );
+}
+
+function getRecordPriceCompleteness(record: AlbionPriceRecord): number {
+  return [record.sell_price_min > 0, record.buy_price_max > 0].filter(Boolean)
+    .length;
+}
+
+function getRecordTimestampConfidence(record: AlbionPriceRecord): number {
+  return [
+    parseTimestamp(record.sell_price_min_date) > 0,
+    parseTimestamp(record.buy_price_max_date) > 0,
+  ].filter(Boolean).length;
+}
+
+function getRecordConfidence(record: AlbionPriceRecord): number {
+  return [
+    record.sell_price_min > 0,
+    record.buy_price_max > 0,
+    parseTimestamp(record.sell_price_min_date) > 0,
+    parseTimestamp(record.buy_price_max_date) > 0,
+  ].filter(Boolean).length;
+}
+
+function choosePreferredRecord(
+  current: AlbionPriceRecord,
+  candidate: AlbionPriceRecord,
+): AlbionPriceRecord {
+  const currentRecency = getRecordRecency(current);
+  const candidateRecency = getRecordRecency(candidate);
+
+  if (candidateRecency > currentRecency) return candidate;
+  if (candidateRecency < currentRecency) return current;
+
+  const currentPriceCompleteness = getRecordPriceCompleteness(current);
+  const candidatePriceCompleteness = getRecordPriceCompleteness(candidate);
+
+  if (candidatePriceCompleteness > currentPriceCompleteness) return candidate;
+  if (candidatePriceCompleteness < currentPriceCompleteness) return current;
+
+  const currentTimestampConfidence = getRecordTimestampConfidence(current);
+  const candidateTimestampConfidence = getRecordTimestampConfidence(candidate);
+
+  if (candidateTimestampConfidence > currentTimestampConfidence)
+    return candidate;
+  if (candidateTimestampConfidence < currentTimestampConfidence) return current;
+
+  const currentConfidence = getRecordConfidence(current);
+  const candidateConfidence = getRecordConfidence(candidate);
+
+  if (candidateConfidence > currentConfidence) return candidate;
+  if (candidateConfidence < currentConfidence) return current;
+
+  return current;
+}
+
+function deduplicatePriceRecords(
+  records: AlbionPriceRecord[],
+): AlbionPriceRecord[] {
+  const deduped = new Map<string, AlbionPriceRecord>();
+
+  for (const record of records) {
+    const key = `${record.item_id}|${record.city}|${record.quality}`;
+    const current = deduped.get(key);
+
+    if (!current) {
+      deduped.set(key, record);
+      continue;
+    }
+
+    deduped.set(key, choosePreferredRecord(current, record));
+  }
+
+  return [...deduped.values()];
+}
+
 function isRetryable(status: number): boolean {
   return status === 429 || (status >= 500 && status <= 599);
 }
@@ -79,16 +164,8 @@ const LOCATIONS = [
 
 type Location = (typeof LOCATIONS)[number];
 
-// Key: `${itemId}|${city}|${quality}`, value: array of avg_prices ordered oldest→newest
+// Key: `${itemId}|${city}`, value: array of avg_prices ordered oldest→newest
 type HistoryMap = Map<string, number[]>;
-
-function buildHistoryKey(
-  itemId: string,
-  city: string,
-  quality: number,
-): string {
-  return `${itemId}|${city}|${quality}`;
-}
 
 export function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -160,11 +237,7 @@ export class ApiMarketService implements MarketService {
           .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
           .map((d) => d.avg_price);
         map.set(
-          buildHistoryKey(
-            result.data.item_id,
-            result.data.location,
-            result.data.quality,
-          ),
+          `${result.data.item_id}|${result.data.location}|${result.data.quality}`,
           sorted,
         );
       }
@@ -234,14 +307,7 @@ export class ApiMarketService implements MarketService {
       const batchResults = await withConcurrency(priceTasks, 3);
       clearTimeout(timeoutId);
 
-      // Deduplicate across batches (first occurrence wins)
-      const seen = new Set<string>();
-      const allPriceRecords = batchResults.flat().filter((r) => {
-        const key = `${r.item_id}|${r.city}|${r.quality}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      const allPriceRecords = deduplicatePriceRecords(batchResults.flat());
 
       if (allPriceRecords.length === 0) {
         // Nenhum dado retornado da API
@@ -266,7 +332,7 @@ export class ApiMarketService implements MarketService {
       const result = recordsWithPrices.map((record) => {
         const item = albionRecordToMarketItem(record);
         const history = historyMap.get(
-          buildHistoryKey(record.item_id, record.city, record.quality),
+          `${record.item_id}|${record.city}|${record.quality}`,
         );
 
         return {
