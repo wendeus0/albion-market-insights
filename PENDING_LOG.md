@@ -282,6 +282,12 @@
 
 ## Decisões incorporadas recentemente
 
+- **Guardrail de sincronização Git para memória durável** (2026-03-21) ✅ **CONCLUÍDO**
+  - Script `.claude/scripts/git-sync-check.sh` criado para validar estado remoto/local antes de consolidar memória ou handoff
+  - `AGENTS.md` atualizado para exigir a checagem antes de `session-open`, `session-close`, `sprint-close` e `memory-curator` quando branches/PRs impactarem a memória
+  - `CLAUDE.md` atualizado para reforçar o guardrail em fluxos de contexto persistente
+  - Objetivo: evitar que branches locais já mergeadas sejam tratadas como frentes ainda ativas
+
 - **Atualização de memória pós-merge PR #64** (2026-03-21) ✅ **CONCLUÍDO**
   - MEMORY.md atualizado para refletir merge do PR #64 (lane Node 24 integrada à CI)
   - Decisão estável adicionada: CI com lane Node 24 paralela
