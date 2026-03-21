@@ -1,10 +1,6 @@
-import type { MarketService } from './market.service';
-import { MockMarketService } from './market.mock';
-import { ApiMarketService } from './market.api';
+import type { MarketService } from "./market.service";
+import { createMarketService } from "./factory";
 
 export type { MarketService };
-
-export const marketService: MarketService =
-  import.meta.env.VITE_USE_REAL_API === 'true'
-    ? new ApiMarketService()
-    : new MockMarketService();
+export { createMarketService } from "./factory";
+export const marketService: MarketService = createMarketService();

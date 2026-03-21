@@ -197,8 +197,11 @@ export async function withConcurrency<T>(
 }
 
 export class ApiMarketService implements MarketService {
-  private storage = new AlertStorageService();
-  private fallback = new MockMarketService();
+  constructor(
+    private storage: AlertStorageService = new AlertStorageService(),
+    private fallback: MarketService = new MockMarketService(),
+  ) {}
+
   private cachedLastUpdate: string | null = null;
   private hasSuccessfulFetch = false;
 
