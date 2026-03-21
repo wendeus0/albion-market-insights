@@ -187,7 +187,8 @@
 
 ### P1 — Próxima janela recomendada
 
-1) Higiene de componentes vendor (`src/components/ui/*`)
+1. Higiene de componentes vendor (`src/components/ui/*`)
+
 - Tipo: dívida técnica incremental
 - Objetivo: reduzir warnings/ruído e acoplamento de código não utilizado
 - Critério de saída:
@@ -197,22 +198,26 @@
 
 ### P2 — Estrutural (após P1)
 
-2) Histórico por qualidade (alvo final)
+2. Histórico por qualidade (alvo final)
+
 - Ajustar fetch/enriquecimento para respeitar qualidade do item ao compor histórico.
 
-3) Deduplicação por recência
+3. Deduplicação por recência
+
 - Substituir estratégia atual por regra baseada em timestamp/confiabilidade.
 
-4) Factory/DI para serviços
+4. Factory/DI para serviços
+
 - Reduzir acoplamento de selector por singleton em import-time.
 
-5) Refresh manual com cooldown local (5 min)
+5. Refresh manual com cooldown local (5 min)
+
 - Reavaliar necessidade após mudanças recentes de política de frescor e UX.
 
 ### Futuro (não bloqueante)
 
-6) Temas (light/dark/system) via SPEC dedicada.
-7) Frente mobile (PWA vs nativo) com reaproveitamento de contratos atuais.
+6. Temas (light/dark/system) via SPEC dedicada.
+7. Frente mobile (PWA vs nativo) com reaproveitamento de contratos atuais.
 
 ## Node 24 — Plano de observação
 
@@ -255,7 +260,8 @@
   - testes de regressão atualizados
 
 ## Janela 9 — Concluída (2026-03-20)
-- Pruning de UI concluído: removidos 34 componentes sem referência em src/components/ui/*.
+
+- Pruning de UI concluído: removidos 34 componentes sem referência em src/components/ui/\*.
 - Guard-rails executados: npm run lint, npm run typecheck e npm run test verdes.
 - Resultado de suíte: 35 arquivos de teste, 333 testes passando.
 - Observação: mantido PR #64 aberto como lane de observação controlada.
@@ -274,3 +280,15 @@
 - Warnings em componentes vendor (`src/components/ui/*`) seguem como trade-off conhecido até a janela de higiene.
 - Não commitar artefatos gerados (`dist/`, `coverage/`, relatórios temporários).
 
+## Decisões incorporadas recentemente
+
+- **Atualização de memória pós-merge PR #64** (2026-03-21) ✅ **CONCLUÍDO**
+  - MEMORY.md atualizado para refletir merge do PR #64 (lane Node 24 integrada à CI)
+  - Decisão estável adicionada: CI com lane Node 24 paralela
+  - Estado consolidado: observação contínua ativa, aguardando janela de estabilidade
+
+- **Validação do estado do projeto** (2026-03-21) ✅ **CONCLUÍDO**
+  - Sessão de abertura executada com `session-open` e `technical-triage`
+  - Confirmado que todas as 9 janelas da rodada 2026-03-20 foram concluídas e mergeadas
+  - MEMORY.md identificado como desatualizado (referenciando branch já mergeada)
+  - Próximo passo definido: consolidação de sessão antes de abrir nova frente

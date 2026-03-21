@@ -5,9 +5,17 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** 🔄 Execução das 5 janelas concluída em branches isoladas, com PRs abertos (#56, #57, #58, #61) e branch documental ativa
-**Branch ativa:** `docs/sprint-followup-2026-03-20` — centralização incremental de logs e memória durante as frentes
-**Snapshot local:** mudanças de documentação desta sessão prontas para commit na branch documental
+**Status:** ✅ Ciclo de 9 janelas concluído e mergeado na `main` (2026-03-20)
+**Branch ativa:** `main` — sincronizada com `origin/main`
+**Snapshot local:** worktree limpa, baseline estável
+
+**Marcos alcançados:**
+
+- Todas as 9 janelas (Janelas 6-9 da rodada 2026-03-20) concluídas e mergeadas
+- Frentes A e B do Contrato de Autonomia v1 concluídas (tier naming + ícones híbridos)
+- ✅ **PR #64 MERGEADO**: Lane Node 24 integrada à CI; observação contínua em execução
+- Issue #59 (flakiness) em acompanhamento — não bloqueia baseline
+- 333 testes passando, build OK
 
 ---
 
@@ -40,6 +48,7 @@
 | Quality Gate restaurado                   | ✅ Fixo | PR #43 mergeado; mocks de `@/data/constants` em testes de API corrigidos via mock parcial com `importOriginal`; CI voltou a ficar verde                                   |
 | Layout compartilhado por rota             | ✅ Fixo | `AppLayout` centraliza `Layout` para `Index`, `Dashboard`, `Alerts` e `About`; páginas renderizam apenas conteúdo de rota                                                 |
 | Extração estrutural da PriceTable         | ✅ Fixo | `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` isolam estado local; 100% cobertura em hooks extraídos                                            |
+| CI com lane Node 24 paralela              | ✅ Fixo | Workflow `.github/workflows/quality-gate.yml` com jobs Node 20 (default) e Node 24 (observação); rollback documentado                                                     |
 
 ---
 
@@ -47,23 +56,24 @@
 
 - ✅ **LOTE 1B 100% CONCLUÍDO**: itens 3 e 4 validados e documentados nos PRs #48 e #49
 - ✅ **LOTE 2 CONCLUÍDO E MERGEADO**: refatoração estrutural integrada à `main` via PR #51
-- ✅ **COBERTURA PÓS-REFATORAÇÃO CONCLUÍDA**: PR #54 mergeado — 4 módulos críticos com cobertura ≥80%
-- ✅ **SPRINT CLOSE EXECUTADO**: triagem técnica consolidada, 5 próximas janelas definidas
-- Baseline recente por frente validada com recortes direcionados de cobertura/CI
-- PRs ativos da rodada: #56 (hooks), #57 (UI), #58 (CI/qualidade), #61 (Node 24 readiness)
-- Issues ativas da rodada: #59 (flakiness suíte completa), #60 (tracking migração Node 24)
+- ✅ **LOTE 3 (CI/QUALIDADE) CONCLUÍDO**: Janelas 6-9 finalizadas (2026-03-20)
+- ✅ **SPRINT CLOSE EXECUTADO**: triagem técnica consolidada, todas as janelas mergeadas
+- ✅ **FRENTES A/B CONCLUÍDAS**: Tier naming (PR #67) + Ícones híbridos (PR #68) mergeados
+- Baseline estável: 333 testes passando, build OK
+- Observação contínua: Node 24 CI lane (aguardando janela de estabilidade), Issue #59 (flakiness)
+- **Pronto para**: abertura de nova frente ou consolidação de observação Node 24
 
 ---
 
 ## Open decisions
 
-- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data
-- **Avaliação futura de `node-version: 24`**: medir impacto real em `npm ci`, testes com cobertura, build, uso de memória e compatibilidade antes de trocar o runtime do job do projeto
+- **Promoção Node 24 para default**: job paralelo verde e mergeado; aguardando janela de estabilidade (1-2 semanas) antes de tornar default
+- **Deadline Node 24**: 2026-06-02 configurado no dependabot.yml
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
 - **Proteção global da API**: definir arquitetura da camada central (proxy/backend com cache compartilhado + rate limit) para mitigar refresh concorrente entre usuários
 - **Estratégia mobile**: frente mantida aberta (PWA e/ou app nativo), aguardando recorte em SPEC
 - **Feature futura de temas**: reintroduzir theming completo (light/dark/system) apenas com SPEC dedicada
-- **Cobertura dos hooks extraídos no sprint**: decidir se `usePriceTablePagination.ts` precisa de reforço imediato antes do próximo lote funcional
+- **Issue #59 (flakiness)**: decidir se investigação adicional é necessária ou se threshold atual é aceitável
 
 ---
 
@@ -95,31 +105,33 @@
 
 ---
 
-## Next recommended steps (5 janelas definidas em 2026-03-20)
+## Next recommended steps
 
-1. **Acompanhar CI e reviews dos PRs abertos**: #56, #57, #58, #61
-2. **Atacar issue #59 (flakiness)** para restaurar previsibilidade da suíte completa em cobertura
-3. **Executar fase 1 da issue #60**: job paralelo Node 24 não bloqueante no CI
-4. **Publicar merge da branch documental** após revisão dos registros da sessão
+1. **Promoção Node 24 para default**: quando janela de estabilidade for atingida (1-2 semanas)
+2. **Investigação issue #59**: avaliar se flakiness requer ação ou é aceitável
+3. **Frentes C/D do Contrato de Autonomia**: dependem de resolução de issues #65 e #66 (bloqueadas por infraestrutura)
+4. **Nova feature**: abrir SPEC para próximo ciclo de desenvolvimento (a definir)
+5. **Manutenção preventiva**: pruning de código morto, atualização de dependências
 
 ---
 
 ## Last handoff summary
 
-**Sprint:** Sprint Lote 2 (encerrado 2026-03-20)  
+**Sessão:** Encerramento 2026-03-21  
 **Trabalho realizado:**
 
-- ✅ **LOTE 2 MERGEADO**: `PriceTable` modularizada em hooks + `AppLayout` via rota-pai; PR #51
-- ✅ **COBERTURA PÓS-REFATORAÇÃO**: PR #54 mergeado — 4 módulos críticos ≥80%
-- ✅ **SPRINT CLOSE**: `technical-triage` executado, 5 janelas lógicas definidas
-- ✅ **Logs consolidados**: `ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md` atualizados
-- Baseline validada: 292/292 testes passando, build OK
+- ✅ **VALIDAÇÃO DO ESTADO**: Sessão aberta com `session-open` e `technical-triage`
+- ✅ **CONSOLIDAÇÃO**: Todas as 9 janelas da rodada 2026-03-20 confirmadas como concluídas e mergeadas
+- ✅ **HANDOFF**: Logs e memória atualizados via `session-logger` e `memory-curator`
+- Baseline validada: 333 testes passando, build OK, worktree limpa
 
 **Estado ao encerrar:**
 
-- Branch `main` com logs pós-sprint modificados aguardando commit documental
-- Cobertura global estável; gaps identificados abaixo de 80% mapeados
-- Próximos passos claros e priorizados (P0 → P1 → P2)
+- Branch `main` sincronizada com `origin/main` (commit `0d8209a`)
+- Todas as frentes A e B do Contrato de Autonomia v1 concluídas
+- ✅ **PR #64 MERGEADO**: Lane Node 24 integrada à CI
+- Issue #59 em acompanhamento (flakiness)
+- MEMORY.md atualizado com estado consolidado
 
 **Retomar por:**
 
@@ -130,16 +142,14 @@ Read before acting:
 - `PENDING_LOG.md`
 
 Current state:
-- ✅ LOTE 2 concluído e mergeado na `main`
-- ✅ PR #54 (cobertura) integrado
-- ✅ Sprint-close executado, 5 janelas definidas
-- Baseline: 292/292 testes, build OK
-- Worktree: logs documentais modificados aguardando commit
+- ✅ Ciclo de 9 janelas concluído e mergeado (2026-03-20)
+- ✅ Frentes A/B (tier naming + ícones híbridos) mergeadas
+- Baseline: 333 testes, build OK, worktree limpa
+- Observação: PR #64 (Node 24), Issue #59 (flakiness)
 
 Recommended next front:
-1. 📦 SPRINT CLOSE — Commitar logs via `git-flow-manager`
-2. 🧪 Cobertura: `usePriceTablePagination.ts` (55.55% → ≥80%)
-3. 🎨 Cobertura UI: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx`
-4. 🔧 Lote 3: CI/qualidade com `typecheck` explícito
-5. ⏫ Preparação Node 24 (deadline 2026-06-02)
+1. 🔍 Aguardar janela de estabilidade Node 24 (1-2 semanas) antes de promoção
+2. 🔍 Investigar issue #59 se flakiness impactar CI
+3. 📝 Abrir SPEC para próxima feature (a definir com usuário)
+4. 🔧 Manutenção preventiva (pruning, updates)
 ```
