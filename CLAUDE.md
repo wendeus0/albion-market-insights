@@ -80,6 +80,7 @@ Consulte `AGENTS.md` para fluxo de etapas, regras críticas e Definition of Done
 
 ## Memória
 
-Estado durável desta sessão: `memory/MEMORY.md`
+Estado durável desta sessão: `memory/MEMORY.md` (índice) → arquivos temáticos em `memory/`.
+Convenção de formato: `.claude/rules/memory.md`.
 
 Antes de consolidar memória, handoff ou abertura/fechamento de sessão com impacto de Git/PRs, executar `bash .claude/scripts/git-sync-check.sh` para validar o estado remoto/local.
