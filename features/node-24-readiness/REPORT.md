@@ -3,27 +3,61 @@
 ## Status
 READY_FOR_COMMIT
 
-## Objetivo
-Avaliar impacto da migração de runtime do projeto de Node 20 para Node 24 antes do deadline de actions.
+## Gate 1 — Diagnóstico (compatibilidade e risco)
 
-## Baseline observada (Node 20)
-- Runtime local: Node v20.20.0 / npm 10.8.2
-- Build: OK (`npm run build`)
-- Workflow CI principal (`quality-gate.yml`) ainda fixa `node-version: 20`
-- Test suite completa sob cobertura apresenta flakiness intermitente (issue #59), o que impacta comparações de desempenho confiáveis
+Baseline observada:
+- Runtime local default: Node v20.20.0 / npm 10.8.2
+- Runtime validado em paralelo: Node v24.14.0 com npm 10.8.2
+- CI atual em `.github/workflows/quality-gate.yml` estava fixo em Node 20
 
-## Risco técnico
-1. Dependências de toolchain (Vite, Vitest, Playwright, ESLint) podem ter comportamento diferente em Node 24
-2. Instabilidade atual da suíte sob cobertura pode mascarar regressões reais da migração
-3. Sem job paralelo de comparação, mudança direta de runtime aumenta risco de quebra de pipeline
+Resultados de compatibilidade em Node 24:
+- `npm ci`: OK
+- `npm run quality:gate`: OK
+- `npm run test:e2e:smoke`: OK (após provisionar Chromium no ambiente)
 
-## Recomendação
-1. Manter Node 20 como default até estabilizar baseline de testes (issue #59)
-2. Criar job paralelo de validação Node 24 no CI (não bloqueante no primeiro ciclo)
-3. Após 1-2 semanas de estabilidade, promover Node 24 para runtime padrão do quality gate
-4. Atualizar `engines.node` e documentação somente após CI verde contínuo em Node 24
+Matriz de risco:
+- Vite/Vitest/TypeScript/ESLint: baixo (suite verde em Node 24)
+- Playwright: médio (depende de browser provisionado; falha sem Chromium)
+- CI workflow: baixo-médio (mudança simples, mas impacta tempo de pipeline)
 
-## Próximos passos sugeridos
-- Abrir issue de tracking para migração gradual (Node 20 -> 24)
-- Planejar rollout em 3 fases: parallel check -> soft enforcement -> full switch
+## Gate 2 — Prova controlada em branch dedicada
+
+Branch:
+- `chore/node24-migration-gates`
+
+Mudanças aplicadas:
+- `quality-gate.yml` convertido para matriz:
+  - Node 20 e Node 24 em paralelo
+  - `fail-fast: false`
+- Coverage threshold mantém enforcement no lane Node 20 (evita duplicidade de gate)
+- Logs de runtime exibem explicitamente versão da lane
+
+## Gate 3 — Rollback validado
+
+Estratégia de rollback imediato:
+1. Editar matrix no workflow para `node-version: [20]`
+2. Reexecutar pipeline
+3. Opcional: reverter commit da frente Node 24 em 1 commit (git revert)
+
+Critério de abort (Node 24):
+- qualquer falha recorrente em quality-gate ou smoke E2E por incompatibilidade de runtime
+- fallback automático para lane única Node 20 até correção
+
+## Gate 4 — Publicação
+
+Artefatos desta frente:
+- `package.json`: engines ajustada para faixa suportada `>=20.0.0 <25`
+- `.github/workflows/quality-gate.yml`: matriz Node 20/24 + instruções de rollback
+- relatório atualizado com evidências e plano de abort
+
+## Evidências locais
+
+Node 24:
+- `npm ci` -> OK
+- `npm run quality:gate` -> OK
+- `npm run test:e2e:smoke` -> OK (4/4)
+
+## Decisão
+
+Recomendação: manter validação paralela Node 20/24 ativa no CI e promover Node 24 como runtime principal apenas após janela curta de estabilidade contínua.
 

@@ -23,8 +23,12 @@ Ferramenta de análise de mercado para **Albion Online**, focada em visualizaç�
 ## 📦 Instalação e Execução
 
 ### Pré-requisitos
-- Node.js (v20+) — alinhado com CI e tooling
+- Node.js (v20+) — runtime default atual do projeto
 - npm (v10.8.2+)
+
+Observação de runtime:
+- Node 24 está em lane paralela de observação no CI
+- Promoção para default ocorrerá após janela mínima de estabilidade contínua
 
 ### Passos
 
@@ -66,6 +70,10 @@ VITE_USE_REAL_API=true
 
 - [CLAUDE.md](./CLAUDE.md): Guia rápido de comandos, stack e convenções.
 - [AGENTS.md](./AGENTS.md): Regras de workflow, arquitetura, hierarquia de documentação e skills.
+- [CONTEXT.md](./CONTEXT.md): Contexto técnico e estado operacional vigente.
+- [docs/adr/](./docs/adr/): Registro de decisões arquiteturais (inclui política de runtime/CI).
+- [docs/architecture/STORAGE_POLICY.md](./docs/architecture/STORAGE_POLICY.md): Política de retenção e uso de localStorage.
+- [docs/architecture/ARTIFACT_POLICY.md](./docs/architecture/ARTIFACT_POLICY.md): Política de artefatos de build (`dist/`, coverage, reports).
 - [features/](./features/): Especificações (SPEC.md) e relatórios (REPORT.md) de cada funcionalidade.
 
 ## 🤝 Contribuição

@@ -2,40 +2,25 @@
 
 ## O Projeto
 
-**Albion Market Insights** é um dashboard web para análise de preços de mercado do jogo Albion Online. O objetivo é oferecer aos jogadores uma visão consolidada de preços, spreads e oportunidades de lucro entre as 7 principais cidades do jogo.
+Albion Market Insights é um dashboard web para análise de mercado do Albion Online, com foco em preços, spreads e oportunidades de arbitragem entre as principais cidades do jogo.
 
-Este é o **segundo repositório** do ecossistema `wendeus0`, desenvolvido em pair programming com IA como segunda frente de trabalho além do AIgnt-OS. O projeto está sendo refatorado e recriado com base em princípios mais sólidos de arquitetura de software.
+O repositório segue um fluxo orientado a especificação (SPEC), testes (TDD/BDD) e decisões arquiteturais registradas em ADR.
 
 ---
 
 ## Filosofia de Desenvolvimento
 
-Este projeto adota uma metodologia explícita baseada em quatro pilares. Cada um resolve um problema concreto de qualidade e previsibilidade. A documentação operacional completa está em `docs/architecture/`.
+### SDD (Spec-Driven Development)
+Nenhuma implementação começa sem SPEC aprovada com critérios verificáveis.
 
-### Spec-Driven Development (SDD)
-Nenhuma linha de código é escrita sem uma SPEC aprovada. A SPEC define *o quê* — comportamento esperado, critérios de aceitação e escopo. O *como* é responsabilidade da implementação.
-
-**Problema que resolve:** evita implementações que resolvem o problema errado ou expandem escopo silenciosamente.
-
-### Test-Driven Development (TDD) com BDD
-Testes escritos *antes* da implementação, a partir dos critérios de aceitação da SPEC. Ciclo: RED → GREEN → REFACTOR. Os critérios usam formato **Given/When/Then** (BDD), tornando cada critério diretamente rastreável a um teste.
-
-**Problema que resolve:** testes escritos após a implementação testam o código como foi escrito, não o comportamento esperado.
+### TDD/BDD
+Ciclo RED → GREEN → REFACTOR, com cenários Given/When/Then rastreáveis aos critérios da SPEC.
 
 ### Definition of Done (DoD)
-Uma feature só está concluída quando: SPEC aprovada, testes passando, lint e build limpos, code review sem blockers, security review concluída, ADR criado se necessário, commit e PR abertos. Consulte `docs/architecture/TDD.md` para o DoD completo.
+Uma entrega só fecha quando passa por qualidade técnica (lint/typecheck/test/build), review e documentação de decisão quando necessário.
 
-**Problema que resolve:** sem DoD explícito, "pronto" significa coisas diferentes em momentos diferentes.
-
-### Architecture Decision Records (ADR)
-Decisões arquiteturais estáveis são registradas em `docs/adr/`. Cada ADR tem status rastreável e cadência de revisão definida. Consulte `docs/architecture/TDD.md` para critérios e cadência.
-
----
-
-### Princípios de trabalho
-- **Component-first**: cada feature começa pelo design do componente, não pelo dado
-- **Incremental**: uma feature por vez, entregável a cada ciclo
-- **Pair programming com IA**: Claude atua como co-piloto, não como executor autônomo
+### ADR (Architecture Decision Record)
+Decisões duráveis de arquitetura são registradas em `docs/adr/`.
 
 ---
 
@@ -43,41 +28,17 @@ Decisões arquiteturais estáveis são registradas em `docs/adr/`. Cada ADR tem 
 
 | Tecnologia | Versão | Papel |
 |-----------|--------|-------|
-| React | 18.3.1 | Framework UI |
+| React | 18.3.1 | UI |
 | TypeScript | 5.8.3 | Tipagem estática |
-| Vite | 5.4.19 | Build tool e dev server |
-| Tailwind CSS | 3.4.17 | Estilização utilitária |
-| shadcn/ui | — | Biblioteca de componentes (Radix UI) |
-| React Router | 6.30.1 | Roteamento client-side |
-| TanStack Query | 5.83.0 | Data fetching e cache |
-| Recharts | 2.15.4 | Visualizações e gráficos |
-| React Hook Form | 7.61.1 | Gerenciamento de formulários |
-| Zod | 3.25.76 | Validação de esquemas |
-| Lucide React | 0.462.0 | Ícones |
-
----
-
-## Modelo de Domínio
-
-### Cidades de Mercado
-```
-Caerleon · Bridgewatch · Fort Sterling · Lymhurst · Martlock · Thetford · Black Market
-```
-
-### Sistema de Tiers
-```
-T4 · T5 · T6 · T7 · T8
-```
-
-### Qualidades de Item
-```
-Normal · Good · Outstanding · Excellent · Masterpiece
-```
-
-### Conceitos-Chave
-- **Spread**: diferença de preço entre cidades (oportunidade de arbitragem)
-- **Margem de lucro**: spread após descontar taxas de transação
-- **Histórico de preços**: evolução temporal do preço de um item em uma cidade
+| Vite | 5.4.x | Build e dev server |
+| Tailwind CSS | 3.4.17 | Estilos |
+| shadcn/ui + Radix | — | Componentes base |
+| React Router | 6.30.1 | Rotas |
+| TanStack Query | 5.83.0 | Estado de servidor |
+| Recharts | 2.15.4 | Visualização |
+| React Hook Form + Zod | 7.61.1 / 3.25.76 | Formulário e validação |
+| Vitest | 4.1.0 | Testes unitários |
+| Playwright | 1.49 | Testes E2E |
 
 ---
 
@@ -86,27 +47,22 @@ Normal · Good · Outstanding · Excellent · Masterpiece
 ```
 src/
 ├── components/
-│   ├── ui/          # shadcn/ui (59 componentes — não editar diretamente)
-│   ├── dashboard/   # StatsCard, PriceTable, TopItemsPanel
-│   ├── layout/      # Layout, Navbar, Footer
-│   └── alerts/      # AlertsManager
-├── pages/           # Dashboard, Index, Alerts, About, NotFound
-├── hooks/           # use-mobile, use-toast, useAlerts, useAlertPoller,
-│                    # useLastUpdateTime, useMarketItems, useTopProfitable
-├── services/        # Camada de serviços (market.service.ts, market.api.ts,
-│                    # market.api.types.ts, market.mock.ts, alert.engine.ts,
-│                    # alert.storage.ts, index.ts)
-├── lib/             # utils.ts, schemas.ts
-├── data/            # mockData.ts, types.ts, constants.ts
-└── test/            # Setup e testes unitários (Vitest)
+│   ├── ui/                 # Base shadcn/ui
+│   ├── dashboard/          # Tabela, arbitragem, cards, badges
+│   ├── layout/             # AppLayout, Navbar, Footer
+│   └── alerts/             # AlertsManager
+├── pages/                  # Index, Dashboard, Alerts, About, NotFound
+├── hooks/                  # alerts, price table (filters/sort/pagination), data source
+├── services/               # market.api/mock/cache, alert storage/engine, cooldown
+├── data/                   # constants e mockData
+├── lib/                    # utilitários e schemas
+└── test/                   # testes unitários/integrados
 
-e2e/                 # Testes E2E com Playwright
-├── alerts.spec.ts
-├── dashboard.spec.ts
-└── navigation.spec.ts
+e2e/                        # specs E2E Playwright
 ```
 
 ### Rotas
+
 | Rota | Página |
 |------|--------|
 | `/` | Index |
@@ -119,35 +75,43 @@ e2e/                 # Testes E2E com Playwright
 
 ## Estado Atual (2026-03)
 
-- Estrutura de governança importada do AIgnt-OS (CLAUDE.md, CONTEXT.md, AGENTS.md, `.claude/`)
-- Camada de serviços implementada (`src/services/`) — abstrai API real e mock data
-- Hooks customizados extraídos dos componentes (`src/hooks/`)
-- Sistema de alertas com engine de polling e persistência em localStorage
-- Testes E2E com Playwright (13 testes passando)
-- `market.api.ts` integrado com a API real (`west.albion-online-data.com`)
-- Seletor de fonte de dados: variável de ambiente `VITE_USE_REAL_API=true` ativa a API real (default: mock)
-- Próximo passo: SPEC formal da integração API e expansão do catálogo de itens
+- Refatorações estruturais principais concluídas (layout compartilhado e extração de hooks críticos).
+- `quality:gate` consolidado com lint + typecheck + testes com cobertura + build.
+- CI com lane paralela de runtime para validação progressiva:
+  - Node 20 = default operacional
+  - Node 24 = lane de observação
+- Testes E2E smoke executados no CI (`e2e/navigation.spec.ts`).
+- Catálogo com suporte a encantamentos e filtros avançados em produção.
+- Persistências locais ativas:
+  - Alertas: `localStorage`
+  - Cache de mercado com TTL: `localStorage`
 
 ---
 
-## Decisões Arquiteturais
+## Runtime e CI (política vigente)
 
-| Decisão | Escolha | Motivo |
-|---------|---------|--------|
-| Componentes UI | shadcn/ui | Composição flexível, sem lock-in |
-| Estado servidor | TanStack Query | Cache automático, revalidação |
-| Estilos | Tailwind CSS | Consistência com design system |
-| Dados | Mock → API Albion | Desenvolvimento offline primeiro |
-| TypeScript | Sem strict mode | Migração gradual do código Lovable |
-| Camada de serviços | Interface `MarketService` | Desacopla componentes da fonte de dados |
-| Persistência de alertas | localStorage via `AlertStorageService` | Sem backend necessário no MVP |
-| Testes E2E | Playwright | Cobertura de fluxos críticos no browser real |
+- `engines.node`: `>=20.0.0`.
+- Estratégia atual: manter Node 20 como baseline e observar estabilidade contínua da lane Node 24 antes de promoção.
+- Rollback rápido previsto: reduzir matrix para Node 20 em caso de regressão.
 
 ---
 
-## Restrições MVP
+## Decisões Arquiteturais Ativas
 
-- Evitar state management global complexo (Redux, Zustand) até necessidade real
-- Evitar chamadas de API diretas fora de hooks ou TanStack Query
-- Evitar CSS personalizado quando Tailwind resolve
-- Foco em funcionalidade estável antes de otimizações de performance
+| Tema | Escolha atual | Motivo |
+|------|---------------|--------|
+| Fonte de dados | `MarketService` com seleção por flag | Desacoplamento e determinismo em testes |
+| Persistência de alertas | localStorage | Simplicidade para frontend-only |
+| Cache de mercado | localStorage com TTL | Menor latência e menor pressão na API |
+| Qualidade CI | quality gate + smoke E2E | Cobertura de regressões de integração |
+| Runtime | Node 20 default + Node 24 observação | Migração segura e progressiva |
+
+---
+
+## Restrições vigentes
+
+- Sem backend próprio no escopo atual.
+- Sem versionamento de `dist/` no repositório.
+- Sem chamadas diretas à API fora da camada de serviços.
+- Mudança de runtime default só após janela mínima de estabilidade da lane paralela.
+

@@ -14,6 +14,10 @@ concurrency:
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node_version: [20, 24]
 
     steps:
       - name: Checkout repository
@@ -22,14 +26,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: ${{ matrix.node_version }}
           cache: npm
 
       - name: Pin npm version
         run: npm install --global npm@10.8.2
 
       - name: Show runtime versions
-        run: node --version && npm --version
+        run: |
+          echo "Node matrix=${{ matrix.node_version }}"
+          node --version
+          npm --version
 
       - name: Install dependencies
         run: npm ci
@@ -44,23 +51,40 @@ jobs:
         run: npm run test:e2e:smoke
 
       - name: Enforce coverage threshold (gradual)
+        if: matrix.node_version == 20
         run: |
           SUMMARY_FILE="coverage/coverage-summary.json"
-          if [ ! -f "$SUMMARY_FILE" ]; then
-            echo "Coverage summary not found at $SUMMARY_FILE"
-            exit 1
-          fi
+          FINAL_FILE="coverage/coverage-final.json"
 
           THRESHOLD=88
 
           node <<'NODE'
           const fs = require('node:fs');
-          const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
-          const pct = summary.total?.statements?.pct;
+
           const threshold = Number(process.env.THRESHOLD || '88');
+          let pct;
+
+          if (fs.existsSync('coverage/coverage-summary.json')) {
+            const summary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+            pct = summary.total?.statements?.pct;
+          } else if (fs.existsSync('coverage/coverage-final.json')) {
+            const finalCoverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+            let total = 0;
+            let covered = 0;
+
+            for (const fileData of Object.values(finalCoverage)) {
+              const statements = fileData?.s || {};
+              for (const count of Object.values(statements)) {
+                total += 1;
+                if (typeof count === 'number' && count > 0) covered += 1;
+              }
+            }
+
+            pct = total > 0 ? Number(((covered / total) * 100).toFixed(2)) : undefined;
+          }
 
           if (typeof pct !== 'number') {
-            console.error('Could not read statements coverage percentage');
+            console.error('Could not read statements coverage percentage from coverage-summary or coverage-final');
             process.exit(1);
           }
 
@@ -72,4 +96,10 @@ jobs:
           NODE
         env:
           THRESHOLD: "88"
+
+      - name: Node 24 rollback hint
+        if: matrix.node_version == 24
+        run: |
+          echo "Node 24 validation lane enabled."
+          echo "Rollback imediato: editar matrix para [20] e reexecutar pipeline."
 

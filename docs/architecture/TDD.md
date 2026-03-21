@@ -176,6 +176,12 @@ docs/adr/
 |-----|--------|--------|----------------|
 | ADR-001 | shadcn/ui como biblioteca de componentes | Aceito | 2026-03-16 |
 | ADR-002 | TanStack Query para gerenciamento de estado de servidor | Aceito | 2026-03-16 |
-| ADR-003 | Interface MarketService com feature flag para implementação | Aceito | 2026-03-16 |
+| ADR-003 | Interface MarketService com feature flag para implementação | Aceito | 2026-03-20 |
 | ADR-004 | localStorage para persistência de alertas | Aceito | 2026-03-16 |
-| ADR-005 | Playwright para testes E2E | Aceito | 2026-03-16 |
+| ADR-005 | Playwright para testes E2E | Aceito | 2026-03-20 |
+| ADR-006 | TypeScript strict mode gradual migration | Aceito | 2026-03-19 |
+| ADR-007 | Cache de dados de mercado com TTL em localStorage | Aceito | 2026-03-16 |
+| ADR-008 | Expansão de catálogo com encantamentos | Aceito | 2026-03-17 |
+| ADR-009 | Extração de hooks no AlertsManager | Aceito | 2026-03-19 |
+| ADR-010 | AppLayout por rota-pai + extração de estado da PriceTable | Aceito | 2026-03-20 |
+| ADR-011 | Runtime CI com lane paralela para observação de Node 24 | Aceito | 2026-03-20 |

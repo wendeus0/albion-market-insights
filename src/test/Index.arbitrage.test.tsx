@@ -49,6 +49,27 @@ vi.mock('@/hooks/useTopProfitable', () => ({
   useTopProfitable: () => ({ data: [mockItems[0]] }),
 }));
 
+vi.mock('@/lib/arbitrage', () => ({
+  buildCrossCityArbitrage: (items: MarketItem[]) => {
+    if (!items.length) return [];
+    return [
+      {
+        itemId: 'T8_2H_HOLYSTAFF_HELL@3',
+        itemName: 'Great Holy Staff T8 .3',
+        tier: 'T8',
+        quality: 'Good',
+        buyCity: 'Martlock',
+        buyPrice: 5900000,
+        sellCity: 'Caerleon',
+        sellPrice: 7200000,
+        netProfit: 832000,
+        netProfitPercent: 14.1,
+        timestamp: '2026-03-17T10:00:00.000Z',
+      },
+    ];
+  },
+}));
+
 vi.mock('@/hooks/useLastUpdateTime', () => ({
   useLastUpdateTime: () => ({ data: '2026-03-17T10:00:00.000Z' }),
 }));
@@ -67,5 +88,12 @@ describe('Index — arbitrage preview', () => {
     expect(screen.getByRole('columnheader', { name: /sell in/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /net profit/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /roi/i })).toBeInTheDocument();
+  });
+
+  it('deve usar somente arbitragem derivada de marketItems no painel principal', () => {
+    render(<Index />);
+
+    expect(screen.getByText(/active routes/i)).toBeInTheDocument();
+    expect(screen.queryByText('No arbitrage opportunities found')).not.toBeInTheDocument();
   });
 });

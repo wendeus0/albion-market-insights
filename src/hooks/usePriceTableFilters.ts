@@ -47,6 +47,29 @@ export function usePriceTableFilters(items: MarketItem[]) {
   const isInitialMount = useRef(true);
   const isClearingRef = useRef(false);
 
+  const minPriceNumber = filters.minPrice
+    ? Number.parseInt(filters.minPrice, 10)
+    : null;
+  const maxPriceNumber = filters.maxPrice
+    ? Number.parseInt(filters.maxPrice, 10)
+    : null;
+  const minSpreadNumber = filters.minSpread
+    ? Number.parseInt(filters.minSpread, 10)
+    : null;
+  const maxSpreadNumber = filters.maxSpread
+    ? Number.parseInt(filters.maxSpread, 10)
+    : null;
+
+  const hasInvalidPriceRange =
+    minPriceNumber !== null &&
+    maxPriceNumber !== null &&
+    minPriceNumber > maxPriceNumber;
+
+  const hasInvalidSpreadRange =
+    minSpreadNumber !== null &&
+    maxSpreadNumber !== null &&
+    minSpreadNumber > maxSpreadNumber;
+
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -111,34 +134,33 @@ export function usePriceTableFilters(items: MarketItem[]) {
       });
     }
 
-    if (filters.minPrice) {
-      result = result.filter(
-        (item) => item.sellPrice >= Number.parseInt(filters.minPrice ?? "", 10),
-      );
+    if (minPriceNumber !== null && !hasInvalidPriceRange) {
+      result = result.filter((item) => item.sellPrice >= minPriceNumber);
     }
 
-    if (filters.maxPrice) {
-      result = result.filter(
-        (item) => item.sellPrice <= Number.parseInt(filters.maxPrice ?? "", 10),
-      );
+    if (maxPriceNumber !== null && !hasInvalidPriceRange) {
+      result = result.filter((item) => item.sellPrice <= maxPriceNumber);
     }
 
-    if (filters.minSpread) {
-      result = result.filter(
-        (item) =>
-          item.spreadPercent >= Number.parseInt(filters.minSpread ?? "", 10),
-      );
+    if (minSpreadNumber !== null && !hasInvalidSpreadRange) {
+      result = result.filter((item) => item.spreadPercent >= minSpreadNumber);
     }
 
-    if (filters.maxSpread) {
-      result = result.filter(
-        (item) =>
-          item.spreadPercent <= Number.parseInt(filters.maxSpread ?? "", 10),
-      );
+    if (maxSpreadNumber !== null && !hasInvalidSpreadRange) {
+      result = result.filter((item) => item.spreadPercent <= maxSpreadNumber);
     }
 
     return result;
-  }, [filters, items]);
+  }, [
+    filters,
+    items,
+    hasInvalidPriceRange,
+    hasInvalidSpreadRange,
+    maxPriceNumber,
+    maxSpreadNumber,
+    minPriceNumber,
+    minSpreadNumber,
+  ]);
 
   const clearAllFilters = () => {
     isClearingRef.current = true;
@@ -153,6 +175,8 @@ export function usePriceTableFilters(items: MarketItem[]) {
   return {
     filters,
     filteredItems,
+    hasInvalidPriceRange,
+    hasInvalidSpreadRange,
     hasActiveFilters: getHasActiveFilters(filters),
     activeFilterCount: [
       filters.categoryFilter !== "all",

@@ -43,6 +43,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
   const {
     filters,
     filteredItems,
+    hasInvalidPriceRange,
+    hasInvalidSpreadRange,
     hasActiveFilters,
     activeFilterCount,
     setSearch,
@@ -219,38 +221,64 @@ export function PriceTable({ items, className }: PriceTableProps) {
               </SelectContent>
             </Select>
 
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="Min price"
-                value={filters.minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-[100px] bg-muted/50 border-border/50"
-              />
-              <Input
-                type="number"
-                placeholder="Max price"
-                value={filters.maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-[100px] bg-muted/50 border-border/50"
-              />
+            <div className="flex flex-col gap-1">
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Min price"
+                  value={filters.minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className={cn(
+                    "w-[100px] bg-muted/50 border-border/50",
+                    hasInvalidPriceRange && "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+                <Input
+                  type="number"
+                  placeholder="Max price"
+                  value={filters.maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className={cn(
+                    "w-[100px] bg-muted/50 border-border/50",
+                    hasInvalidPriceRange && "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+              </div>
+              {hasInvalidPriceRange && (
+                <p className="text-xs text-destructive" role="alert">
+                  Min price cannot be greater than max price
+                </p>
+              )}
             </div>
 
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="Min spread %"
-                value={filters.minSpread}
-                onChange={(e) => setMinSpread(e.target.value)}
-                className="w-[100px] bg-muted/50 border-border/50"
-              />
-              <Input
-                type="number"
-                placeholder="Max spread %"
-                value={filters.maxSpread}
-                onChange={(e) => setMaxSpread(e.target.value)}
-                className="w-[100px] bg-muted/50 border-border/50"
-              />
+            <div className="flex flex-col gap-1">
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Min spread %"
+                  value={filters.minSpread}
+                  onChange={(e) => setMinSpread(e.target.value)}
+                  className={cn(
+                    "w-[100px] bg-muted/50 border-border/50",
+                    hasInvalidSpreadRange && "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+                <Input
+                  type="number"
+                  placeholder="Max spread %"
+                  value={filters.maxSpread}
+                  onChange={(e) => setMaxSpread(e.target.value)}
+                  className={cn(
+                    "w-[100px] bg-muted/50 border-border/50",
+                    hasInvalidSpreadRange && "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+              </div>
+              {hasInvalidSpreadRange && (
+                <p className="text-xs text-destructive" role="alert">
+                  Min spread cannot be greater than max spread
+                </p>
+              )}
             </div>
 
             {hasActiveFilters && (

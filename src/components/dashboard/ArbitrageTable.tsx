@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import type { ArbitrageOpportunity } from '@/data/types';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ItemIcon } from '@/components/items/ItemIcon';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,8 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
   const [minRoi, setMinRoi] = useState('');
   const [sortField, setSortField] = useState<SortField>('netProfitPercent');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const filteredItems = useMemo(() => {
     const searchLower = search.toLowerCase();
@@ -57,6 +60,9 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
     return result;
   }, [items, minNetProfit, minRoi, search, sortDirection, sortField]);
 
+  const minNetProfitValue = minNetProfit ? Number(minNetProfit) : null;
+  const minRoiValue = minRoi ? Number(minRoi) : null;
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -66,6 +72,24 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
     setSortField(field);
     setSortDirection('desc');
   };
+
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+  const paginatedItems = useMemo(
+    () => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [currentPage, filteredItems],
+  );
+
+  const visiblePages = useMemo(() => {
+    if (totalPages === 0) return [];
+
+    return Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+      if (totalPages <= 5) return index + 1;
+      if (currentPage <= 3) return index + 1;
+      if (currentPage >= totalPages - 2) return totalPages - 4 + index;
+      return currentPage - 2 + index;
+    });
+  }, [currentPage, totalPages]);
 
   const formatPrice = (price: number) => new Intl.NumberFormat('en-US').format(price);
 
@@ -95,7 +119,10 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
             <Input
               placeholder="Search item, buy city or sell city..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+              }}
               className="pl-9 bg-muted/50 border-border/50"
             />
           </div>
@@ -105,14 +132,20 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
               type="number"
               placeholder="Min net profit"
               value={minNetProfit}
-              onChange={(event) => setMinNetProfit(event.target.value)}
+              onChange={(event) => {
+                setMinNetProfit(event.target.value);
+                setCurrentPage(1);
+              }}
               className="w-[140px] bg-muted/50 border-border/50"
             />
             <Input
               type="number"
               placeholder="Min ROI"
               value={minRoi}
-              onChange={(event) => setMinRoi(event.target.value)}
+              onChange={(event) => {
+                setMinRoi(event.target.value);
+                setCurrentPage(1);
+              }}
               className="w-[110px] bg-muted/50 border-border/50"
             />
           </div>
@@ -190,7 +223,7 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
             </tr>
           </thead>
           <tbody>
-            {filteredItems.length === 0 ? (
+            {paginatedItems.length === 0 ? (
               <tr>
                 <td colSpan={8} className="text-center py-12 text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
@@ -200,7 +233,7 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
                 </td>
               </tr>
             ) : (
-              filteredItems.map(item => (
+              paginatedItems.map(item => (
                 <tr
                   key={`${item.itemId}|${item.quality}|${item.buyCity}|${item.sellCity}`}
                   className="border-b border-border/30 hover:bg-muted/30 transition-colors"
@@ -236,6 +269,45 @@ export function ArbitrageTable({ items, className }: ArbitrageTableProps) {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="p-4 border-t border-border/50 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredItems.length)} of {filteredItems.length} opportunities
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center gap-1">
+              {visiblePages.map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className={cn('w-8 h-8 p-0', currentPage === page && 'bg-primary text-primary-foreground')}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(Math.max(totalPages, 1), prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

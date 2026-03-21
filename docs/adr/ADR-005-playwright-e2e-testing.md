@@ -1,38 +1,39 @@
 # ADR-005 — Playwright para testes E2E
 
-**Status:** Aceito
-**Data:** 2026-03-16
+Status: Aceito
+Data: 2026-03-16
+Última revisão: 2026-03-20
 
 ## Contexto
 
-O dashboard tem fluxos de UI não triviais: navegação entre abas, criação de alertas via
-dialog com validação de formulário, polling de dados em background. Testes unitários com
-Vitest + Testing Library cobrem lógica de componente isolada, mas não cobrem integração
-entre rotas, estado global e interações sequenciais do usuário. Era necessária uma camada
-de testes que executasse o browser real.
+Testes unitários cobrem lógica isolada, mas não garantem fluxos reais de navegação, integração de rotas e comportamento em browser.
+
+Era necessário um guard-rail de integração no CI para detectar regressões entre páginas e ações principais do usuário.
 
 ## Decisão
 
-Usar Playwright como framework de testes E2E. A suíte vive em `e2e/` com 13 testes
-cobrindo: carregamento do dashboard, navegação entre abas (Overview, Market, Alerts,
-Settings), criação e exclusão de alertas, e comportamento com dados mock. A configuração
-em `playwright.config.ts` aponta para `http://localhost:5173` com servidor Vite em
-background.
+Adotar Playwright para testes E2E com suíte em `e2e/`.
+
+No CI, usar abordagem em duas camadas:
+- Smoke E2E obrigatório no quality gate (`npm run test:e2e:smoke`)
+- Suíte E2E completa disponível para execução dedicada quando necessário
+
+A execução de CI usa modo determinístico (sem obrigatoriedade de API real) para reduzir flakiness.
 
 ## Consequências
 
-- Testes E2E são executados com `npm run test:e2e` (separado dos unitários).
-- Requerem binários de browser instalados via `npx playwright install`.
-- Execução mais lenta que unitários (~10-30s vs <1s) — não devem rodar no watch mode.
-- Testam comportamento real do bundle Vite, não componentes isolados — detectam
-  regressões de integração que testes unitários não pegam.
-- CI deve executar `npm run test:e2e` com `VITE_USE_REAL_API` não definido (modo mock)
-  para garantir determinismo.
+- Regressões de navegação e fluxo crítico são detectadas no pipeline padrão.
+- Tempo de CI permanece controlado com smoke em vez de suíte completa em toda execução.
+- Continua necessário instalar browser do Playwright nos jobs que rodam E2E.
+- Para investigação profunda, suíte completa pode ser acionada fora do caminho crítico.
+
+## Relação com runtime/CI
+
+Com Node 24 em observação paralela, o smoke E2E no quality gate ajuda a comparar estabilidade entre lanes sem inflar custo do pipeline.
 
 ## Alternativas consideradas
 
-- **Cypress:** ecossistema maduro, mas arquitetura diferente (iframes) complica
-  debugging em alguns cenários; bundle maior.
-- **Testing Library apenas:** cobre componentes isolados mas não fluxos de navegação
-  multi-rota com estado persistido entre páginas.
-- **Testes manuais:** não escalam; regressões passam despercebidas sem automação.
+- Rodar suíte E2E completa em todo PR: maior custo/latência e menor produtividade.
+- Manter apenas unit/integration: não cobre problemas reais de navegação e integração de rotas.
+- Testes manuais: baixa repetibilidade e maior chance de regressão escapar.
+

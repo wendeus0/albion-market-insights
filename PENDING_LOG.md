@@ -169,173 +169,108 @@
 
 **Itens Prioritários:**
 
-- [x] **Extrair regras da `PriceTable`** para hooks/serviços puros (filtros, sort, persistência, paginação). ✅ PR #51
-- [x] **Rota com layout compartilhado**: reduzir repetição de `Layout` nas páginas. ✅ PR #51
-- [x] **Extrair regras da `AlertsManager`** para hooks/serviços puros (normalização, persistência, feedback). ✅ **CONCLUÍDO e mergeado na `main` em 2026-03-19 (PR #42)**
+- Branch ativa de trabalho: `chore/node24-migration-gates` (PR #64 aberto)
+- Estratégia vigente de runtime:
+  - Node 20 = default operacional
+  - Node 24 = lane paralela em observação
+- Último marco de CI na frente Node 24:
+  - run `23344041067` com lanes Node 20 e Node 24 verdes simultaneamente
 
-**Itens Secundários:**
+## Decisões vigentes
 
-- [x] **Persistência da tabela**: filtros + ordenação persistentes; paginação não persistente; reset de página ao filtrar. ✅ consolidada no PR #51
-- [ ] **Validação de filtros numéricos**: tratar `min > max` com feedback de UX.
-- [ ] **Arbitragem na Home com fonte única**: remover fallback semântico misto.
-- [ ] **Paginação da `ArbitrageTable`** (virtualização apenas se profiling justificar).
-- [ ] **Higiene de componentes vendor**: pruning incremental de `src/components/ui/*` não usados.
+- Não criar repositório externo para a frente Node 24 neste momento.
+- Manter laboratório interno em `features/node-24-readiness/pr-64-lab/`.
+- Promover Node 24 para default apenas após janela contínua de estabilidade.
+- Rollback rápido deve continuar documentado e testável (retorno imediato para Node 20-only em caso de regressão).
 
-**Estimativa:** 2-3 dias  
-**Status de saída:** implementação concluída e mergeada na `main` via PR #51
+## Backlog ativo (priorizado por impacto)
 
-### Lote 3 — Qualidade, CI e documentação (P1/P2)
+### P1 — Próxima janela recomendada
 
-- [x] **`quality:gate` com `typecheck` explícito** (`tsc --noEmit`) + cobertura de configs TS de toolchain. (PR #58 mergeado)
-- [x] **Smoke E2E obrigatório no CI** (PR), mantendo suíte completa em job dedicado quando necessário. (PR #58 mergeado)
-- [x] **Threshold oficial de coverage** com enforcement gradual no CI. (PR #58 mergeado; threshold inicial 88%)
-- [x] **Frente #59 — estabilização de flakies em testes** (2026-03-20): timeout global de teste ampliado para 20s + hookTimeout 30s em `vite.config.ts`; `tsconfig.strict.test.ts` migrou de `npx tsc` para binário local do TypeScript com timeout explícito de 60s por caso; `PriceTable.persistence.test.tsx` estabilizado no fluxo de seleção de categoria (`listbox` + `within`) para evitar timeout intermitente no Radix Select; `npm test` e `quality:gate` verdes (`323/323` testes, PR #63 mergeado).
+1) Higiene de componentes vendor (`src/components/ui/*`)
+- Tipo: dívida técnica incremental
+- Objetivo: reduzir warnings/ruído e acoplamento de código não utilizado
+- Critério de saída:
+  - mapa de uso atualizado
+  - pruning incremental sem regressão
+  - lint/typecheck/testes verdes
 
-- [ ] **Atualizar docs com drift**: `CONTEXT.md`, ADR-003, ADR-005, README e notas de workflow.
-- [ ] **Política de privacidade/retenção localStorage**: documentar escopo, retenção e limpeza.
-- [ ] **Política de artefatos `dist/`**: manter não versionado; gerar apenas em build/CI.
+### P2 — Estrutural (após P1)
 
-### Lote 4 — Estratégia futura (não bloqueante)
+2) Histórico por qualidade (alvo final)
+- Ajustar fetch/enriquecimento para respeitar qualidade do item ao compor histórico.
 
-- [ ] **Feature futura de temas**: arquitetura light/dark/system com `ThemeProvider` completo (via SPEC dedicada).
-- [ ] **Frente mobile**: estudar roadmap PWA vs app nativo, reaproveitando contratos e componentes existentes.
+3) Deduplicação por recência
+- Substituir estratégia atual por regra baseada em timestamp/confiabilidade.
 
----
+4) Factory/DI para serviços
+- Reduzir acoplamento de selector por singleton em import-time.
 
-## 🎯 Lote 1B — Consistência de Dados (P1) 🔄 EM ANDAMENTO
+5) Refresh manual com cooldown local (5 min)
+- Reavaliar necessidade após mudanças recentes de política de frescor e UX.
 
-**Análise completa em:** `features/proxima-janela-analise.md`
+### Futuro (não bloqueante)
 
-Após a conclusão bem-sucedida dos Lotes P0 e 1A, o Lote 1B foca em quick wins de consistência interna antes de avançar para refatorações estruturais (Lote 2).
+6) Temas (light/dark/system) via SPEC dedicada.
+7) Frente mobile (PWA vs nativo) com reaproveitamento de contratos atuais.
 
-### Itens em Progresso:
+## Node 24 — Plano de observação
 
-- [ ] **Política única de frescor (15 min)**: unificar TTL de cache, `staleTime`, textos de UI e polling.
-- [ ] **ID robusto para alertas**: migrar de `Date.now()` para `crypto.randomUUID()` com fallback.
-- [ ] **Cooldown de alerta persistente**: sobreviver a reload com TTL curto por alerta.
-- [ ] **Runtime padronizado em Node 20**: alinhar README e tooling.
+### Status dos gates
 
-**Estimativa:** 1 dia  
-**Próxima Feature Estrutural:** Lote 2 (Refatoração Estrutural e UX)
+- Gate 1 (bootstrap CI): concluído
+  - Correção de sintaxe/parse no workflow de matrix
+- Gate 2 (execução paralela): concluído
+  - Correção de leitura de cobertura com fallback para `coverage-final.json`
+  - Reexecução verde simultânea (Node 20 + Node 24)
 
----
+### Próxima condição para promoção
 
-## 🏗️ Lote 2 — Refatoração Estrutural e UX (P1/P2) ✅ IMPLEMENTADO
+- Acumular janela de estabilidade contínua (1-2 semanas) em execuções reais de PR.
+- Não observar regressão de flakiness/material no quality gate.
+- Abrir PR dedicado de promoção quando os critérios acima forem cumpridos.
 
-### Sprint close (2026-03-20)
+## Janela 6 — Concluída (2026-03-20)
 
-- [x] `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` extraídos
-- [x] `AppLayout` via rota-pai implementado em `src/App.tsx`
-- [x] `REPORT.md` gerado com `READY_FOR_COMMIT`
-- [x] PR #51 aberto: `refactor(lote-2): extract table state and shared layout`
-- [x] Review e merge do PR #51
+- Drift de documentação/governança alinhado:
+  - `CONTEXT.md` atualizado
+  - ADR-003 e ADR-005 revisados
+  - ADR-011 criado
+  - README com política de runtime em observação
+  - políticas de storage e artefatos adicionadas
 
-### Item 3: AlertsManager Hooks ✅ CONCLUÍDO
+## Janela 7 — Concluída (2026-03-20)
 
-**Data:** 2026-03-19  
-**Status:** ✅ **CONCLUÍDO**
+- Lote 1B (itens P1 de consistência) concluído:
+  - política única de frescor confirmada
+  - ID robusto para alertas confirmado
+  - cooldown persistente de alertas confirmado
 
-#### Hooks Criados:
+## Janela 8 — Concluída (2026-03-20)
 
-1. **`useAlertsForm.ts`** (72 linhas)
-   - Gerenciamento do formulário com react-hook-form
-   - Geração de ID robusto (`crypto.randomUUID` com fallback)
-   - Criação do objeto Alert a partir dos valores do formulário
-   - Função `generateAlertId` exportada para reuso
+- UX/consistência da arbitragem:
+  - feedback de faixas inválidas na PriceTable (`min > max`)
+  - Home com fonte única de arbitragem derivada de `marketItems`
+  - paginação adicionada na `ArbitrageTable`
+  - testes de regressão atualizados
 
-2. **`useAlertsFeedback.ts`** (63 linhas)
-   - Centralização de todos os toasts do Sonner
-   - `notifyToggle()` - feedback de ativação/desativação
-   - `notifyDelete()` - feedback de exclusão com nome do item
-   - `notifyCreate()` - feedback de criação com formatação contextual
+## Janela 9 — Concluída (2026-03-20)
+- Pruning de UI concluído: removidos 34 componentes sem referência em src/components/ui/*.
+- Guard-rails executados: npm run lint, npm run typecheck e npm run test verdes.
+- Resultado de suíte: 35 arquivos de teste, 333 testes passando.
+- Observação: mantido PR #64 aberto como lane de observação controlada.
 
-3. **`useAlertsUI.ts`** (76 linhas)
-   - Helpers de UI para formatação
-   - `getConditionIcon()` - ícones por condição (below/above/change)
-   - `getConditionText()` - textos descritivos formatados
-   - `getCityLabel()` - labels de cidade ("All Cities" vs nome)
-   - `getConditionStyles()` - estilos condicionais para UI
+## Marcos históricos consolidados
 
-#### Resultados:
+- Lote P0 concluído e mergeado
+- Lote 1A concluído e mergeado
+- Lote 1B (P1) concluído
+- Lote 2 concluído e mergeado (PR #51)
+- Lote 3 (qualidade/CI/docs) concluído nas frentes planejadas
 
-- **AlertsManager.tsx:** 466 → ~320 linhas (-31%)
-- **Cobertura de testes:** 3 arquivos de teste com 30+ casos
-- **Separação de responsabilidades:** UI, formulário e feedback isolados
-- **ADR-009:** Documentação arquitetural criada
+## Pontos de atenção atuais
 
-#### Testes:
+- Manter observação do comportamento Node 24 no CI antes de promoção.
+- Warnings em componentes vendor (`src/components/ui/*`) seguem como trade-off conhecido até a janela de higiene.
+- Não commitar artefatos gerados (`dist/`, `coverage/`, relatórios temporários).
 
-- `useAlertsForm.test.ts` - 9 casos (form init, createAlert, reset, UUID fallback)
-- `useAlertsFeedback.test.ts` - 6 casos (toggle, delete, create toasts)
-- `useAlertsUI.test.ts` - 6 casos (icons, text, labels)
-
----
-
-## ✅ Lote 1A — Correções de Alertas e Notificações (P1) CONCLUÍDO
-
-**Análise completa em:** `features/proxima-frente-analise.md`
-
-### ✅ Todos os Itens Concluídos
-
-- [x] **Item 1: Contrato de alerta `change` (Q07)** — ✅ **MERGEADO**
-  - Engine calcula variação percentual temporal usando `priceHistory`
-  - Substitui `spreadPercent` por variação real do preço ao longo do tempo
-- [x] **Item 2: Unificação de notificações (Q14)** — ✅ **MERGEADO**
-  - Removido sistema `use-toast` legado
-  - Sistema único baseado em Sonner
-
-- [x] **Item 3: Respeitar `notifications.inApp` (Q10)** — ✅ **MERGEADO**
-  - Poller verifica flag antes de notificar
-  - Usuário pode desabilitar notificações por alerta
-
-- [x] **Item 4: Normalização de `alert.city` (Q08, Q44)** — ✅ **MERGEADO**
-  - Valor canônico `"all"` em todo o sistema
-  - Migração automática de dados antigos
-  - Label de UI separada do valor persistido
-
-**Tempo total:** 1.5 dias  
-**Impacto UX:** ⭐⭐⭐⭐⭐  
-**Status:** ✅ **LOTE 1A 100% COMPLETO**
-
-## Pendências
-
-- [x] **ADR-004**: `docs/adr/ADR-004-localstorage-alert-persistence.md` já existe e está completo (2026-03-16).
-- [x] **Expansão do catálogo**: CONCLUÍDO — PR #10 mergeado. 450 IDs em 17 categorias.
-- [x] **Enchanted items**: CONCLUÍDO — PR #24 mergeado. Catálogo em 1.830 IDs com filtro de encantamento.
-- [x] **Filtros de UI adicionais**: CONCLUÍDO parcialmente no PR #25 — min/max preço e spread, `Clear All`, contador de filtros. Gap remanescente: persistência opcional dos filtros (AC-5).
-- [x] **Tratamento de Rate Limit**: CONCLUÍDO — PR #11 mergeado. `fetchWithRetry` com backoff exponencial e jitter em `market.api.ts`. Fecha DEBT-P1-001.
-- [x] **Cache com TTL**: CONCLUÍDO — PR #17 mergeado. `market.cache.ts` com validação Zod; TTL alinhado depois para 15 min pela política única de frescor. Fecha DEBT-P1-002.
-- [x] **Cobertura de hooks críticos**: CONCLUÍDO — PR #28 mergeado. use-toast.ts (91.22%), useAlerts.ts (100%), useAlertPoller.ts (93.75%). 72 novos testes.
-- [x] **Cobertura de componentes críticos** (2026-03-18): CONCLUÍDO — PR #31 mergeado em `main`; testes unitários adicionados para `PriceTable.tsx` (84.67%) e `AlertsManager.tsx` (80.76%); ambos acima do limiar de 80%; 211/211 testes passando; workflow `Quality Gate` criado e operacional.
-- [x] **Validação defensiva de alertas persistidos**: CONCLUÍDO — PR #28 mergeado em `main`; `alertSchema.safeParse()` valida dados do localStorage; 13 testes cobrindo JSON malformado, campos ausentes, tipos incorretos, enum inválido e estrutura aninhada inválida.
-- [x] **E2E completo de alertas**: CONCLUÍDO — `feat/alerts-manager-e2e` com 9 cenários Playwright cobrindo criação, persistência, toggle e exclusão de alertas.
-- [x] **Decisão sobre `strict: true`** (2026-03-19): CONCLUÍDO — ADR-006 atualizado com decisão de consolidar 6 flags em `strict: true`; mitigações documentadas (`@ts-expect-error`, limite de 5 supressões); PR #32 mergeado.
-- [x] **Persistência de filtros do PriceTable** (2026-03-19): CONCLUÍDO — implementação de AC-5 do SPEC `enhanced-ui-filters`; serviço `filter.storage.ts` com validação defensiva; 10 testes novos; PR #33 mergeado.
-- [x] **Restauração do Quality Gate** (2026-03-19): CONCLUÍDO — PR #43 mergeado; mocks de testes alinhados ao contrato atual de `@/data/constants`; CI voltou a ficar verde.
-- [x] **Refatoração do AlertsManager para hooks especializados** (2026-03-19): CONCLUÍDO — PR #42 mergeado; ajuste posterior em `market.cache.test.ts` removeu mock contraditório de TTL.
-- [x] **Sessão de triagem técnica** (2026-03-19): CONCLUÍDO — avaliação do estado atual via `technical-triage`; baseline verificada como estável; próximo passo definido como Lote 1B.
-- [x] **Lote 1B — Item 3: Cooldown persistente** (2026-03-19): ✅ **VALIDADO** — implementação já existia em `useAlertPoller.ts`; PR #48 criado com documentação; funções `loadLastFiredFromStorage()` e `saveLastFiredToStorage()` validadas; 8 testes passando.
-- [x] **Lote 1B — Item 4: Runtime Node 20** (2026-03-19): ✅ **VALIDADO** — README, package.json engines, e workflow CI já alinhados; PR #49 criado com documentação.
-- [x] **LOTE 1B 100% CONCLUÍDO** (2026-03-19): ✅ Todos os 4 itens validados e documentados; próxima frente: Lote 2 (Refatoração Estrutural e UX).
-- [x] **LOTE 2 CONCLUÍDO E MERGEADO** (2026-03-20): ✅ Refatoração estrutural da PriceTable extraída para hooks + layout compartilhado por rota; PR #51 mergeado na main; ADR-010 criado.
-- [x] **COBERTURA PÓS-REFATORAÇÃO CONCLUÍDA** (2026-03-20): ✅ PR #54 mergeado — 4 módulos críticos com cobertura ≥80%; gaps remanescentes identificados.
-- [x] **SPRINT CLOSE — Triagem das 5 próximas janelas** (2026-03-20): ✅ Análise via `technical-triage` consolidada; baseline validada com 292/292 testes; handoff preparado.
-
-## 🎯 Próximas 5 Janelas Lógicas (definidas 2026-03-20)
-
-1. [x] **P0 — Publicar artefatos de fechamento do sprint**: Commitar logs consolidados e limpar worktree (em branch documental dedicada)
-2. [x] **P1 — Cobertura de hooks extraídos**: `usePriceTablePagination.ts` (55.55% → ≥80%) e reforço de `usePriceTableFilters.ts` (PR #56 aberto)
-3. [x] **P1 — Cobertura de componentes UI**: `Navbar.tsx`, `Dashboard.tsx`, `ArbitrageTable.tsx` (PR #57 aberto)
-4. [x] **P2 — Lote 3 (CI/Qualidade)**: `typecheck` explícito, smoke E2E obrigatório, threshold coverage (PR #58 aberto)
-5. [x] **P2 — Preparação Node 24**: Avaliar impacto da migração antes do deadline 2026-06-02 (PR #61 aberto + issue #60)
-
-## Pontos de atenção
-
-- **Worktree local suja**: logs de sessão (`ERROR_LOG.md`, `PENDING_LOG.md`, `memory/MEMORY.md`) modificados e aguardando commit documental do sprint-close.
-- **Cobertura atual** (pós-PR #54): 292/292 testes passando. Gaps mais relevantes abaixo de 80%: `usePriceTablePagination.ts` (55.55%), `Navbar.tsx` (58.33%), `Dashboard.tsx` (68.18%), `ArbitrageTable.tsx` (69.64%) e `App.tsx` (75%).
-- **Catálogo expandido**: 1.830 IDs aumentam pressão sobre filtragem client-side; monitorar performance real antes de nova expansão.
-- **shadcn/ui warnings**: warnings de ESLint em `src/components/ui/` permanecem como trade-off até atualização do vendor.
-- **Qualidade da baseline** (2026-03-20): `Quality Gate` estável; baseline validada com 292 testes passando.
-- **Upgrade de actions para Node 24** (2026-06-02): deadline configurado no dependabot.yml; avaliar quando próximo da data (janela #5).
-- **Avaliação futura de `node-version: 24` no job do projeto**: antes de migrar o runtime do CI, comparar desempenho e estabilidade contra Node 20 (`npm ci`, `quality:gate`, tempo total, consumo de memória e compatibilidade de dependências).
-- **Worktree local sujo por cobertura**: artefatos em `coverage/` continuam fora do escopo e não devem ser commitados.
