@@ -347,3 +347,17 @@
   - Criado script `.claude/scripts/git-sync-check.sh` para checagem remoto/local com `fetch --prune`, drift vs `origin/main`, branches já mergeadas e PRs abertos
   - `AGENTS.md` e `CLAUDE.md` atualizados para exigir esse guardrail antes de fluxos de memória/handoff quando o estado de Git impactar a sessão
 - **Status**: RESOLVIDO
+
+---
+
+### [2026-03-21 08:35] implement-feature: coverage-branches-gap (AC-2/AC-3/AC-4)
+
+- **Erro**: Nenhum erro bloqueante durante a execução do fluxo completo
+- **Causa**: N/A
+- **Ação tomada**:
+  - SPEC `coverage-branches-gap` promovida para `Approved` e REPORT atualizado para `READY_FOR_COMMIT`
+  - Testes adicionais em `PriceTable` e `market.api` elevaram cobertura global de branches para 90.28%
+  - `npm run quality:gate` validado com sucesso (`394/394` testes, lint/typecheck/build OK)
+  - Commit `2655a8d` criado na branch `feat/coverage-branches-gap-ac2-ac4`; PR #77 aberta e mergeada na `main`
+  - Ajustes operacionais menores (quoting em `node -e` e caminho incorreto de leitura) corrigidos na hora, sem impacto na entrega
+- **Status**: SEM ERROS BLOQUEANTES — entrega concluída e mergeada

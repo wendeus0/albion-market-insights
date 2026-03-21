@@ -6,14 +6,14 @@ type: project
 
 ## Active fronts
 
-- SPRINT 2026-03-20 FECHADO: 9 janelas completas, frentes A/B mergeadas, baseline estável
+- SPRINT 2026-03-20 FECHADO: baseline estável e sem bloqueio operacional aberto
+- PR #77 MERGEADO: frente `coverage-branches-gap` concluída (AC-2/AC-3/AC-4)
 - PR #72, #71, #70 MERGEADOS: Deduplicação, history-by-quality, higienização de componentes
 - LOTE 1B, 2, 3 CONCLUÍDOS E MERGEADOS: documentação, refatoração, CI/qualidade
-- FRENTES A/B CONCLUÍDAS: Tier naming (PR #67) + Ícones híbridos (PR #68)
 - Observação contínua:
   - Node 24 CI lane (aguardando janela de 1-2 semanas para promoção)
   - Issue #59 (flakiness) — não bloqueia baseline
-- Próximo ciclo: Abertura de nova feature (a definir com usuário)
+- Próximo ciclo: abrir nova frente a partir de `main` sincronizada
 
 ## Open decisions
 

@@ -276,11 +276,19 @@
 
 ## Pontos de atenção atuais
 
+- Branch local `feat/coverage-branches-gap-ac2-ac4` já foi mergeada na `main`; próxima sessão deve retornar para `main` e sincronizar antes de abrir nova frente.
 - Manter observação do comportamento Node 24 no CI antes de promoção.
 - Warnings em componentes vendor (`src/components/ui/*`) seguem como trade-off conhecido até a janela de higiene.
 - Não commitar artefatos gerados (`dist/`, `coverage/`, relatórios temporários).
 
 ## Decisões incorporadas recentemente
+
+- **Retomada coverage-branches-gap (AC-2/AC-3/AC-4)** (2026-03-21) ✅ **MERGEADO NA MAIN via PR #77**
+  - SPEC `features/coverage-branches-gap/SPEC.md` validada e promovida para `Approved`
+  - Cobertura global de branches elevada de **86.71%** para **90.28%** (meta atingida)
+  - Cobertura por arquivo: `PriceTable.tsx` **100% branches** e `market.api.ts` **94.73% branches**
+  - Quality gate completo aprovado: lint + typecheck + testes (`394/394`) + build
+  - Commit `2655a8d` na branch `feat/coverage-branches-gap-ac2-ac4`, PR #77 criada e mergeada
 
 - **Guardrail de sincronização Git para memória durável** (2026-03-21) ✅ **CONCLUÍDO**
   - Script `.claude/scripts/git-sync-check.sh` criado para validar estado remoto/local antes de consolidar memória ou handoff
