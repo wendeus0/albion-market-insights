@@ -1,9 +1,10 @@
-import { z } from 'zod';
-import type { MarketItem } from '@/data/types';
-import { DATA_FRESHNESS_MS } from '@/data/constants';
+import { z } from "zod";
+import type { MarketItem } from "@/data/types";
+import { DATA_FRESHNESS_MS } from "@/data/constants";
 
-export const CACHE_KEY = 'albion_market_cache';
+export const CACHE_KEY = "albion_market_cache";
 export const CACHE_TTL_MS = DATA_FRESHNESS_MS; // 15 minutos (política única de frescor)
+export const CACHE_VERSION = 2;
 
 const MarketItemCacheSchema = z.object({
   itemId: z.string(),
@@ -20,6 +21,7 @@ const MarketItemCacheSchema = z.object({
 });
 
 const MarketCacheEntrySchema = z.object({
+  version: z.literal(CACHE_VERSION),
   data: z.array(MarketItemCacheSchema),
   cachedAt: z.string(),
   expiresAt: z.string(),
@@ -42,6 +44,7 @@ export function readCache(): MarketCacheEntry | null {
 export function writeCache(data: MarketItem[]): void {
   const now = new Date();
   const entry: MarketCacheEntry = {
+    version: CACHE_VERSION,
     data,
     cachedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + CACHE_TTL_MS).toISOString(),
