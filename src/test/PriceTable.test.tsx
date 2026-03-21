@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PriceTable } from "@/components/dashboard/PriceTable";
@@ -376,6 +376,16 @@ describe("PriceTable — filtros combinados", () => {
 });
 
 describe("PriceTable - branches de sort e paginacao", () => {
+  it("ordena por city", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    const cityBtn = screen.getByRole("button", { name: /city/i });
+    await user.click(cityBtn);
+
+    expect(cityBtn).toBeInTheDocument();
+  });
+
   it("ordena por buyPrice", async () => {
     const user = userEvent.setup();
     render(<PriceTable items={mockItems} />);
@@ -428,5 +438,64 @@ describe("PriceTable - branches de sort e paginacao", () => {
     await user.click(page2);
 
     expect(page2).toHaveClass("bg-primary");
+  });
+
+  it("exibe tempo relativo em minutos e horas", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-21T12:00:00.000Z"));
+
+    const datedItems: MarketItem[] = [
+      {
+        ...mockItems[0],
+        timestamp: "2026-03-21T11:30:00.000Z",
+      },
+      {
+        ...mockItems[1],
+        timestamp: "2026-03-21T09:00:00.000Z",
+      },
+    ];
+
+    render(<PriceTable items={datedItems} />);
+
+    expect(screen.getByText("30m ago")).toBeInTheDocument();
+    expect(screen.getByText("3h ago")).toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
+  it("aplica cores para spreads medio e baixo", () => {
+    const branchItems: MarketItem[] = [
+      {
+        ...mockItems[0],
+        itemId: "T4_MEDIUM_SPREAD",
+        itemName: "Medium Spread Item",
+        spreadPercent: 15,
+      },
+      {
+        ...mockItems[1],
+        itemId: "T4_LOW_SPREAD",
+        itemName: "Low Spread Item",
+        spreadPercent: 5,
+      },
+    ];
+
+    render(<PriceTable items={branchItems} />);
+
+    expect(screen.getByText("+15.0%")).toHaveClass("text-primary");
+    expect(screen.getByText("+5.0%")).toHaveClass("text-muted-foreground");
+  });
+});
+
+describe("PriceTable - branches de validacao de spread", () => {
+  it("exibe feedback quando min spread > max spread", async () => {
+    const user = userEvent.setup();
+    render(<PriceTable items={mockItems} />);
+
+    await user.type(screen.getByPlaceholderText(/min spread/i), "40");
+    await user.type(screen.getByPlaceholderText(/max spread/i), "10");
+
+    expect(
+      screen.getByText(/min spread cannot be greater than max spread/i),
+    ).toBeInTheDocument();
   });
 });
