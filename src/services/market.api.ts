@@ -1,15 +1,19 @@
-import type { MarketItem, Alert } from '@/data/types';
-import type { MarketService } from './market.service';
-import { AlbionPriceRecordSchema, AlbionHistoryRecordSchema, albionRecordToMarketItem } from './market.api.types';
-import type { AlbionPriceRecord } from './market.api.types';
-import { AlertStorageService } from './alert.storage';
-import { ITEM_IDS, ITEM_NAMES } from '@/data/constants';
-import { MockMarketService } from './market.mock';
-import { readCache, writeCache, isCacheValid } from '@/services/market.cache';
-import { dataSourceManager, shouldUseMockFallback } from './dataSource.manager';
+import type { MarketItem, Alert } from "@/data/types";
+import type { MarketService } from "./market.service";
+import {
+  AlbionPriceRecordSchema,
+  AlbionHistoryRecordSchema,
+  albionRecordToMarketItem,
+} from "./market.api.types";
+import type { AlbionPriceRecord } from "./market.api.types";
+import { AlertStorageService } from "./alert.storage";
+import { ITEM_IDS, ITEM_NAMES } from "@/data/constants";
+import { MockMarketService } from "./market.mock";
+import { readCache, writeCache, isCacheValid } from "@/services/market.cache";
+import { dataSourceManager, shouldUseMockFallback } from "./dataSource.manager";
 
-const BASE_URL = 'https://west.albion-online-data.com/api/v2/stats/prices';
-const HISTORY_URL = 'https://west.albion-online-data.com/api/v2/stats/history';
+const BASE_URL = "https://west.albion-online-data.com/api/v2/stats/prices";
+const HISTORY_URL = "https://west.albion-online-data.com/api/v2/stats/history";
 
 export const BATCH_SIZE = 100;
 export const HISTORY_CONCURRENCY = 3;
@@ -21,13 +25,13 @@ function isRetryable(status: number): boolean {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function fetchWithRetry(
   url: string,
   options?: RequestInit,
-  retryConfig?: { maxAttempts?: number; baseDelayMs?: number }
+  retryConfig?: { maxAttempts?: number; baseDelayMs?: number },
 ): Promise<Response> {
   const maxAttempts = retryConfig?.maxAttempts ?? RETRY_MAX_ATTEMPTS;
   const baseDelayMs = retryConfig?.baseDelayMs ?? RETRY_BASE_DELAY_MS;
@@ -36,20 +40,21 @@ export async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= maxAttempts; attempt++) {
     if (options?.signal?.aborted) {
-      throw new DOMException('The operation was aborted.', 'AbortError');
+      throw new DOMException("The operation was aborted.", "AbortError");
     }
 
     let response: Response | undefined;
     try {
       response = await fetch(url, options);
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      if (err instanceof DOMException && err.name === "AbortError") throw err;
       lastError = err;
     }
 
     if (response) {
       if (response.ok) return response;
-      if (!isRetryable(response.status)) throw new Error(`HTTP ${response.status}`);
+      if (!isRetryable(response.status))
+        throw new Error(`HTTP ${response.status}`);
       lastError = new Error(`HTTP ${response.status}`);
     }
 
@@ -63,19 +68,27 @@ export async function fetchWithRetry(
 }
 
 const LOCATIONS = [
-  'Caerleon',
-  'Bridgewatch',
-  'Fort Sterling',
-  'Lymhurst',
-  'Martlock',
-  'Thetford',
-  'Black Market',
+  "Caerleon",
+  "Bridgewatch",
+  "Fort Sterling",
+  "Lymhurst",
+  "Martlock",
+  "Thetford",
+  "Black Market",
 ] as const;
 
-type Location = typeof LOCATIONS[number];
+type Location = (typeof LOCATIONS)[number];
 
-// Key: `${itemId}|${city}`, value: array of avg_prices ordered oldest→newest
+// Key: `${itemId}|${city}|${quality}`, value: array of avg_prices ordered oldest→newest
 type HistoryMap = Map<string, number[]>;
+
+function buildHistoryKey(
+  itemId: string,
+  city: string,
+  quality: number,
+): string {
+  return `${itemId}|${city}|${quality}`;
+}
 
 export function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -87,7 +100,7 @@ export function chunkArray<T>(arr: T[], size: number): T[][] {
 
 export async function withConcurrency<T>(
   tasks: (() => Promise<T>)[],
-  limit: number
+  limit: number,
 ): Promise<T[]> {
   const results: T[] = new Array(tasks.length);
   let index = 0;
@@ -99,9 +112,8 @@ export async function withConcurrency<T>(
     }
   }
 
-  const workers = Array.from(
-    { length: Math.min(limit, tasks.length) },
-    () => worker()
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, () =>
+    worker(),
   );
   await Promise.all(workers);
   return results;
@@ -113,23 +125,32 @@ export class ApiMarketService implements MarketService {
   private cachedLastUpdate: string | null = null;
   private hasSuccessfulFetch = false;
 
-  private async fetchPricesBatch(itemIds: string[], signal?: AbortSignal): Promise<AlbionPriceRecord[]> {
-    const locationsParam = LOCATIONS.join(',');
-    const url = `${BASE_URL}/${itemIds.join(',')}.json?locations=${locationsParam}&qualities=1,2,3,4,5`;
+  private async fetchPricesBatch(
+    itemIds: string[],
+    signal?: AbortSignal,
+  ): Promise<AlbionPriceRecord[]> {
+    const locationsParam = LOCATIONS.join(",");
+    const url = `${BASE_URL}/${itemIds.join(",")}.json?locations=${locationsParam}&qualities=1,2,3,4,5`;
     const response = await fetchWithRetry(url, { signal });
     const raw: unknown[] = await response.json();
     return raw
-      .map(r => {
+      .map((r) => {
         const result = AlbionPriceRecordSchema.safeParse(r);
         return result.success ? result.data : null;
       })
       .filter((r): r is AlbionPriceRecord => r !== null);
   }
 
-  private async fetchHistoryBatch(itemIds: string[], city: Location): Promise<HistoryMap> {
+  private async fetchHistoryBatch(
+    itemIds: string[],
+    city: Location,
+    qualities: number[],
+  ): Promise<HistoryMap> {
     const map: HistoryMap = new Map();
+    if (itemIds.length === 0 || qualities.length === 0) return map;
+
     try {
-      const url = `${HISTORY_URL}/${itemIds.join(',')}.json?locations=${city}&qualities=1&time-scale=1`;
+      const url = `${HISTORY_URL}/${itemIds.join(",")}.json?locations=${city}&qualities=${qualities.join(",")}&time-scale=1`;
       const response = await fetchWithRetry(url);
       const raw: unknown[] = await response.json();
       for (const record of raw) {
@@ -137,8 +158,15 @@ export class ApiMarketService implements MarketService {
         if (!result.success || result.data.data.length === 0) continue;
         const sorted = [...result.data.data]
           .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
-          .map(d => d.avg_price);
-        map.set(`${result.data.item_id}|${result.data.location}`, sorted);
+          .map((d) => d.avg_price);
+        map.set(
+          buildHistoryKey(
+            result.data.item_id,
+            result.data.location,
+            result.data.quality,
+          ),
+          sorted,
+        );
       }
     } catch {
       // silent — history enrichment is best-effort
@@ -146,11 +174,30 @@ export class ApiMarketService implements MarketService {
     return map;
   }
 
-  private async buildHistoryMap(batches: string[][]): Promise<HistoryMap> {
+  private async buildHistoryMap(
+    records: AlbionPriceRecord[],
+  ): Promise<HistoryMap> {
     const merged: HistoryMap = new Map();
-    const tasks = batches.flatMap(batch =>
-      LOCATIONS.map(city => async () => this.fetchHistoryBatch(batch, city))
-    );
+    const tasks = LOCATIONS.flatMap((city) => {
+      const cityRecords = records.filter((record) => record.city === city);
+      const itemBatches = chunkArray(
+        [...new Set(cityRecords.map((record) => record.item_id))],
+        BATCH_SIZE,
+      );
+
+      return itemBatches.map((batch) => async () => {
+        const qualities = [
+          ...new Set(
+            cityRecords
+              .filter((record) => batch.includes(record.item_id))
+              .map((record) => record.quality),
+          ),
+        ].sort((a, b) => a - b);
+
+        return this.fetchHistoryBatch(batch, city, qualities);
+      });
+    });
+
     const batchMaps = await withConcurrency(tasks, HISTORY_CONCURRENCY);
     for (const batchMap of batchMaps) {
       for (const [key, prices] of batchMap) {
@@ -175,7 +222,7 @@ export class ApiMarketService implements MarketService {
     try {
       const batches = chunkArray(ITEM_IDS, BATCH_SIZE);
 
-      const priceTasks = batches.map(batch => async () => {
+      const priceTasks = batches.map((batch) => async () => {
         if (controller.signal.aborted) return [] as AlbionPriceRecord[];
         try {
           return await this.fetchPricesBatch(batch, controller.signal);
@@ -189,7 +236,7 @@ export class ApiMarketService implements MarketService {
 
       // Deduplicate across batches (first occurrence wins)
       const seen = new Set<string>();
-      const allPriceRecords = batchResults.flat().filter(r => {
+      const allPriceRecords = batchResults.flat().filter((r) => {
         const key = `${r.item_id}|${r.city}|${r.quality}`;
         if (seen.has(key)) return false;
         seen.add(key);
@@ -202,8 +249,8 @@ export class ApiMarketService implements MarketService {
           dataSourceManager.setMock();
           return this.fallback.getItems();
         } else {
-          dataSourceManager.setDegraded('API retornou dados vazios');
-          throw new Error('API returned empty data');
+          dataSourceManager.setDegraded("API retornou dados vazios");
+          throw new Error("API returned empty data");
         }
       }
 
@@ -211,31 +258,35 @@ export class ApiMarketService implements MarketService {
       this.hasSuccessfulFetch = true;
       dataSourceManager.setReal();
 
-      const items = allPriceRecords
-        .map(record => albionRecordToMarketItem(record))
-        .filter(item => item.sellPrice > 0 && item.buyPrice > 0)
-        .map(item => ({
+      const recordsWithPrices = allPriceRecords.filter(
+        (record) => record.sell_price_min > 0 && record.buy_price_max > 0,
+      );
+      const historyMap = await this.buildHistoryMap(recordsWithPrices);
+
+      const result = recordsWithPrices.map((record) => {
+        const item = albionRecordToMarketItem(record);
+        const history = historyMap.get(
+          buildHistoryKey(record.item_id, record.city, record.quality),
+        );
+
+        return {
           ...item,
           itemName: ITEM_NAMES[item.itemId] ?? item.itemName,
-        }));
-
-      const historyMap = await this.buildHistoryMap(batches);
-
-      const result = items.map(item => {
-        const history = historyMap.get(`${item.itemId}|${item.city}`);
-        return history ? { ...item, priceHistory: history } : item;
+          priceHistory: history ?? item.priceHistory,
+        };
       });
 
       writeCache(result);
       return result;
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (shouldUseMockFallback()) {
         dataSourceManager.setMock();
         return this.fallback.getItems();
       } else {
-        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+        const errorMessage =
+          error instanceof Error ? error.message : "Erro desconhecido";
         dataSourceManager.setDegraded(errorMessage);
         throw error;
       }
