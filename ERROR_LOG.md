@@ -335,3 +335,15 @@
   - Adicionada decisão estável: CI com lane Node 24 paralela
   - Atualizadas seções: Marcos alcançados, Active fronts, Open decisions, Next steps
 - **Status**: SEM ERROS — memória consolidada
+
+---
+
+### [2026-03-21 02:10] memory-curator — memória durável desatualizada por leitura incompleta do estado remoto
+
+- **Erro**: `memory/MEMORY.md` manteve como próximas frentes itens que já haviam sido mergeados (`#70`, `#71`, `#72`)
+- **Causa**: Consolidação baseada em contexto local incompleto, sem guardrail explícito para validar branches locais vs. estado remoto/PRs antes de atualizar a memória durável
+- **Ação tomada**:
+  - `memory/MEMORY.md` corrigido para refletir merges já concluídos
+  - Criado script `.claude/scripts/git-sync-check.sh` para checagem remoto/local com `fetch --prune`, drift vs `origin/main`, branches já mergeadas e PRs abertos
+  - `AGENTS.md` e `CLAUDE.md` atualizados para exigir esse guardrail antes de fluxos de memória/handoff quando o estado de Git impactar a sessão
+- **Status**: RESOLVIDO

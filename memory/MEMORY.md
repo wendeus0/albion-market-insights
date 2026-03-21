@@ -5,17 +5,22 @@
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** ✅ Ciclo de 9 janelas concluído e mergeado na `main` (2026-03-20)
-**Branch ativa:** `main` — sincronizada com `origin/main`
-**Snapshot local:** worktree limpa, baseline estável
+**Status:** ✅ Sprint 2026-03-20 fechado — baseline estável, pronto para próximo ciclo
+**Branch ativa:** `main` — sincronizada com `origin/main` (commit `344741e`)
+**Snapshot local:** worktree limpa, nenhuma mudança pendente
 
 **Marcos alcançados:**
 
-- Todas as 9 janelas (Janelas 6-9 da rodada 2026-03-20) concluídas e mergeadas
+- Sprint 2026-03-20 fechado com sucesso (session-close, coverage, debt-tracker, security-audit)
+- Todas as 9 janelas (Janelas 6-9) concluídas e mergeadas
+- ✅ **PR #72 MERGEADO**: Deduplicação por recência — preferência por registros mais novos
+- ✅ **PR #71 MERGEADO**: History by quality — respeita qualidade do item no enriquecimento
+- ✅ **PR #70 MERGEADO**: Higienização de componentes vendor — isolamento de exports
+- ✅ **PR #64 MERGEADO**: Lane Node 24 integrada à CI; observação contínua
 - Frentes A e B do Contrato de Autonomia v1 concluídas (tier naming + ícones híbridos)
-- ✅ **PR #64 MERGEADO**: Lane Node 24 integrada à CI; observação contínua em execução
-- Issue #59 (flakiness) em acompanhamento — não bloqueia baseline
+- Cobertura: 95.26% linhas, 93.47% statements, 93.09% functions
 - 333 testes passando, build OK
+- Issue #59 (flakiness) em acompanhamento — não bloqueia baseline
 
 ---
 
@@ -54,14 +59,14 @@
 
 ## Active fronts
 
-- ✅ **LOTE 1B 100% CONCLUÍDO**: itens 3 e 4 validados e documentados nos PRs #48 e #49
-- ✅ **LOTE 2 CONCLUÍDO E MERGEADO**: refatoração estrutural integrada à `main` via PR #51
-- ✅ **LOTE 3 (CI/QUALIDADE) CONCLUÍDO**: Janelas 6-9 finalizadas (2026-03-20)
-- ✅ **SPRINT CLOSE EXECUTADO**: triagem técnica consolidada, todas as janelas mergeadas
-- ✅ **FRENTES A/B CONCLUÍDAS**: Tier naming (PR #67) + Ícones híbridos (PR #68) mergeados
-- Baseline estável: 333 testes passando, build OK
-- Observação contínua: Node 24 CI lane (aguardando janela de estabilidade), Issue #59 (flakiness)
-- **Pronto para**: abertura de nova frente ou consolidação de observação Node 24
+- ✅ **SPRINT 2026-03-20 FECHADO**: 9 janelas completas, frentes A/B mergeadas, baseline estável
+- ✅ **PR #72, #71, #70 MERGEADOS**: Deduplicação, history-by-quality, higienização de componentes
+- ✅ **LOTE 1B, 2, 3 CONCLUÍDOS E MERGEADOS**: documentação, refatoração, CI/qualidade
+- ✅ **FRENTES A/B CONCLUÍDAS**: Tier naming (PR #67) + Ícones híbridos (PR #68)
+- 🔄 **Observação contínua**:
+  - Node 24 CI lane (aguardando janela de 1-2 semanas para promoção)
+  - Issue #59 (flakiness) — não bloqueia baseline
+- 🎯 **Próximo ciclo**: Abertura de nova feature (a definir com usuário)
 
 ---
 
@@ -88,6 +93,7 @@
 - Deduplicação por `${item_id}|${city}|${quality}` é obrigatória ao consolidar resultados de múltiplos batches
 - Testes com `fetchWithRetry`: usar `const assertion = expect(promise).rejects...; await vi.runAllTimersAsync(); await assertion` — handler ANTES dos timers para evitar `PromiseRejectionHandledWarning`
 - Quando um PR for mergeado, criar nova branch a partir de `origin/main` — não continuar na branch antiga que divergiu
+- Antes de consolidar memória/handoff, validar estado remoto/local com `bash .claude/scripts/git-sync-check.sh` — branch local existente pode já estar mergeada
 - `window.matchMedia` não existe no jsdom — mockar em testes que renderizam `App` (Sonner usa essa API)
 - `vi.stubGlobal('fetch', vi.fn())` retorna o objeto `globalThis`, não o spy — usar `globalThis.fetch as ReturnType<typeof vi.fn>` para assertions
 - `vi.mock(...)` deve estar no top-level do módulo de teste — quando aninhado em blocos, é hoistado silenciosamente mas gera warning
@@ -107,31 +113,36 @@
 
 ## Next recommended steps
 
-1. **Promoção Node 24 para default**: quando janela de estabilidade for atingida (1-2 semanas)
-2. **Investigação issue #59**: avaliar se flakiness requer ação ou é aceitável
-3. **Frentes C/D do Contrato de Autonomia**: dependem de resolução de issues #65 e #66 (bloqueadas por infraestrutura)
-4. **Nova feature**: abrir SPEC para próximo ciclo de desenvolvimento (a definir)
-5. **Manutenção preventiva**: pruning de código morto, atualização de dependências
+1. **Abrir SPEC para próxima feature**: iniciar ciclo de desenvolvimento (a definir com usuário)
+2. **Promoção Node 24 para default**: quando janela de estabilidade for atingida (1-2 semanas)
+3. **Investigação issue #59**: avaliar se flakiness requer ação ou é aceitável
+4. **Fix P1**: validação defensiva de schema em `alert.storage.ts`
+5. **Frentes C/D do Contrato de Autonomia**: dependem de resolução de issues #65 e #66 (bloqueadas por infraestrutura)
+6. **Manutenção preventiva**: pruning de código morto, atualização de dependências
 
 ---
 
 ## Last handoff summary
 
-**Sessão:** Encerramento 2026-03-21  
+**Sessão:** Memory Curator — Correção pós-merge 2026-03-21  
 **Trabalho realizado:**
 
-- ✅ **VALIDAÇÃO DO ESTADO**: Sessão aberta com `session-open` e `technical-triage`
-- ✅ **CONSOLIDAÇÃO**: Todas as 9 janelas da rodada 2026-03-20 confirmadas como concluídas e mergeadas
-- ✅ **HANDOFF**: Logs e memória atualizados via `session-logger` e `memory-curator`
-- Baseline validada: 333 testes passando, build OK, worktree limpa
+- ✅ **ESTADO CORRIGIDO**: Identificado via GitHub que PRs #70, #71, #72 já estavam mergeados na `main`
+- ✅ **MEMORY.md ATUALIZADO**: Refletindo merges de deduplicação, history-by-quality e higienização
+- ✅ **ACTIVE FRONTS REVISADAS**: Removida referência obsoleta a features já concluídas
+- ✅ **HANDOFF CONSOLIDADO**: Prompt de retomada atualizado com estado real do projeto
 
 **Estado ao encerrar:**
 
-- Branch `main` sincronizada com `origin/main` (commit `0d8209a`)
-- Todas as frentes A e B do Contrato de Autonomia v1 concluídas
-- ✅ **PR #64 MERGEADO**: Lane Node 24 integrada à CI
-- Issue #59 em acompanhamento (flakiness)
-- MEMORY.md atualizado com estado consolidado
+- Branch `main` sincronizada com `origin/main` (commit `344741e`)
+- ✅ **PR #72 MERGEADO**: Deduplicação por recência
+- ✅ **PR #71 MERGEADO**: History by quality
+- ✅ **PR #70 MERGEADO**: Higienização de componentes vendor
+- Worktree limpa, baseline estável
+- 333 testes passando, build OK
+- Cobertura: 95.26% linhas, 93.47% statements, 93.09% functions
+- Issue #59 (flakiness) em acompanhamento — não bloqueia baseline
+- PR #64 (Node 24 lane) mergeado — observação contínua ativa
 
 **Retomar por:**
 
@@ -140,16 +151,19 @@ Read before acting:
 - `AGENTS.md`
 - `memory/MEMORY.md`
 - `PENDING_LOG.md`
+- `bash .claude/scripts/git-sync-check.sh`
+- `SECURITY_AUDIT_REPORT.md` (se tocar auth/CI/infra)
 
 Current state:
-- ✅ Ciclo de 9 janelas concluído e mergeado (2026-03-20)
-- ✅ Frentes A/B (tier naming + ícones híbridos) mergeadas
-- Baseline: 333 testes, build OK, worktree limpa
-- Observação: PR #64 (Node 24), Issue #59 (flakiness)
+- ✅ Sprint fechado — baseline estável, 333 testes OK
+- ✅ PRs #70, #71, #72 mergeados (higienização, history-by-quality, deduplicação)
+- Cobertura: 95%+ linhas/statements; gap em branches (84%)
+- Débito: 1 P1 (validação alert.storage.ts), 4 P2
+- Observação: Node 24 (1-2 semanas estabilidade), Issue #59
 
 Recommended next front:
-1. 🔍 Aguardar janela de estabilidade Node 24 (1-2 semanas) antes de promoção
-2. 🔍 Investigar issue #59 se flakiness impactar CI
-3. 📝 Abrir SPEC para próxima feature (a definir com usuário)
-4. 🔧 Manutenção preventiva (pruning, updates)
+1. 📝 Abrir SPEC para próxima feature (a definir com usuário)
+2. 🔧 Fix P1: validação defensiva em `alert.storage.ts`
+3. 🔍 Aguardar estabilidade Node 24 para promoção
+4. 📊 Fechar gap de cobertura em branches (84% → 90%)
 ```

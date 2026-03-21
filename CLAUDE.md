@@ -18,19 +18,19 @@ npm run preview                 # preview do build de produção
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Framework | React 18 + TypeScript |
-| Build | Vite 5 |
-| Estilos | Tailwind CSS 3 |
-| Componentes | shadcn/ui (Radix UI) |
-| Roteamento | React Router 6 |
-| Data fetching | TanStack Query 5 |
-| Gráficos | Recharts 2 |
-| Formulários | React Hook Form + Zod |
-| Ícones | Lucide React |
+| Camada           | Tecnologia                 |
+| ---------------- | -------------------------- |
+| Framework        | React 18 + TypeScript      |
+| Build            | Vite 5                     |
+| Estilos          | Tailwind CSS 3             |
+| Componentes      | shadcn/ui (Radix UI)       |
+| Roteamento       | React Router 6             |
+| Data fetching    | TanStack Query 5           |
+| Gráficos         | Recharts 2                 |
+| Formulários      | React Hook Form + Zod      |
+| Ícones           | Lucide React               |
 | Testes unitários | Vitest 4 + Testing Library |
-| Testes E2E | Playwright 1.49 |
+| Testes E2E       | Playwright 1.49            |
 
 ---
 
@@ -81,3 +81,5 @@ Consulte `AGENTS.md` para fluxo de etapas, regras críticas e Definition of Done
 ## Memória
 
 Estado durável desta sessão: `memory/MEMORY.md`
+
+Antes de consolidar memória, handoff ou abertura/fechamento de sessão com impacto de Git/PRs, executar `bash .claude/scripts/git-sync-check.sh` para validar o estado remoto/local.

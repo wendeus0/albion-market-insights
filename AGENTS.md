@@ -19,25 +19,25 @@ Meta-skill: `implement-feature`
 
 ### Condicionais
 
-| Skill | Quando |
-|-------|--------|
-| `task-planner` | SPEC com >=3 critérios independentes |
-| `repo-preflight` | Docker, build, scripts de boot, env vars |
-| `code-review` | Diff não trivial ou lógica não óbvia |
+| Skill             | Quando                                            |
+| ----------------- | ------------------------------------------------- |
+| `task-planner`    | SPEC com >=3 critérios independentes              |
+| `repo-preflight`  | Docker, build, scripts de boot, env vars          |
+| `code-review`     | Diff não trivial ou lógica não óbvia              |
 | `security-review` | CI/CD, auth/secrets, infra, APIs públicas, skills |
-| `adr-manager` | Decisão arquitetural durável com trade-off |
+| `adr-manager`     | Decisão arquitetural durável com trade-off        |
 
 ---
 
 ## Agentes Customizados (`.claude/agents/`)
 
-| Agente | Modo | Quando | Entrega |
-|--------|------|--------|---------|
-| explorer | read-only | análise de impacto pré-implementação | mapa de arquivos, deps, riscos |
-| worker | r/w | SPEC aprovada + impacto mapeado | implementação, lint/build OK |
-| reviewer | read-only | pós-implementação (= `code-review`) | BLOQUEANTE / RISCO / SUGESTÃO |
-| monitor | exec (sem escrita) | falha build/lint/runtime (= `debug-failure`) | evidências + reprodução |
-| domain-expert | read-only | dúvida sobre domínio Albion Online | validação de domínio |
+| Agente        | Modo               | Quando                                       | Entrega                        |
+| ------------- | ------------------ | -------------------------------------------- | ------------------------------ |
+| explorer      | read-only          | análise de impacto pré-implementação         | mapa de arquivos, deps, riscos |
+| worker        | r/w                | SPEC aprovada + impacto mapeado              | implementação, lint/build OK   |
+| reviewer      | read-only          | pós-implementação (= `code-review`)          | BLOQUEANTE / RISCO / SUGESTÃO  |
+| monitor       | exec (sem escrita) | falha build/lint/runtime (= `debug-failure`) | evidências + reprodução        |
+| domain-expert | read-only          | dúvida sobre domínio Albion Online           | validação de domínio           |
 
 ---
 
@@ -52,6 +52,14 @@ Meta-skill: `implement-feature`
 7. `enforce-workflow` antes de commit
 8. Não editar `src/components/ui/` (shadcn/ui)
 9. Não fazer polling agressivo à API
+10. Antes de `session-open`, `session-close`, `sprint-close` ou `memory-curator` quando o estado de branches/PRs impactar a memória, executar `.claude/scripts/git-sync-check.sh`
+
+### Guardrail de Memória Durável
+
+- `memory/MEMORY.md` não pode assumir que branch local existente representa frente ativa.
+- Antes de consolidar memória durável, validar estado remoto/local com `.claude/scripts/git-sync-check.sh`.
+- Se o script indicar branch local já mergeada em `origin/main`, tratar essa frente como concluída até evidência contrária.
+- Snapshot local só entra na memória quando altera a próxima sessão.
 
 ---
 
