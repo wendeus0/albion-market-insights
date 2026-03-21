@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import type { ArbitrageOpportunity } from '@/data/types';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ItemIcon } from '@/components/items/ItemIcon';
 import { cn } from '@/lib/utils';
