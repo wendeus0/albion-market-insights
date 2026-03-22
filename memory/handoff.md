@@ -6,26 +6,22 @@ type: project
 
 ## Last handoff summary
 
-**Sessão:** Memory Curator — Reestruturação do sistema de memória 2026-03-21
+**Sessão:** Encerramento pós-implementação — coverage-branches-gap (2026-03-21)
 **Trabalho realizado:**
 
-- ESTADO CORRIGIDO: Identificado via GitHub que PRs #70, #71, #72 já estavam mergeados na `main`
-- MEMORY.md REESTRUTURADO: Convertido de monolítico (170 linhas) para índice lean + 6 arquivos temáticos
-- OVERRIDE LOCAL CRIADO: `.claude/rules/memory.md` instrui `memory-curator` a usar padrão de índice
-- SKILL GLOBAL ATUALIZADA: `memory-curator` reconhece override de projeto via `.claude/rules/memory.md`
-- DOCS ATUALIZADOS: `AGENTS.md` (item 11) e `CLAUDE.md` (seção Memória) refletem nova convenção
+- Frente `coverage-branches-gap` retomada e concluída (AC-2/AC-3/AC-4)
+- SPEC validada e REPORT finalizado com `READY_FOR_COMMIT`
+- Cobertura global de branches elevada para 90.28% (meta atingida)
+- Commit `2655a8d` criado em `feat/coverage-branches-gap-ac2-ac4`
+- PR #77 aberta e mergeada na `main`
 
 **Estado ao encerrar:**
 
-- Branch `main` sincronizada com `origin/main` (commit `344741e`)
-- PR #72 MERGEADO: Deduplicação por recência
-- PR #71 MERGEADO: History by quality
-- PR #70 MERGEADO: Higienização de componentes vendor
-- Worktree limpa, baseline estável
-- 333 testes passando, build OK
-- Cobertura: 95.26% linhas, 93.47% statements, 93.09% functions
-- Issue #59 (flakiness) em acompanhamento — não bloqueia baseline
-- PR #64 (Node 24 lane) mergeado — observação contínua ativa
+- Branch local atual: `feat/coverage-branches-gap-ac2-ac4` (já mergeada)
+- Drift local vs `origin/main`: `behind=1` (necessário sincronizar antes da próxima frente)
+- Worktree limpa
+- Quality gate verde: lint + typecheck + `394/394` testes + build
+- Observações contínuas ativas: Node 24 (janela de estabilidade), issue #59 (flakiness)
 
 **Retomar por:**
 
@@ -37,15 +33,19 @@ Read before acting:
 - bash .claude/scripts/git-sync-check.sh
 
 Current state:
-- Sprint fechado — baseline estável, 333 testes OK
-- PRs #70, #71, #72 mergeados (higienização, history-by-quality, deduplicação)
-- Cobertura: 95%+ linhas/statements; gap em branches (84%)
-- Débito: 1 P1 (validação alert.storage.ts), 4 P2
-- Observação: Node 24 (1-2 semanas estabilidade), Issue #59
+- PR #77 mergeado: coverage-branches-gap concluída
+- Cobertura global atual: 90.28% branches (meta atingida)
+- Worktree limpa em branch local já mergeada
+- Baseline validada com quality gate completo
+- Observação: Node 24 em monitoramento e issue #59 sem bloqueio imediato
+
+Open points:
+- Sincronizar ambiente local para `main` antes de iniciar nova frente
+- Definir com usuário qual será a próxima feature do ciclo
+- Decidir janela para tratar issue #59, se houver impacto em novas frentes
 
 Recommended next front:
-1. Abrir SPEC para próxima feature (a definir com usuário)
-2. Fix P1: validação defensiva em alert.storage.ts
-3. Aguardar estabilidade Node 24 para promoção
-4. Fechar gap de cobertura em branches (84% → 90%)
+1. Sincronizar para `main` e abrir SPEC da próxima feature (a definir com usuário)
+2. Manter observação Node 24 até janela mínima de estabilidade
+3. Reavaliar issue #59 conforme prioridade do próximo ciclo
 ```
