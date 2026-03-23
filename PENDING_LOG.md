@@ -4,6 +4,34 @@
 
 ## Decisões incorporadas
 
+- **Frentes D + A (hardening de testes + governança Node 24)** (2026-03-23) ✅ **CONCLUÍDO**
+  - Hardening de suíte de testes:
+    - `src/test/setup.ts`: mock de localStorage ajustado com `length` dinâmico e retorno nullish-safe (`??`) para reduzir acoplamento temporal em assertions
+    - `src/hooks/useAlerts.test.tsx`: assert estabilizado para contrato final (`data=[]` e sem erro), reduzindo flake em execução full-suite
+  - Governança Node 24:
+    - Runbook criado em `docs/architecture/NODE24_PROMOTION_RUNBOOK.md` com gates objetivos de promoção e rollback imediato
+    - Referências ao runbook adicionadas em:
+      - `README.md`
+      - `CONTEXT.md`
+      - `memory/active_fronts.md`
+  - Quality gate validado após mudanças:
+    - `401/401` testes passando
+    - `lint`, `typecheck` e `build` verdes
+  - Issue atualizada:
+    - #60 (Node 24 migration tracking) com progresso e próximos gates operacionais
+
+- **Estabilização autônoma da suíte de hooks (`useAlerts`)** (2026-03-23) ✅ **CONCLUÍDO**
+  - Falha intermitente identificada no teste `src/hooks/useAlerts.test.tsx` durante execução completa da suíte (`isSuccess` podia não refletir estado final no timing esperado)
+  - Ajuste aplicado no teste para assert orientado ao contrato de saída (`data=[]` e ausência de erro), com `waitFor` defensivo e timeout explícito
+  - Arquivos alterados:
+    - `src/hooks/useAlerts.test.tsx`
+    - `src/test/setup.ts` (localStorage mock com `length` dinâmico + nullish-safe)
+  - Quality gate validado após mudança:
+    - `401/401` testes passando
+    - `lint`, `typecheck` e `build` verdes
+  - Obstáculos de execução:
+    - nenhum bloqueio estrutural encontrado nesta frente
+
 - **Higiene de componentes vendor UI — round 2** (2026-03-23) ✅ **CONCLUÍDO EM BRANCH `feat/higiene-vendor-ui-round-2`**
   - SPEC criada em `features/higiene-vendor-ui-round-2/SPEC.md`
   - Mapa de uso gerado em `features/higiene-vendor-ui-round-2/COMPONENTS_USAGE.md` (+ `COMPONENTS_USAGE_RAW.json`)

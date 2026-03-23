@@ -9,9 +9,10 @@ global.ResizeObserver = class ResizeObserver {
 // Mock LocalStorage for tests
 const localStorageMock = (function() {
   let store: Record<string, string> = {};
+
   return {
     getItem: function(key: string) {
-      return store[key] || null;
+      return store[key] ?? null;
     },
     setItem: function(key: string, value: string) {
       store[key] = value.toString();
@@ -22,9 +23,11 @@ const localStorageMock = (function() {
     clear: function() {
       store = {};
     },
-    length: 0,
+    get length() {
+      return Object.keys(store).length;
+    },
     key: function(index: number) {
-      return Object.keys(store)[index] || null;
+      return Object.keys(store)[index] ?? null;
     }
   };
 })();

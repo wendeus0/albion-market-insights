@@ -93,6 +93,7 @@ e2e/                        # specs E2E Playwright
 - `engines.node`: `>=20.0.0`.
 - Estratégia atual: manter Node 20 como baseline e observar estabilidade contínua da lane Node 24 antes de promoção.
 - Rollback rápido previsto: reduzir matrix para Node 20 em caso de regressão.
+- Runbook oficial de promoção/rollback: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`. 
 
 ---
 

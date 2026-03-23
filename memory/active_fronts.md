@@ -20,6 +20,7 @@ type: project
 
 - **Dashboard Cloudflare Pages**: `VITE_USE_REAL_API=true` configurado no dashboard + redeploy executado (2026-03-23) — dados reais em produção ✅
 - **Promoção Node 24 para default**: job paralelo verde e mergeado; aguardando janela de estabilidade (1-2 semanas) antes de tornar default
+- Runbook de promoção/rollback publicado: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`
 - **Deadline Node 24**: 2026-06-02 configurado no dependabot.yml
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
 - **Estratégia mobile**: frente mantida aberta (PWA e/ou app nativo), aguardando recorte em SPEC

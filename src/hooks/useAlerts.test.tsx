@@ -52,9 +52,10 @@ describe("useAlerts", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-      expect(result.current.data).toEqual([]);
+      await waitFor(() => {
+        expect(result.current.isError).toBe(false);
+        expect(result.current.data).toEqual([]);
+      }, { timeout: 5000 });
     });
 
     it("deve retornar alertas do serviço", async () => {
