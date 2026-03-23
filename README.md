@@ -29,6 +29,7 @@ Ferramenta de análise de mercado para **Albion Online**, focada em visualizaç�
 Observação de runtime:
 - Node 24 está em lane paralela de observação no CI
 - Promoção para default ocorrerá após janela mínima de estabilidade contínua
+- Runbook de promoção/rollback: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`
 
 ### Passos
 
