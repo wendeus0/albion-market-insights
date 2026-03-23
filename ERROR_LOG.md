@@ -14,6 +14,32 @@
 
 ---
 
+### [2026-03-22 22:44] green-refactor: api-proxy-worker — erros na fase GREEN
+
+- **Erro 1**: AC-4 — `Body is unusable: Body has already been read` em 3 testes de rate limit
+- **Causa**: `mockCache.match` retornava a mesma `Response` sem clonar; após o primeiro `.text()`, o body ficava consumido para as chamadas subsequentes
+- **Ação tomada**: `mockCache.match` atualizado para retornar `res.clone()` em vez de `res` diretamente; `resetCacheMocks` alinhado
+- **Status**: RESOLVIDO
+
+- **Erro 2**: 5 unhandled rejections no output do Vitest (erros dos testes AC-5)
+- **Causa**: `bodyPromise.finally(() => pendingMap.delete(key))` criava Promise rejeitada sem catch; `pendingMap.delete` não precisa de try/catch, mas o `.finally()` retorna Promise que propaga a rejeição original
+- **Ação tomada**: Encadeado `.catch(() => {})` no retorno do `.finally()` em `worker/src/index.ts:124`
+- **Status**: RESOLVIDO
+
+- **Erro 3**: AC-5 "503 sem dado cacheado" falhava retornando 200 após normalização de query params
+- **Causa**: Normalização eliminou `fallback=stale/miss/timeout/raw` dos params — todos os testes AC-5 passaram a usar a mesma chave normalizada; `staleBackup` do primeiro teste vazou para os seguintes
+- **Ação tomada**: Testes AC-5 atualizados para usar `items` distintos (`T4_BAG_STALE`, `T4_BAG_MISS`, etc.) para isolamento real via param legítimo
+- **Status**: RESOLVIDO
+
+### [2026-03-22 22:44] green-refactor: api-proxy-worker — erros na fase AC-6
+
+- **Erro**: Teste "deve usar VITE_PROXY_URL quando VITE_USE_PROXY=true" falhava — `calledUrls` incluía `west.albion-online-data.com`
+- **Causa**: `buildHistoryMap` usa `HISTORY_URL` hardcoded para Albion; com `USE_PROXY=true`, o service ainda chamava history diretamente, violando a expectativa do teste
+- **Ação tomada**: Adicionado `const historyMap = USE_PROXY ? new Map() : await this.buildHistoryMap(...)` em `market.api.ts:340`; history silenciosamente ausente em modo proxy (aceitável — proxy não cobre history)
+- **Status**: RESOLVIDO
+
+---
+
 ### [2026-03-16 02:36] fix-feature: test de timeout com mismatch de timer
 
 - **Erro**: Teste `retorna mock data em timeout (>10s)` falhava com timeout de 5000ms (limite do Vitest) em vez de assertion failure

@@ -12,7 +12,10 @@ import { MockMarketService } from "./market.mock";
 import { readCache, writeCache, isCacheValid } from "@/services/market.cache";
 import { dataSourceManager, shouldUseMockFallback } from "./dataSource.manager";
 
-const BASE_URL = "https://west.albion-online-data.com/api/v2/stats/prices";
+const USE_PROXY = import.meta.env.VITE_USE_PROXY === "true";
+const BASE_URL = USE_PROXY
+  ? `${import.meta.env.VITE_PROXY_URL}/api/market/prices`
+  : "https://west.albion-online-data.com/api/v2/stats/prices";
 const HISTORY_URL = "https://west.albion-online-data.com/api/v2/stats/history";
 
 export const BATCH_SIZE = 100;
@@ -210,7 +213,9 @@ export class ApiMarketService implements MarketService {
     signal?: AbortSignal,
   ): Promise<AlbionPriceRecord[]> {
     const locationsParam = LOCATIONS.join(",");
-    const url = `${BASE_URL}/${itemIds.join(",")}.json?locations=${locationsParam}&qualities=1,2,3,4,5`;
+    const url = USE_PROXY
+      ? `${BASE_URL}?items=${itemIds.join(",")}&locations=${locationsParam}&qualities=1,2,3,4,5`
+      : `${BASE_URL}/${itemIds.join(",")}.json?locations=${locationsParam}&qualities=1,2,3,4,5`;
     const response = await fetchWithRetry(url, { signal });
     const raw: unknown[] = await response.json();
     return raw
@@ -330,7 +335,9 @@ export class ApiMarketService implements MarketService {
       const recordsWithPrices = allPriceRecords.filter(
         (record) => record.sell_price_min > 0 && record.buy_price_max > 0,
       );
-      const historyMap = await this.buildHistoryMap(recordsWithPrices);
+      const historyMap = USE_PROXY
+        ? new Map()
+        : await this.buildHistoryMap(recordsWithPrices);
 
       const result = recordsWithPrices.map((record) => {
         const item = albionRecordToMarketItem(record);

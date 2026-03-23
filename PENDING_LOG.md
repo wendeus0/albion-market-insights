@@ -4,6 +4,15 @@
 
 ## Decisões incorporadas
 
+- **Frente `api-proxy-worker` — Cloudflare Worker implementado localmente** (2026-03-22) 🔄 **AGUARDANDO BRANCH/COMMIT/PR**
+  - Worker implementado em `worker/src/index.ts` com AC-1 a AC-5 passando (18 testes Vitest)
+  - Frontend ajustado com feature flag `VITE_USE_PROXY` em `src/services/market.api.ts` (AC-6, 5 testes)
+  - Arquivos criados/modificados: `worker/src/index.ts`, `worker/src/index.test.ts`, `src/services/market.api.ts`, `src/test/market.api.proxy.test.ts`, `.env.example`, `.github/workflows/deploy-worker.yml`
+  - ADR `docs/adr/ADR-012-cloudflare-workers-api-proxy.md` criado
+  - REPORT em `features/api-proxy-worker/REPORT.md` com status `READY_FOR_COMMIT`
+  - Usuário instruiu a não subir PR nesta sessão — branch/commit/PR fica para próxima sessão
+  - Decisões abertas pós-MVP: fixed window rate limit → sliding window, CORS wildcard → domínio específico, staleBackup sem LRU, X-Forwarded-For como fallback de IP
+
 - **Contrato de autonomia v1 — Execução Opção A (Frente B: ícones híbridos)** (2026-03-20) ✅ **CONCLUÍDO EM BRANCH `feat/frente-b-icon-fallback`**
   - Estratégia híbrida aplicada: CDN primária (`render.albiononline.com`) + fallback local (`/placeholder.svg`) em falha de carregamento
   - Novo componente reutilizável:

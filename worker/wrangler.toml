@@ -1,0 +1,6 @@
+name = "albion-market-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+[vars]
+ALBION_API_BASE_URL = "https://west.albion-online-data.com/api/v2/stats/prices"
