@@ -23,7 +23,7 @@ describe("Navbar", () => {
 
   it("deve renderizar logo e navegacao desktop", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -41,7 +41,7 @@ describe("Navbar", () => {
     >);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -52,7 +52,7 @@ describe("Navbar", () => {
 
   it("deve renderizar botoes de acao desktop", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -63,7 +63,7 @@ describe("Navbar", () => {
 
   it("deve renderizar botao de menu mobile", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -75,7 +75,7 @@ describe("Navbar", () => {
 
   it("deve abrir menu mobile ao clicar no botao", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -94,7 +94,7 @@ describe("Navbar", () => {
 
   it("deve fechar menu mobile ao clicar em link", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -116,7 +116,7 @@ describe("Navbar", () => {
 
   it("deve fechar menu mobile ao clicar novamente no botao", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -139,7 +139,7 @@ describe("Navbar", () => {
     >);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );
@@ -154,7 +154,7 @@ describe("Navbar", () => {
 
   it("deve renderizar botoes de acao no menu mobile", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navbar />
       </MemoryRouter>,
     );

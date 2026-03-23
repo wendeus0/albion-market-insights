@@ -4,6 +4,27 @@
 
 ## Decisões incorporadas
 
+- **Melhorias autônomas de estabilidade de testes e roteamento v7** (2026-03-23) ✅ **CONCLUÍDO**
+  - `DataSourceBadge` ajustado para evitar warning de `ref` no Radix Slot (`TooltipTrigger asChild`) encapsulando `Badge` em wrapper `span.inline-flex`
+  - Opt-in explícito de future flags do React Router v7 no app e testes:
+    - `v7_startTransition: true`
+    - `v7_relativeSplatPath: true`
+  - `App.tsx` alinhado ao padrão de imports com alias `@/` (NotFound + lazy pages)
+  - Arquivos alterados:
+    - `src/components/dashboard/DataSourceBadge.tsx`
+    - `src/App.tsx`
+    - `src/components/layout/AppLayout.test.tsx`
+    - `src/components/layout/Navbar.test.tsx`
+    - `src/pages/Dashboard.test.tsx`
+    - `src/test/NotFound.test.tsx`
+  - Quality gate validado após mudanças:
+    - `399/399` testes passando
+    - Coverage: `95.83% statements`, `90.38% branches`
+    - `lint`, `typecheck` e `build` verdes
+  - Obstáculo registrado em issue para próxima frente:
+    - #84 warning remanescente de `act(...)` em teste de Suspense/lazy (`src/test/App.test.tsx`) — https://github.com/wendeus0/albion-market-insights/issues/84
+  - Follow-up concluído: warning de `act(...)` em `src/test/App.test.tsx` eliminado com flush assíncrono em `act`, issue #84 comentada e fechada
+
 - **[RESOLVIDO] Cloudflare Pages dashboard com VITE_USE_REAL_API=false** (2026-03-23) ✅ **CONCLUÍDO**
   - Variável corrigida para `true` no dashboard do Pages + redeploy executado pelo usuário
   - Dashboard em produção agora exibe dados reais via Worker proxy

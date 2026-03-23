@@ -13,7 +13,7 @@ vi.mock("@/components/layout/Layout", () => ({
 describe("AppLayout", () => {
   it("deve renderizar o Layout compartilhado com o conteudo da rota filha", () => {
     render(
-      <MemoryRouter initialEntries={["/"]}>
+      <MemoryRouter initialEntries={["/"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<div>home content</div>} />
@@ -28,7 +28,7 @@ describe("AppLayout", () => {
 
   it("deve expor o Outlet para permitir rotas aninhadas", () => {
     render(
-      <MemoryRouter initialEntries={["/nested"]}>
+      <MemoryRouter initialEntries={["/nested"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/nested" element={<div>nested content</div>} />
