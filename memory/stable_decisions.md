@@ -34,3 +34,5 @@ type: project
 | Layout compartilhado por rota             | Fixo | `AppLayout` centraliza `Layout` para `Index`, `Dashboard`, `Alerts` e `About`; páginas renderizam apenas conteúdo de rota                                                 |
 | Extração estrutural da PriceTable         | Fixo | `usePriceTableFilters`, `usePriceTableSort` e `usePriceTablePagination` isolam estado local; 100% cobertura em hooks extraídos                                            |
 | CI com lane Node 24 paralela              | Fixo | Workflow `.github/workflows/quality-gate.yml` com jobs Node 20 (default) e Node 24 (observação); rollback documentado                                                     |
+| Cloudflare Worker como proxy de API       | Fixo | `worker/src/index.ts`; Cache API (TTL 5min), deduplicação via Map<string, Promise>, rate limit 30 req/min por IP, fallback stale; feature flag `VITE_USE_PROXY`; ADR-013 |
+| Deploy automático do Worker               | Fixo | Workflow `.github/workflows/deploy-worker.yml`; dispara em push para `main` com paths `worker/**`; requer secret `CLOUDFLARE_API_TOKEN`                                   |

@@ -6,22 +6,32 @@ type: project
 
 ## Last handoff summary
 
-**Sessão:** Encerramento pós-implementação — coverage-branches-gap (2026-03-21)
+**Sessão:** Implementação completa da frente `api-proxy-worker` — Cloudflare Worker (2026-03-22)
 **Trabalho realizado:**
 
-- Frente `coverage-branches-gap` retomada e concluída (AC-2/AC-3/AC-4)
-- SPEC validada e REPORT finalizado com `READY_FOR_COMMIT`
-- Cobertura global de branches elevada para 90.28% (meta atingida)
-- Commit `2655a8d` criado em `feat/coverage-branches-gap-ac2-ac4`
-- PR #77 aberta e mergeada na `main`
+- Frente `api-proxy-worker` implementada do zero (green-refactor completo)
+- 18 testes Vitest no Worker (AC-1 a AC-5) — todos GREEN
+- 5 testes Vitest no frontend (`market.api.proxy.test.ts`, AC-6) — todos GREEN
+- code-review executado com 4 blockers corrigidos (CORS no 404, JSON.parse sem try/catch, param normalization, CI sem npm test)
+- security-review: SECURITY_PASS_WITH_NOTES (sem blockers)
+- REPORT gerado: `features/api-proxy-worker/REPORT.md` — `READY_FOR_COMMIT`
+- ADR-013 criado: `docs/adr/ADR-013-cloudflare-workers-api-proxy.md`
+- Usuário instruiu a não criar branch/PR nesta sessão
 
 **Estado ao encerrar:**
 
-- Branch local atual: `feat/coverage-branches-gap-ac2-ac4` (já mergeada)
-- Drift local vs `origin/main`: `behind=1` (necessário sincronizar antes da próxima frente)
-- Worktree limpa
-- Quality gate verde: lint + typecheck + `394/394` testes + build
-- Observações contínuas ativas: Node 24 (janela de estabilidade), issue #59 (flakiness)
+- Branch local: `main` (mudanças não commitadas)
+- Arquivos modificados/criados não commitados:
+  - `worker/src/index.ts` — implementação completa do Worker
+  - `worker/src/index.test.ts` — 18 testes GREEN
+  - `src/services/market.api.ts` — feature flag VITE_USE_PROXY (AC-6)
+  - `src/test/market.api.proxy.test.ts` — 5 testes AC-6
+  - `.env.example` — VITE_USE_PROXY e VITE_PROXY_URL adicionados
+  - `.github/workflows/deploy-worker.yml` — criado
+  - `docs/adr/ADR-013-cloudflare-workers-api-proxy.md` — criado
+  - `features/api-proxy-worker/REPORT.md` — criado
+- Quality gate: lint + build do frontend OK; `npm test` no worker: 23/23 GREEN
+- Worktree: mudanças locais não commitadas (git status mostrará arquivos modificados)
 
 **Retomar por:**
 
@@ -33,19 +43,17 @@ Read before acting:
 - bash .claude/scripts/git-sync-check.sh
 
 Current state:
-- PR #77 mergeado: coverage-branches-gap concluída
-- Cobertura global atual: 90.28% branches (meta atingida)
-- Worktree limpa em branch local já mergeada
-- Baseline validada com quality gate completo
-- Observação: Node 24 em monitoramento e issue #59 sem bloqueio imediato
+- Frente api-proxy-worker: implementação completa, 23 testes GREEN, REPORT READY_FOR_COMMIT
+- Mudanças locais NÃO commitadas em main — próxima ação é git-flow-manager
+- Worker ainda não deployado em workers.dev (aguarda branch/PR/merge)
 
 Open points:
-- Sincronizar ambiente local para `main` antes de iniciar nova frente
-- Definir com usuário qual será a próxima feature do ciclo
-- Decidir janela para tratar issue #59, se houver impacto em novas frentes
+- Executar git-flow-manager: branch feat/api-proxy-worker → commit → PR
+- Configurar CLOUDFLARE_API_TOKEN em GitHub Secrets antes do merge
+- Após deploy: configurar VITE_PROXY_URL no ambiente de produção/staging
 
 Recommended next front:
-1. Sincronizar para `main` e abrir SPEC da próxima feature (a definir com usuário)
-2. Manter observação Node 24 até janela mínima de estabilidade
-3. Reavaliar issue #59 conforme prioridade do próximo ciclo
+1. git-flow-manager para branch feat/api-proxy-worker + commit + PR
+2. Configurar secrets no GitHub para deploy automático via wrangler
+3. Validar Worker deployado com curl em workers.dev
 ```
