@@ -4,6 +4,21 @@
 
 ## Decisões incorporadas
 
+- **Higiene de componentes vendor UI — round 2** (2026-03-23) ✅ **CONCLUÍDO EM BRANCH `feat/higiene-vendor-ui-round-2`**
+  - SPEC criada em `features/higiene-vendor-ui-round-2/SPEC.md`
+  - Mapa de uso gerado em `features/higiene-vendor-ui-round-2/COMPONENTS_USAGE.md` (+ `COMPONENTS_USAGE_RAW.json`)
+  - TDD aplicado para contrato de toast Sonner:
+    - RED: novo teste `src/test/ui.sonner.contract.test.ts` falhando (toast não reexportado no boundary interno)
+    - GREEN: boundary explícito criado em `src/components/ui/sonnerToast.ts`
+    - REFACTOR: removido arquivo não usado `src/components/ui/sonner.utils.ts`
+  - Resultado de pruning incremental:
+    - `src/components/ui`: 19 -> 18 arquivos rastreados na pasta (-1 arquivo, -5.26%)
+    - removido apenas utilitário de baixo risco sem import direto
+  - Quality gate validado após mudanças:
+    - `401/401` testes passando
+    - Coverage: `95.95% statements`, `90.42% branches`
+    - `lint`, `typecheck` e `build` verdes
+
 - **Melhorias autônomas de estabilidade de testes e roteamento v7** (2026-03-23) ✅ **CONCLUÍDO**
   - `DataSourceBadge` ajustado para evitar warning de `ref` no Radix Slot (`TooltipTrigger asChild`) encapsulando `Badge` em wrapper `span.inline-flex`
   - Opt-in explícito de future flags do React Router v7 no app e testes:

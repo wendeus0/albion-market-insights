@@ -1,0 +1,148 @@
+[
+  {
+    "module": "@/components/ui/alert",
+    "file": "src/components/ui/alert.tsx",
+    "imports": [
+      "src/components/dashboard/DegradedBanner.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/badge",
+    "file": "src/components/ui/badge.tsx",
+    "imports": [
+      "src/components/dashboard/DataSourceBadge.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/badge.utils",
+    "file": "src/components/ui/badge.utils.ts",
+    "imports": [],
+    "imports_count": 0
+  },
+  {
+    "module": "@/components/ui/button",
+    "file": "src/components/ui/button.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx",
+      "src/components/dashboard/ArbitrageTable.tsx",
+      "src/components/dashboard/PriceTable.tsx",
+      "src/components/layout/Navbar.tsx",
+      "src/pages/About.tsx",
+      "src/pages/Index.tsx",
+      "src/pages/NotFound.tsx"
+    ],
+    "imports_count": 7
+  },
+  {
+    "module": "@/components/ui/button.utils",
+    "file": "src/components/ui/button.utils.ts",
+    "imports": [],
+    "imports_count": 0
+  },
+  {
+    "module": "@/components/ui/checkbox",
+    "file": "src/components/ui/checkbox.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/dialog",
+    "file": "src/components/ui/dialog.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/form.hooks",
+    "file": "src/components/ui/form.hooks.ts",
+    "imports": [],
+    "imports_count": 0
+  },
+  {
+    "module": "@/components/ui/form",
+    "file": "src/components/ui/form.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/input",
+    "file": "src/components/ui/input.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx",
+      "src/components/dashboard/ArbitrageTable.tsx",
+      "src/components/dashboard/PriceTable.tsx"
+    ],
+    "imports_count": 3
+  },
+  {
+    "module": "@/components/ui/label",
+    "file": "src/components/ui/label.tsx",
+    "imports": [
+      "src/components/ui/form.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/select",
+    "file": "src/components/ui/select.tsx",
+    "imports": [
+      "src/components/alerts/AlertsManager.tsx",
+      "src/components/dashboard/PriceTable.tsx"
+    ],
+    "imports_count": 2
+  },
+  {
+    "module": "@/components/ui/skeleton",
+    "file": "src/components/ui/skeleton.tsx",
+    "imports": [
+      "src/pages/Dashboard.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/sonner",
+    "file": "src/components/ui/sonner.tsx",
+    "imports": [
+      "src/App.tsx"
+    ],
+    "imports_count": 1
+  },
+  {
+    "module": "@/components/ui/sonner.utils",
+    "file": "src/components/ui/sonner.utils.ts",
+    "imports": [],
+    "imports_count": 0
+  },
+  {
+    "module": "@/components/ui/sparkline",
+    "file": "src/components/ui/sparkline.tsx",
+    "imports": [
+      "src/components/dashboard/PriceTable.tsx",
+      "src/components/dashboard/TopItemsPanel.tsx",
+      "src/test/sparkline.test.tsx"
+    ],
+    "imports_count": 3
+  },
+  {
+    "module": "@/components/ui/tooltip",
+    "file": "src/components/ui/tooltip.tsx",
+    "imports": [
+      "src/App.tsx",
+      "src/components/dashboard/DataSourceBadge.tsx"
+    ],
+    "imports_count": 2
+  },
+  {
+    "module": "@/components/ui/tooltip.utils",
+    "file": "src/components/ui/tooltip.utils.ts",
+    "imports": [],
+    "imports_count": 0
+  }
+]
