@@ -92,13 +92,15 @@ export default {
     }
 
     // Normaliza a chave com apenas params conhecidos (evita crescimento ilimitado de Maps)
+    const items = url.searchParams.get("items") ?? "";
     const normalizedParams = new URLSearchParams();
-    for (const p of ["items", "locations", "qualities"] as const) {
+    for (const p of ["locations", "qualities"] as const) {
       const v = url.searchParams.get(p);
       if (v) normalizedParams.set(p, v);
     }
-    const normalizedUrl = `${url.origin}${url.pathname}?${normalizedParams.toString()}`;
-    const albionUrl = `${env.ALBION_API_BASE_URL}?${normalizedParams.toString()}`;
+    const normalizedUrl = `${url.origin}${url.pathname}?items=${items}&${normalizedParams.toString()}`;
+    // Albion API usa path-based format: /ITEM1,ITEM2.json?locations=...
+    const albionUrl = `${env.ALBION_API_BASE_URL}/${items}.json?${normalizedParams.toString()}`;
     const key = normalizedUrl;
 
     // Verificação de cache (TTL 5 min) — usa URL normalizada como chave
