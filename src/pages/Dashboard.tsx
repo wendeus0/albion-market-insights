@@ -6,29 +6,40 @@ import { DataSourceBadge } from "@/components/dashboard/DataSourceBadge";
 import { DegradedBanner } from "@/components/dashboard/DegradedBanner";
 import { useMarketItems } from "@/hooks/useMarketItems";
 import { useLastUpdateTime } from "@/hooks/useLastUpdateTime";
-import { useRefreshCooldown } from "@/hooks/useRefreshCooldown";
-import {
-  TrendingUp,
-  LayoutDashboard,
-  Zap,
-  Clock,
-  RefreshCw,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, LayoutDashboard, Zap, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 import { buildCrossCityArbitrage } from "@/lib/arbitrage";
+import { DATA_FRESHNESS_MS } from "@/data/constants";
+
+function getRelativeUpdateLabel(lastUpdate: string | null, isRefreshing: boolean): string {
+  if (isRefreshing) return "Syncing...";
+  if (!lastUpdate) return "Awaiting first sync";
+
+  const timestamp = new Date(lastUpdate).getTime();
+  if (Number.isNaN(timestamp)) return "Awaiting first sync";
+
+  const elapsedMs = Date.now() - timestamp;
+  if (elapsedMs < 60_000) return "Updated just now";
+
+  const elapsedMinutes = Math.floor(elapsedMs / 60_000);
+  if (elapsedMinutes < 60) return `Updated ${elapsedMinutes} min ago`;
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  return `Updated ${elapsedHours}h ago`;
+}
 
 const Dashboard = () => {
-  const queryClient = useQueryClient();
-  const { data: items = [], isLoading: itemsLoading } = useMarketItems();
-  const { data: lastUpdate, isLoading: timeLoading } = useLastUpdateTime();
-  const { canRefresh, formattedTime, recordRefresh } = useRefreshCooldown();
+  const { data: items = [], isLoading: itemsLoading } = useMarketItems({
+    refetchInterval: DATA_FRESHNESS_MS,
+  });
+  const { data: lastUpdate, isLoading: timeLoading } = useLastUpdateTime({
+    refetchInterval: DATA_FRESHNESS_MS,
+  });
 
   const arbitrageItems = useMemo(() => buildCrossCityArbitrage(items), [items]);
 
   const isRefreshing = itemsLoading || timeLoading;
+  const updateStatusLabel = getRelativeUpdateLabel(lastUpdate ?? null, isRefreshing);
   const avgRoi =
     arbitrageItems.length > 0
       ? `${(arbitrageItems.reduce((sum, item) => sum + item.netProfitPercent, 0) / arbitrageItems.length).toFixed(1)}%`
@@ -40,22 +51,6 @@ const Dashboard = () => {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    });
-  };
-
-  const handleRefresh = () => {
-    if (!canRefresh) {
-      toast.error("Refresh on cooldown", {
-        description: `Please wait ${formattedTime} before refreshing again.`,
-      });
-      return;
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["marketItems"] });
-    queryClient.invalidateQueries({ queryKey: ["lastUpdateTime"] });
-    recordRefresh();
-    toast.success("Data refreshed", {
-      description: "Market prices have been updated.",
     });
   };
 
@@ -76,18 +71,13 @@ const Dashboard = () => {
         </div>
         <div className="flex items-center gap-3">
           <DataSourceBadge />
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing || !canRefresh}
-            className="border-primary/30"
-            title={canRefresh ? "Refresh data" : `Cooldown: ${formattedTime}`}
+          <span
+            className="text-sm text-muted-foreground"
+            aria-live="polite"
+            data-testid="auto-refresh-status"
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            {canRefresh ? "Refresh Data" : formattedTime}
-          </Button>
+            {updateStatusLabel}
+          </span>
         </div>
       </div>
 
