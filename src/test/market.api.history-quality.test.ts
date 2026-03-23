@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.stubEnv("VITE_USE_PROXY", "false");
+
 const MOCK_IDS = ["T4_MAIN_SWORD"];
 
 vi.mock("@/data/constants", async (importOriginal) => {

@@ -6,20 +6,24 @@ type: project
 
 ## Last handoff summary
 
-**Sessão:** Implementação e merge da frente `api-proxy-worker` — Cloudflare Worker (2026-03-22)
+**Sessão:** Deploy frontend Cloudflare Pages + correção de env vars + sprint-close (2026-03-23)
 **Trabalho realizado:**
 
-- Frente `api-proxy-worker` implementada (green-refactor, code-review, security-review, report-writer)
-- 23 testes GREEN (18 worker AC-1..AC-5 + 5 frontend AC-6)
-- 5 commits separados por bloco lógico em `feat/api-proxy-worker`
-- PR #79 aberta e mergeada na `main`; Worker deployado via CI (CLOUDFLARE_API_TOKEN configurado)
-- ADR-013 criado: `docs/adr/ADR-013-cloudflare-workers-api-proxy.md`
+- Diagnóstico em 3 camadas do dashboard mostrando Mock:
+  1. `.env` não tinha `VITE_USE_PROXY=true` → PR #81 corrigiu
+  2. `.env` tinha `VITE_USE_REAL_API=false` → PR #82 corrigiu
+  3. Pages dashboard tem `VITE_USE_REAL_API=false` sobrescrevendo → pendente ação do usuário
+- ADR-014 criado: `docs/adr/ADR-014-env-config-frontend-proxy.md`
+- 13 testes corrigidos: `vi.stubEnv("VITE_USE_PROXY", "false")` adicionado ao topo de 4 arquivos
+  - `market.api.dedup.test.ts`, `market.api.batch.test.ts`, `market.api.retry.test.ts`, `market.api.history-quality.test.ts`
+- Sprint-close completo: coverage (399/399, 95.74% stmts), debt-tracker, security-audit (SECURITY_PASS_WITH_NOTES), ADR-014
 
 **Estado ao encerrar:**
 
-- Branch local: `feat/api-proxy-worker` (já mergeada em `origin/main`)
-- `origin/main`: `f141b04` (Merge pull request #79)
-- Worker deployado em `workers.dev` via pipeline CI
+- Branch local: `main` (limpa)
+- `origin/main`: PRs #81 e #82 mergeados
+- Worker deployado em `albion-market-proxy.wendel-gdsilva.workers.dev`
+- Frontend deployado no Cloudflare Pages mas ainda mostrando Mock (ver ação pendente)
 
 **Retomar por:**
 
@@ -31,18 +35,17 @@ Read before acting:
 - bash .claude/scripts/git-sync-check.sh
 
 Current state:
-- PR #79 mergeado: api-proxy-worker concluída
-- Worker deployado em workers.dev (CLOUDFLARE_API_TOKEN ativo no CI)
-- Branch local feat/api-proxy-worker já mergeada — sincronizar para main
-- Próxima ação: git checkout main && git pull origin main
+- PRs #81 e #82 mergeados: proxy ativado no .env
+- BLOQUEIO: Pages dashboard ainda tem VITE_USE_REAL_API=false → usuário precisa corrigir manualmente
+- Caminho: Cloudflare Pages dashboard → Settings → Environment variables → Production → editar VITE_USE_REAL_API para true → Deployments → Retry deployment
 
 Open points:
-- Configurar VITE_USE_PROXY=true e VITE_PROXY_URL no .env de produção/staging
-- Definir com usuário qual será a próxima feature do ciclo
+- Confirmar dashboard em produção mostrando dados reais após redeploy
+- Definir com usuário qual será a próxima feature
 - Manter observação Node 24 até janela mínima de estabilidade
 
 Recommended next front:
-1. Sincronizar para main, ativar VITE_USE_PROXY no ambiente alvo
-2. Abrir SPEC da próxima feature (a definir com usuário)
-3. Manter observação Node 24 até janela mínima de estabilidade
+1. Usuário corrige VITE_USE_REAL_API no Pages dashboard + redeploy
+2. Confirmar produção OK (badge "Live" + dados reais)
+3. Abrir SPEC da próxima feature
 ```

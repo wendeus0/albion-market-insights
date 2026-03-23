@@ -387,3 +387,27 @@
   - Commit `2655a8d` criado na branch `feat/coverage-branches-gap-ac2-ac4`; PR #77 aberta e mergeada na `main`
   - Ajustes operacionais menores (quoting em `node -e` e caminho incorreto de leitura) corrigidos na hora, sem impacto na entrega
 - **Status**: SEM ERROS BLOQUEANTES — entrega concluída e mergeada
+
+---
+
+### [2026-03-23] deploy-cloudflare-pages — erros de configuração de ambiente
+
+- **Erro 1**: Dashboard exibia "Mock" mesmo após deploy do Pages
+- **Causa**: `VITE_USE_PROXY=true` e `VITE_PROXY_URL` definidos apenas no `.env` local (não commitado); Pages buildava com `.env` commitado que só tinha `VITE_USE_REAL_API=true`
+- **Ação tomada**: Commitado `.env` com `VITE_USE_PROXY=true` e `VITE_PROXY_URL` — PR #81 mergeado
+- **Status**: RESOLVIDO
+
+- **Erro 2**: Dashboard continuava exibindo "Mock" após PR #81
+- **Causa**: `.env` commitado tinha `VITE_USE_REAL_API=false`; `factory.ts` usa esse flag para decidir entre `ApiMarketService` e `MockMarketService` — com `false`, retorna sempre mock, o proxy nunca é chamado
+- **Ação tomada**: Alterado para `VITE_USE_REAL_API=true` — PR #82 mergeado
+- **Status**: RESOLVIDO
+
+- **Erro 3**: Variável `VITE_USE_REAL_API=false` no dashboard do Cloudflare Pages sobrescrevia `.env`
+- **Causa**: Pages injeta env vars do dashboard durante o build, sobrescrevendo o arquivo `.env`
+- **Ação tomada**: Usuário deve atualizar manualmente `VITE_USE_REAL_API=true` no dashboard Pages → Settings → Environment variables, e acionar redeploy
+- **Status**: PENDENTE (ação manual do usuário)
+
+- **Erro 4**: 13 testes falhando após commit de `VITE_USE_PROXY=true` no `.env`
+- **Causa**: `USE_PROXY` é constante de módulo avaliada no import; com env `true`, URL do fetch muda para formato proxy (`/api/market/prices?items=...`); mocks que checavam `/stats/prices/` deixaram de bater
+- **Ação tomada**: Adicionado `vi.stubEnv("VITE_USE_PROXY", "false")` no topo de 4 arquivos de teste (dedup, batch, retry, history-quality)
+- **Status**: RESOLVIDO — 399/399 passando

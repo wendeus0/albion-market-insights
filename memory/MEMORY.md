@@ -2,7 +2,7 @@
 
 <!-- Gerenciado por: memory-curator | Não editar manualmente durante sessão ativa -->
 
-Última consolidação: 2026-03-22 — frente `api-proxy-worker` concluída (PR #79 mergeado).
+Última consolidação: 2026-03-23 — sprint-close: PRs #81/#82 mergeados, ADR-014, 399/399 testes, Pages dashboard pendente.
 
 - [project_state.md](project_state.md) — Estado atual do projeto (sprint, branch, marcos alcançados)
 - [stable_decisions.md](stable_decisions.md) — Decisões arquiteturais consolidadas (25+ itens, tabela)

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
+vi.stubEnv("VITE_USE_PROXY", "false");
+
 // Todos os testes neste arquivo são RED — fetchWithRetry não existe ainda
 
 // Mock global necessário para AC-4 e AC-5 (evita erros de exports em mockData.ts)

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+vi.stubEnv("VITE_USE_PROXY", "false");
+
 const MOCK_IDS = Array.from({ length: 200 }, (_, i) => `T4_ITEM_${i}`);
 
 vi.mock('@/data/constants', async (importOriginal) => {

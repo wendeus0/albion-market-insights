@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Garante que os testes de dedup usam URL direta (não proxy)
+// sem essa stub, VITE_USE_PROXY=true do .env muda o formato de URL
+// e os mocks de fetch que checam "/stats/prices/" deixam de bater
+vi.stubEnv("VITE_USE_PROXY", "false");
+
 const MOCK_IDS = Array.from({ length: 200 }, (_, i) => `T4_ITEM_${i}`);
 
 vi.mock("@/data/constants", async (importOriginal) => {

@@ -6,24 +6,22 @@ type: project
 
 ## Active fronts
 
+- **PRs #81 e #82 MERGEADOS**: configuração de env vars para Cloudflare Pages concluída (2026-03-23)
+  - `.env` commitado com `VITE_USE_PROXY=true`, `VITE_PROXY_URL`, `VITE_USE_REAL_API=true`
+  - ADR-014 criado documentando a estratégia
+  - 13 testes corrigidos com `vi.stubEnv("VITE_USE_PROXY", "false")`
 - **PR #79 MERGEADO**: frente `api-proxy-worker` concluída (2026-03-22)
-  - Cloudflare Worker deployado via CI (CLOUDFLARE_API_TOKEN configurado)
-  - 23 testes GREEN (18 worker AC-1..AC-5 + 5 frontend AC-6)
-  - `VITE_USE_PROXY` disponível para ativar proxy no frontend
-- PR #77 MERGEADO: frente `coverage-branches-gap` concluída (AC-2/AC-3/AC-4)
-- SPRINT 2026-03-20 FECHADO: baseline estável e sem bloqueio operacional aberto
+- SPRINT 2026-03-23 FECHADO: 399/399 testes passando, deploy configurado
 - Observação contínua:
   - Node 24 CI lane (aguardando janela de 1-2 semanas para promoção)
   - Issue #59 (flakiness) — não bloqueia baseline
-- Próximo ciclo: abrir nova frente a partir de `main` sincronizada
 
 ## Open decisions
 
-- **Ativação do proxy no frontend**: configurar `VITE_USE_PROXY=true` e `VITE_PROXY_URL` no ambiente de produção/staging para começar a usar o Worker
+- **Dashboard Cloudflare Pages ainda mostra Mock**: variável `VITE_USE_REAL_API=false` no dashboard sobrescreve o `.env`. Usuário precisa atualizar para `true` manualmente em Settings → Environment variables → Production + redeploy
 - **Promoção Node 24 para default**: job paralelo verde e mergeado; aguardando janela de estabilidade (1-2 semanas) antes de tornar default
 - **Deadline Node 24**: 2026-06-02 configurado no dependabot.yml
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
-- **Proteção global da API**: RESOLVIDA pela frente `api-proxy-worker` (Cloudflare Worker com cache + rate limit + deduplicação)
 - **Estratégia mobile**: frente mantida aberta (PWA e/ou app nativo), aguardando recorte em SPEC
 - **Feature futura de temas**: reintroduzir theming completo (light/dark/system) apenas com SPEC dedicada
 - **Issue #59 (flakiness)**: decidir se investigação adicional é necessária ou se threshold atual é aceitável

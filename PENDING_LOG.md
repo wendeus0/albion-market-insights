@@ -4,6 +4,20 @@
 
 ## Decisões incorporadas
 
+- **[BLOQUEIO USUÁRIO] Cloudflare Pages dashboard com VITE_USE_REAL_API=false** (2026-03-23) ⚠️ **PENDENTE AÇÃO MANUAL**
+  - O dashboard do Pages tem `VITE_USE_REAL_API=false` que sobrescreve o `.env` commitado durante o build
+  - Dashboard continua mostrando Mock/dados zerados em produção até que isso seja corrigido
+  - **Ação necessária**: Cloudflare Pages → Settings → Environment variables → Production → editar `VITE_USE_REAL_API` para `true` → Deployments tab → três pontos → Retry deployment
+  - Referência: ADR-014 (`docs/adr/ADR-014-env-config-frontend-proxy.md`)
+
+- **Deploy frontend Cloudflare Pages + correção env vars** (2026-03-23) ✅ **PRs #81 e #82 MERGEADOS**
+  - PR #81: `.env` commitado com `VITE_USE_PROXY=true` e `VITE_PROXY_URL=https://albion-market-proxy.wendel-gdsilva.workers.dev`
+  - PR #82: `VITE_USE_REAL_API` restaurado para `true` no `.env`
+  - ADR-014 criado: estratégia de commitar `.env` com config de produção, precedência do dashboard
+  - 13 testes corrigidos: `vi.stubEnv("VITE_USE_PROXY", "false")` adicionado a 4 arquivos de teste
+    - `market.api.dedup.test.ts`, `market.api.batch.test.ts`, `market.api.retry.test.ts`, `market.api.history-quality.test.ts`
+  - Sprint-close executado: 399/399 testes, 95.74% statements, 90.21% branches, SECURITY_PASS_WITH_NOTES
+
 - **Frente `api-proxy-worker` — Cloudflare Worker implementado localmente** (2026-03-22) 🔄 **AGUARDANDO BRANCH/COMMIT/PR**
   - Worker implementado em `worker/src/index.ts` com AC-1 a AC-5 passando (18 testes Vitest)
   - Frontend ajustado com feature flag `VITE_USE_PROXY` em `src/services/market.api.ts` (AC-6, 5 testes)
