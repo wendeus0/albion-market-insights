@@ -21,17 +21,10 @@ type: project
 **Estado ao encerrar:**
 
 - Branch local: `main` (mudanças não commitadas)
-- Arquivos modificados/criados não commitados:
-  - `worker/src/index.ts` — implementação completa do Worker
-  - `worker/src/index.test.ts` — 18 testes GREEN
-  - `src/services/market.api.ts` — feature flag VITE_USE_PROXY (AC-6)
-  - `src/test/market.api.proxy.test.ts` — 5 testes AC-6
-  - `.env.example` — VITE_USE_PROXY e VITE_PROXY_URL adicionados
-  - `.github/workflows/deploy-worker.yml` — criado
-  - `docs/adr/ADR-013-cloudflare-workers-api-proxy.md` — criado
-  - `features/api-proxy-worker/REPORT.md` — criado
+- Branch: `feat/api-proxy-worker` — 5 commits pushados
+- PR #79 aberta: https://github.com/wendeus0/albion-market-insights/pull/79
 - Quality gate: lint + build do frontend OK; `npm test` no worker: 23/23 GREEN
-- Worktree: mudanças locais não commitadas (git status mostrará arquivos modificados)
+- Worktree limpa na branch `feat/api-proxy-worker`
 
 **Retomar por:**
 
@@ -48,7 +41,7 @@ Current state:
 - Worker ainda não deployado em workers.dev (aguarda branch/PR/merge)
 
 Open points:
-- Executar git-flow-manager: branch feat/api-proxy-worker → commit → PR
+- PR #79 aberta: https://github.com/wendeus0/albion-market-insights/pull/79
 - Configurar CLOUDFLARE_API_TOKEN em GitHub Secrets antes do merge
 - Após deploy: configurar VITE_PROXY_URL no ambiente de produção/staging
 

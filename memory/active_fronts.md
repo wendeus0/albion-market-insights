@@ -6,11 +6,11 @@ type: project
 
 ## Active fronts
 
-- **`api-proxy-worker` — IMPLEMENTADO LOCALMENTE, AGUARDANDO BRANCH/COMMIT/PR** (2026-03-22)
-  - Cloudflare Worker como proxy entre frontend e API Albion Online
-  - 23 testes passando (18 worker + 5 frontend); REPORT `READY_FOR_COMMIT`
-  - Mudanças locais não commitadas — próxima sessão cria branch `feat/api-proxy-worker` e abre PR
-  - Working directory: `worker/` (sub-projeto com `package.json` próprio)
+- **`api-proxy-worker` — PR #79 ABERTA, AGUARDANDO MERGE** (2026-03-22)
+  - Branch: `feat/api-proxy-worker` | PR: https://github.com/wendeus0/albion-market-insights/pull/79
+  - 5 commits separados por bloco lógico (docs/adr, worker, frontend, CI, session)
+  - 23 testes GREEN (18 worker AC-1..AC-5 + 5 frontend AC-6); REPORT `READY_FOR_COMMIT`
+  - Pendente: configurar `CLOUDFLARE_API_TOKEN` em GitHub Secrets antes de merge
 - SPRINT 2026-03-20 FECHADO: baseline estável e sem bloqueio operacional aberto
 - PR #77 MERGEADO: frente `coverage-branches-gap` concluída (AC-2/AC-3/AC-4)
 - Observação contínua:
