@@ -18,7 +18,7 @@ type: project
 
 ## Open decisions
 
-- **Dashboard Cloudflare Pages ainda mostra Mock**: variável `VITE_USE_REAL_API=false` no dashboard sobrescreve o `.env`. Usuário precisa atualizar para `true` manualmente em Settings → Environment variables → Production + redeploy
+- **Dashboard Cloudflare Pages**: `VITE_USE_REAL_API=true` configurado no dashboard + redeploy executado (2026-03-23) — dados reais em produção ✅
 - **Promoção Node 24 para default**: job paralelo verde e mergeado; aguardando janela de estabilidade (1-2 semanas) antes de tornar default
 - **Deadline Node 24**: 2026-06-02 configurado no dependabot.yml
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update

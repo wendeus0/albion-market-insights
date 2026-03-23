@@ -4,11 +4,9 @@
 
 ## Decisões incorporadas
 
-- **[BLOQUEIO USUÁRIO] Cloudflare Pages dashboard com VITE_USE_REAL_API=false** (2026-03-23) ⚠️ **PENDENTE AÇÃO MANUAL**
-  - O dashboard do Pages tem `VITE_USE_REAL_API=false` que sobrescreve o `.env` commitado durante o build
-  - Dashboard continua mostrando Mock/dados zerados em produção até que isso seja corrigido
-  - **Ação necessária**: Cloudflare Pages → Settings → Environment variables → Production → editar `VITE_USE_REAL_API` para `true` → Deployments tab → três pontos → Retry deployment
-  - Referência: ADR-014 (`docs/adr/ADR-014-env-config-frontend-proxy.md`)
+- **[RESOLVIDO] Cloudflare Pages dashboard com VITE_USE_REAL_API=false** (2026-03-23) ✅ **CONCLUÍDO**
+  - Variável corrigida para `true` no dashboard do Pages + redeploy executado pelo usuário
+  - Dashboard em produção agora exibe dados reais via Worker proxy
 
 - **Deploy frontend Cloudflare Pages + correção env vars** (2026-03-23) ✅ **PRs #81 e #82 MERGEADOS**
   - PR #81: `.env` commitado com `VITE_USE_PROXY=true` e `VITE_PROXY_URL=https://albion-market-proxy.wendel-gdsilva.workers.dev`
