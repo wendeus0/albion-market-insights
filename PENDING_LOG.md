@@ -8,6 +8,13 @@
   - Variável corrigida para `true` no dashboard do Pages + redeploy executado pelo usuário
   - Dashboard em produção agora exibe dados reais via Worker proxy
 
+- **[FEATURE FUTURA] Auto-refresh com remoção do botão manual** (2026-03-23) 📋 **BACKLOG**
+  - Remover o botão de Refresh manual do dashboard
+  - Sistema executa requisições automaticamente a cada 10-15 minutos (intervalo a definir na SPEC)
+  - Substituir o botão por indicador de tempo desde o último refresh (ex: "Atualizado há 3 min")
+  - Posicionamento: no lugar onde está o Refresh atualmente, ao lado do badge de status da API
+  - Motivação: evitar requisições excessivas e desnecessárias disparadas pelo usuário
+
 - **Deploy frontend Cloudflare Pages + correção env vars** (2026-03-23) ✅ **PRs #81 e #82 MERGEADOS**
   - PR #81: `.env` commitado com `VITE_USE_PROXY=true` e `VITE_PROXY_URL=https://albion-market-proxy.wendel-gdsilva.workers.dev`
   - PR #82: `VITE_USE_REAL_API` restaurado para `true` no `.env`
