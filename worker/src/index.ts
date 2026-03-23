@@ -2,11 +2,22 @@ export interface Env {
   ALBION_API_BASE_URL: string;
 }
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://albion-market-insights.pages.dev",
+]);
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigin =
+    origin && ALLOWED_ORIGINS.has(origin)
+      ? origin
+      : "https://albion-market-insights.pages.dev";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Vary": "Origin",
+  };
+}
 
 // Rate limit: 30 req/min por IP
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
@@ -46,12 +57,13 @@ async function fetchUpstream(url: string): Promise<string> {
 function jsonResponse(
   body: string,
   status: number,
+  corsHeaders: Record<string, string>,
   extra: Record<string, string> = {},
 ): Response {
   return new Response(body, {
     status,
     headers: {
-      ...CORS_HEADERS,
+      ...corsHeaders,
       "Content-Type": "application/json",
       ...extra,
     },
@@ -65,14 +77,16 @@ export default {
     ctx: ExecutionContext,
   ): Promise<Response> {
     const url = new URL(request.url);
+    const origin = request.headers.get("Origin");
+    const corsHeaders = getCorsHeaders(origin);
 
     if (url.pathname !== "/api/market/prices") {
-      return new Response("Not Found", { status: 404, headers: CORS_HEADERS });
+      return new Response("Not Found", { status: 404, headers: corsHeaders });
     }
 
     // Preflight CORS
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 200, headers: CORS_HEADERS });
+      return new Response(null, { status: 200, headers: corsHeaders });
     }
 
     // Rate limit por IP
@@ -84,7 +98,7 @@ export default {
       return new Response("Too Many Requests", {
         status: 429,
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders,
           "Content-Type": "text/plain",
           "Retry-After": "60",
         },
@@ -108,7 +122,7 @@ export default {
     const cached = await caches.default.match(cacheKey);
     if (cached) {
       const body = await cached.text();
-      return jsonResponse(body, 200, { "X-Cache": "HIT" });
+      return jsonResponse(body, 200, corsHeaders, { "X-Cache": "HIT" });
     }
 
     // Deduplicação: reusa Promise em voo para a mesma chave
@@ -134,7 +148,7 @@ export default {
 
     try {
       const body = await bodyPromise;
-      return jsonResponse(body, 200, { "X-Cache": "MISS" });
+      return jsonResponse(body, 200, corsHeaders, { "X-Cache": "MISS" });
     } catch {
       // Fallback: dado stale em memória
       const staleBody = staleBackup.get(key);
@@ -144,6 +158,7 @@ export default {
           return jsonResponse(
             JSON.stringify({ data: staleData, stale: true }),
             200,
+            corsHeaders,
           );
         } catch {
           // staleBody corrompido — cai no 503 abaixo
@@ -152,6 +167,7 @@ export default {
       return jsonResponse(
         JSON.stringify({ error: "service_unavailable" }),
         503,
+        corsHeaders,
       );
     }
   },
