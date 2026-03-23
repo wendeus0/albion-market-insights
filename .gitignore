@@ -1,3 +1,6 @@
+# Bun (project uses npm — prevent Cloudflare Pages from auto-detecting bun)
+bun.lockb
+
 # Logs
 logs
 *.log
