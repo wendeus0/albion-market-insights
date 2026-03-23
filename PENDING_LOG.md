@@ -29,12 +29,21 @@
   - Variável corrigida para `true` no dashboard do Pages + redeploy executado pelo usuário
   - Dashboard em produção agora exibe dados reais via Worker proxy
 
-- **[FEATURE FUTURA] Auto-refresh com remoção do botão manual** (2026-03-23) 📋 **BACKLOG**
-  - Remover o botão de Refresh manual do dashboard
-  - Sistema executa requisições automaticamente a cada 10-15 minutos (intervalo a definir na SPEC)
-  - Substituir o botão por indicador de tempo desde o último refresh (ex: "Atualizado há 3 min")
-  - Posicionamento: no lugar onde está o Refresh atualmente, ao lado do badge de status da API
-  - Motivação: evitar requisições excessivas e desnecessárias disparadas pelo usuário
+- **Auto-refresh no Dashboard com remoção do refresh manual** (2026-03-23) ✅ **CONCLUÍDO**
+  - SPEC criada: `features/auto-refresh-dashboard/SPEC.md`
+  - Botão manual de refresh removido do header do Dashboard
+  - Auto-refresh configurado em `useMarketItems` e `useLastUpdateTime` com `refetchInterval=DATA_FRESHNESS_MS` (15 min)
+  - Indicador textual de recência adicionado ao lado do `DataSourceBadge`:
+    - `Syncing...`
+    - `Awaiting first sync`
+    - `Updated just now`
+    - `Updated X min ago`
+    - `Updated Xh ago`
+  - Hook `useLastUpdateTime` expandido para aceitar opções (`refetchInterval`)
+  - Quality gate validado após mudanças:
+    - `400/400` testes passando
+    - Coverage: `95.95% statements`, `90.42% branches`
+    - `lint`, `typecheck` e `build` verdes
 
 - **Deploy frontend Cloudflare Pages + correção env vars** (2026-03-23) ✅ **PRs #81 e #82 MERGEADOS**
   - PR #81: `.env` commitado com `VITE_USE_PROXY=true` e `VITE_PROXY_URL=https://albion-market-proxy.wendel-gdsilva.workers.dev`

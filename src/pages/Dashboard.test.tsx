@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
-import { toast } from "sonner";
 
 // Mock dos hooks
 vi.mock("@/hooks/useMarketItems", () => ({
@@ -13,30 +12,14 @@ vi.mock("@/hooks/useLastUpdateTime", () => ({
   useLastUpdateTime: vi.fn(),
 }));
 
-vi.mock("@/hooks/useRefreshCooldown", () => ({
-  useRefreshCooldown: vi.fn(),
-}));
 
-vi.mock("sonner", () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
-
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: vi.fn(() => ({
-    invalidateQueries: vi.fn(),
-  })),
-}));
 
 import { useMarketItems } from "@/hooks/useMarketItems";
 import { useLastUpdateTime } from "@/hooks/useLastUpdateTime";
-import { useRefreshCooldown } from "@/hooks/useRefreshCooldown";
+import { DATA_FRESHNESS_MS } from "@/data/constants";
 
 const mockUseMarketItems = vi.mocked(useMarketItems);
 const mockUseLastUpdateTime = vi.mocked(useLastUpdateTime);
-const mockUseRefreshCooldown = vi.mocked(useRefreshCooldown);
 
 describe("Dashboard", () => {
   beforeEach(() => {
@@ -53,13 +36,6 @@ describe("Dashboard", () => {
       isLoading: false,
     } as ReturnType<typeof useLastUpdateTime>);
 
-    mockUseRefreshCooldown.mockReturnValue({
-      canRefresh: true,
-      timeRemaining: 0,
-      formattedTime: "04:59",
-      recordRefresh: vi.fn(),
-      refreshState: { canRefresh: true, timeRemaining: 0, lastRefresh: 0 },
-    } as ReturnType<typeof useRefreshCooldown>);
   });
 
   it("deve renderizar titulo e descricao", () => {
@@ -75,87 +51,43 @@ describe("Dashboard", () => {
     ).toBeInTheDocument();
   });
 
-  it("deve renderizar botao de refresh habilitado quando pode refresh", () => {
+  it("deve remover o botão manual de refresh", () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    const refreshButton = screen.getByRole("button", { name: /refresh data/i });
-    expect(refreshButton).toBeInTheDocument();
-    expect(refreshButton).not.toBeDisabled();
+    expect(screen.queryByRole("button", { name: /refresh data/i })).not.toBeInTheDocument();
   });
 
-  it("deve desabilitar botao de refresh quando em cooldown", () => {
-    mockUseRefreshCooldown.mockReturnValue({
-      canRefresh: false,
-      timeRemaining: 299000, // 4:59
-      formattedTime: "04:59",
-      recordRefresh: vi.fn(),
-      refreshState: {
-        canRefresh: false,
-        timeRemaining: 299000,
-        lastRefresh: Date.now(),
-      },
-    } as ReturnType<typeof useRefreshCooldown>);
-
+  it("deve configurar auto-refresh de 15 min em marketItems e lastUpdateTime", () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    const refreshButton = screen.getByRole("button", { name: /04:59/i });
-    expect(refreshButton).toBeInTheDocument();
-    expect(refreshButton).toBeDisabled();
+    expect(mockUseMarketItems).toHaveBeenCalledWith({ refetchInterval: DATA_FRESHNESS_MS });
+    expect(mockUseLastUpdateTime).toHaveBeenCalledWith({ refetchInterval: DATA_FRESHNESS_MS });
   });
 
-  it("deve mostrar toast de sucesso ao fazer refresh", () => {
-    render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Dashboard />
-      </MemoryRouter>,
-    );
-
-    const refreshButton = screen.getByRole("button", { name: /refresh data/i });
-    fireEvent.click(refreshButton);
-
-    expect(toast.success).toHaveBeenCalledWith("Data refreshed", {
-      description: "Market prices have been updated.",
-    });
-  });
-
-  it("deve desabilitar refresh durante loading mesmo com cooldown liberado", () => {
+  it("deve mostrar indicador Syncing... durante loading", () => {
     mockUseMarketItems.mockReturnValue({
       data: [],
       isLoading: true,
     } as ReturnType<typeof useMarketItems>);
 
-    mockUseLastUpdateTime.mockReturnValue({
-      data: null,
-      isLoading: false,
-    } as ReturnType<typeof useLastUpdateTime>);
-
-    mockUseRefreshCooldown.mockReturnValue({
-      canRefresh: true,
-      timeRemaining: 0,
-      formattedTime: "05:00",
-      recordRefresh: vi.fn(),
-      refreshState: { canRefresh: true, timeRemaining: 0, lastRefresh: 0 },
-    } as ReturnType<typeof useRefreshCooldown>);
-
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    const refreshButton = screen.getByRole("button");
-    expect(refreshButton).toBeDisabled();
+    expect(screen.getByText("Syncing...")).toBeInTheDocument();
   });
 
-  it("deve exibir fallback para Last Update quando não há timestamp", () => {
+  it("deve exibir estado Awaiting first sync quando não há timestamp", () => {
     mockUseLastUpdateTime.mockReturnValue({
       data: null,
       isLoading: false,
@@ -167,8 +99,37 @@ describe("Dashboard", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Last Update")).toBeInTheDocument();
-    expect(screen.getByText("...")).toBeInTheDocument();
+    expect(screen.getByTestId("auto-refresh-status")).toHaveTextContent("Awaiting first sync");
+  });
+
+  it("deve exibir Updated just now quando atualização é menor que 1 minuto", () => {
+    mockUseLastUpdateTime.mockReturnValue({
+      data: new Date().toISOString(),
+      isLoading: false,
+    } as ReturnType<typeof useLastUpdateTime>);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Dashboard />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId("auto-refresh-status")).toHaveTextContent("Updated just now");
+  });
+
+  it("deve exibir Updated X min ago quando atualização é maior que 1 minuto", () => {
+    mockUseLastUpdateTime.mockReturnValue({
+      data: new Date(Date.now() - 5 * 60_000).toISOString(),
+      isLoading: false,
+    } as ReturnType<typeof useLastUpdateTime>);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Dashboard />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId("auto-refresh-status")).toHaveTextContent("Updated 5 min ago");
   });
 
   it("deve mostrar skeleton enquanto carrega", () => {
@@ -182,14 +143,14 @@ describe("Dashboard", () => {
       isLoading: true,
     } as ReturnType<typeof useLastUpdateTime>);
 
-    render(
+    const { container } = render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
 
-    const refreshButton = screen.getByRole("button");
-    expect(refreshButton).toBeDisabled();
+    expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByTestId("auto-refresh-status")).toHaveTextContent("Syncing...");
   });
 
   it("deve renderizar stats cards", () => {
