@@ -14,7 +14,7 @@ describe('NotFound', () => {
 
     // When
     render(
-      <MemoryRouter initialEntries={['/rota-inexistente']}>
+      <MemoryRouter initialEntries={['/rota-inexistente']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <NotFound />
       </MemoryRouter>
     );

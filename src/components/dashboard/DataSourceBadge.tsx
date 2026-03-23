@@ -33,13 +33,15 @@ export function DataSourceBadge() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge
-            variant={getVariant()}
-            className={`cursor-help ${getBadgeColor()} text-white`}
-          >
-            {getIcon()}
-            {getLabel()}
-          </Badge>
+          <span className="inline-flex">
+            <Badge
+              variant={getVariant()}
+              className={`cursor-help ${getBadgeColor()} text-white`}
+            >
+              {getIcon()}
+              {getLabel()}
+            </Badge>
+          </span>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs">
           <div className="space-y-1">

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import App from '@/App';
 
 // AC-2: simula página que suspende indefinidamente (chunk ainda não carregado)
@@ -34,7 +34,7 @@ describe('App — code-splitting', () => {
   });
 
   // AC-2: Suspense fallback exibido enquanto rota lazy carrega
-  it('deve exibir fallback enquanto rota lazy está carregando', () => {
+  it('deve exibir fallback enquanto rota lazy está carregando', async () => {
     // Given: /dashboard tem componente suspenso (simula lazy chunk em download)
     window.history.pushState({}, '', '/dashboard');
 
@@ -44,6 +44,11 @@ describe('App — code-splitting', () => {
     // Then: fallback de loading é exibido — App precisa ter Suspense com fallback
     // RED: falha porque App não tem Suspense; React lança erro ao suspender sem boundary
     expect(screen.getByRole('status')).toBeInTheDocument();
+
+    // Flush da resolução assíncrona de lazy imports para evitar warning de act no teardown
+    await act(async () => {
+      await Promise.resolve();
+    });
   });
 
   // AC-3: NotFound exibido para rota inexistente (deve manter comportamento estático)

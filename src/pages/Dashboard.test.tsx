@@ -64,7 +64,7 @@ describe("Dashboard", () => {
 
   it("deve renderizar titulo e descricao", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -77,7 +77,7 @@ describe("Dashboard", () => {
 
   it("deve renderizar botao de refresh habilitado quando pode refresh", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -101,7 +101,7 @@ describe("Dashboard", () => {
     } as ReturnType<typeof useRefreshCooldown>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -113,7 +113,7 @@ describe("Dashboard", () => {
 
   it("deve mostrar toast de sucesso ao fazer refresh", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -146,7 +146,7 @@ describe("Dashboard", () => {
     } as ReturnType<typeof useRefreshCooldown>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -162,7 +162,7 @@ describe("Dashboard", () => {
     } as ReturnType<typeof useLastUpdateTime>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -183,7 +183,7 @@ describe("Dashboard", () => {
     } as ReturnType<typeof useLastUpdateTime>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -216,7 +216,7 @@ describe("Dashboard", () => {
     } as unknown as ReturnType<typeof useMarketItems>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
@@ -234,7 +234,7 @@ describe("Dashboard", () => {
     } as ReturnType<typeof useLastUpdateTime>);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Dashboard />
       </MemoryRouter>,
     );
