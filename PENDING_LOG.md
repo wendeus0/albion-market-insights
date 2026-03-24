@@ -4,6 +4,17 @@
 
 ## Decisões incorporadas
 
+- **Higienização breve da base (consistência documental de stack/gates)** (2026-03-23) ✅ **CONCLUÍDO EM BRANCH `chore/higiene-breve-base`**
+  - Correções de consistência aplicadas sem impacto funcional:
+    - `CONTEXT.md`: versão do Vite atualizada (`5.4.x` -> `7.3.1`)
+    - `CONTEXT.md`: versão do Playwright atualizada (`1.49` -> `1.58.2`)
+    - `README.md`: descrição de `quality:gate` alinhada ao script real (`Lint + Typecheck + Testes + Coverage + Build`)
+  - Escopo deliberadamente curto e de baixo risco (higiene documental)
+  - Quality gate validado após mudanças:
+    - `401/401` testes passando
+    - `lint`, `typecheck` e `build` verdes
+  - Obstáculos: nenhum bloqueio estrutural encontrado
+
 - **Frentes D + A (hardening de testes + governança Node 24)** (2026-03-23) ✅ **CONCLUÍDO**
   - Hardening de suíte de testes:
     - `src/test/setup.ts`: mock de localStorage ajustado com `length` dinâmico e retorno nullish-safe (`??`) para reduzir acoplamento temporal em assertions

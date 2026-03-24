@@ -65,7 +65,7 @@ VITE_USE_REAL_API=true
 
 - **Unitários**: `npm run test`
 - **E2E**: `npm run test:e2e`
-- **Validação Completa**: `npm run quality:gate` (Lint + Build + Testes + Coverage)
+- **Validação Completa**: `npm run quality:gate` (Lint + Typecheck + Testes + Coverage + Build)
 
 ## 📂 Documentação do Desenvolvedor
 
