@@ -30,7 +30,7 @@ Decisões duráveis de arquitetura são registradas em `docs/adr/`.
 |-----------|--------|-------|
 | React | 18.3.1 | UI |
 | TypeScript | 5.8.3 | Tipagem estática |
-| Vite | 5.4.x | Build e dev server |
+| Vite | 7.3.1 | Build e dev server |
 | Tailwind CSS | 3.4.17 | Estilos |
 | shadcn/ui + Radix | — | Componentes base |
 | React Router | 6.30.1 | Rotas |
@@ -38,7 +38,7 @@ Decisões duráveis de arquitetura são registradas em `docs/adr/`.
 | Recharts | 2.15.4 | Visualização |
 | React Hook Form + Zod | 7.61.1 / 3.25.76 | Formulário e validação |
 | Vitest | 4.1.0 | Testes unitários |
-| Playwright | 1.49 | Testes E2E |
+| Playwright | 1.58.2 | Testes E2E |
 
 ---
 
