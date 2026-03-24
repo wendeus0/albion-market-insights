@@ -1,8 +1,9 @@
-import { TrendingUp, ArrowUpRight } from 'lucide-react';
-import type { MarketItem } from '@/data/types';
-import { ItemIcon } from '@/components/items/ItemIcon';
-import { Sparkline } from '@/components/ui/sparkline';
-import { cn } from '@/lib/utils';
+import { TrendingUp, ArrowUpRight } from "lucide-react";
+import type { MarketItem } from "@/data/types";
+import { formatTierBadge } from "@/data/constants";
+import { ItemIcon } from "@/components/items/ItemIcon";
+import { Sparkline } from "@/components/ui/sparkline";
+import { cn } from "@/lib/utils";
 
 interface TopItemsPanelProps {
   items: MarketItem[];
@@ -11,17 +12,19 @@ interface TopItemsPanelProps {
 
 export function TopItemsPanel({ items, className }: TopItemsPanelProps) {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US').format(price);
+    return new Intl.NumberFormat("en-US").format(price);
   };
 
   return (
-    <div className={cn('glass-card p-5', className)}>
+    <div className={cn("glass-card p-5", className)}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
             <TrendingUp className="h-4 w-4 text-success" />
           </div>
-          <h3 className="font-semibold text-foreground">Top Profitable Items</h3>
+          <h3 className="font-semibold text-foreground">
+            Top Profitable Items
+          </h3>
         </div>
         <span className="text-xs text-muted-foreground">Highest spread</span>
       </div>
@@ -35,19 +38,23 @@ export function TopItemsPanel({ items, className }: TopItemsPanelProps) {
             <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
               {index + 1}
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <ItemIcon itemId={item.itemId} itemName={item.itemName} />
-                <p className="font-medium text-sm text-foreground truncate">{item.itemName}</p>
+                <p className="font-medium text-sm text-foreground truncate">
+                  {item.itemName}
+                </p>
                 <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                  {item.tier}
+                  {formatTierBadge(item.itemId, item.tier)}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{item.city}</span>
                 <span>•</span>
-                <span className="font-mono">{formatPrice(item.buyPrice)} → {formatPrice(item.sellPrice)}</span>
+                <span className="font-mono">
+                  {formatPrice(item.buyPrice)} → {formatPrice(item.sellPrice)}
+                </span>
               </div>
             </div>
 

@@ -15,6 +15,7 @@ import {
   qualities,
   ITEM_CATALOG,
   ENCHANTMENT_LEVELS,
+  formatTierBadge,
 } from "@/data/constants";
 import type { CatalogCategoryKey } from "@/data/constants";
 import { Sparkline } from "@/components/ui/sparkline";
@@ -230,7 +231,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
                   onChange={(e) => setMinPrice(e.target.value)}
                   className={cn(
                     "w-[100px] bg-muted/50 border-border/50",
-                    hasInvalidPriceRange && "border-destructive focus-visible:ring-destructive",
+                    hasInvalidPriceRange &&
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
                 <Input
@@ -240,7 +242,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
                   onChange={(e) => setMaxPrice(e.target.value)}
                   className={cn(
                     "w-[100px] bg-muted/50 border-border/50",
-                    hasInvalidPriceRange && "border-destructive focus-visible:ring-destructive",
+                    hasInvalidPriceRange &&
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
               </div>
@@ -260,7 +263,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
                   onChange={(e) => setMinSpread(e.target.value)}
                   className={cn(
                     "w-[100px] bg-muted/50 border-border/50",
-                    hasInvalidSpreadRange && "border-destructive focus-visible:ring-destructive",
+                    hasInvalidSpreadRange &&
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
                 <Input
@@ -270,7 +274,8 @@ export function PriceTable({ items, className }: PriceTableProps) {
                   onChange={(e) => setMaxSpread(e.target.value)}
                   className={cn(
                     "w-[100px] bg-muted/50 border-border/50",
-                    hasInvalidSpreadRange && "border-destructive focus-visible:ring-destructive",
+                    hasInvalidSpreadRange &&
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
               </div>
@@ -390,7 +395,7 @@ export function PriceTable({ items, className }: PriceTableProps) {
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                            {item.tier}
+                            {formatTierBadge(item.itemId, item.tier)}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {item.quality}
