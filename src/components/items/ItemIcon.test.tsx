@@ -6,7 +6,7 @@ import { buildCdnIconUrl, LOCAL_FALLBACK_ICON } from '@/components/items/itemIco
 describe('ItemIcon', () => {
   it('deve montar URL da CDN com itemId codificado', () => {
     expect(buildCdnIconUrl('T8_2H_HOLYSTAFF@3')).toBe(
-      'https://render.albiononline.com/v1/item/T8_2H_HOLYSTAFF%403.png?size=64',
+      'https://render.albiononline.com/v1/item/T8_2H_HOLYSTAFF@3.png?size=64',
     );
   });
 

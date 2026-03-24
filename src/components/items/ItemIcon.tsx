@@ -21,10 +21,10 @@ export function ItemIcon({ itemId, itemName, className }: ItemIconProps) {
       src={useFallback ? LOCAL_FALLBACK_ICON : cdnIconUrl}
       alt={`Icon for ${itemName}`}
       loading="lazy"
-      width={32}
-      height={32}
+      width={40}
+      height={40}
       className={cn(
-        'h-8 w-8 rounded-md border border-border/50 bg-muted/40 object-cover shrink-0',
+        'h-10 w-10 rounded-md border border-border/50 bg-muted/40 object-cover shrink-0',
         className,
       )}
       onError={() => {
