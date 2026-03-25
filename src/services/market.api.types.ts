@@ -1,5 +1,6 @@
-import { z } from 'zod';
-import type { MarketItem } from '@/data/types';
+import { z } from "zod";
+import type { MarketItem } from "@/data/types";
+import { ITEM_NAMES } from "@/data/constants";
 
 export const AlbionHistoryEntrySchema = z.object({
   item_count: z.number(),
@@ -29,14 +30,16 @@ export const AlbionPriceRecordSchema = z.object({
 export type AlbionPriceRecord = z.infer<typeof AlbionPriceRecordSchema>;
 
 const qualityMap: Record<number, string> = {
-  1: 'Normal',
-  2: 'Good',
-  3: 'Outstanding',
-  4: 'Excellent',
-  5: 'Masterpiece',
+  1: "Normal",
+  2: "Good",
+  3: "Outstanding",
+  4: "Excellent",
+  5: "Masterpiece",
 };
 
-export function albionRecordToMarketItem(record: AlbionPriceRecord): MarketItem {
+export function albionRecordToMarketItem(
+  record: AlbionPriceRecord,
+): MarketItem {
   const sellPrice = record.sell_price_min;
   const buyPrice = record.buy_price_max;
   const spread = Math.max(0, sellPrice - buyPrice);
@@ -44,11 +47,16 @@ export function albionRecordToMarketItem(record: AlbionPriceRecord): MarketItem 
 
   // Tier extraído do item_id (ex: T4_MAIN_SWORD → T4)
   const tierMatch = record.item_id.match(/^(T\d)/);
-  const tier = tierMatch ? tierMatch[1] : 'T4';
+  const tier = tierMatch ? tierMatch[1] : "T4";
+
+  // Usa ITEM_NAMES se disponível, ou cria nome limpo sem sufixo de encantamento
+  const itemName =
+    ITEM_NAMES[record.item_id] ??
+    record.item_id.replace(/@\d$/, "").replace(/^T\d_/, "").replace(/_/g, " ");
 
   return {
     itemId: record.item_id,
-    itemName: record.item_id.replace(/_/g, ' '),
+    itemName,
     city: record.city,
     sellPrice,
     buyPrice,
@@ -56,7 +64,7 @@ export function albionRecordToMarketItem(record: AlbionPriceRecord): MarketItem 
     spreadPercent,
     timestamp: record.sell_price_min_date || new Date().toISOString(),
     tier,
-    quality: qualityMap[record.quality] || 'Normal',
+    quality: qualityMap[record.quality] || "Normal",
     priceHistory: [sellPrice],
   };
 }
