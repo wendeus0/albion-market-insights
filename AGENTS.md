@@ -47,7 +47,7 @@ Meta-skill: `implement-feature`
 2. SPEC antes de código
 3. Testes RED antes de GREEN
 4. `code-review` sem blockers antes de commit
-5. `npm run lint && npm run build` limpos antes de commit
+5. `npm run quality:gate` limpo antes de commit (lint + typecheck + test + coverage + build)
 6. Escopo restrito à SPEC
 7. `enforce-workflow` antes de commit
 8. Não editar `src/components/ui/` (shadcn/ui)
@@ -66,4 +66,8 @@ Meta-skill: `implement-feature`
 
 ## Definition of Done
 
-SPEC aprovada → RED → GREEN → lint + build OK → sem console.log → `@/*` imports → code-review OK → security-review OK/pulada → REPORT READY_FOR_COMMIT → WORKFLOW_OK → commit + PR
+SPEC aprovada → RED → GREEN → `quality:gate` OK (lint + typecheck + test + build) → sem console.log → `@/*` imports → code-review OK → security-review OK/pulada → REPORT READY_FOR_COMMIT → WORKFLOW_OK → commit + PR
+
+## CI
+
+`.github/workflows/security-review.yml` — analisa PRs automaticamente via `claude-code-security-review`. Requer secret `CLAUDE_API_KEY` no repositório GitHub. Não substitui a skill `security-review` local.
