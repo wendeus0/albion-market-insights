@@ -1,13 +1,17 @@
 import { mockItems, lastUpdateTime } from "@/data/mockData";
-import type { MarketItem, Alert } from "@/data/types";
+import type { MarketItem, Alert, IAlertStorage } from "@/data/types";
 import type { MarketService } from "./market.service";
 import { AlertStorageService } from "./alert.storage";
 import { dataSourceManager } from "./dataSource.manager";
 
 export class MockMarketService implements MarketService {
   constructor(
-    private storage: AlertStorageService = new AlertStorageService(),
+    private storage: IAlertStorage = new AlertStorageService(),
   ) {}
+
+  setStorage(storage: IAlertStorage): void {
+    this.storage = storage;
+  }
 
   async getItems(): Promise<MarketItem[]> {
     dataSourceManager.setMock();

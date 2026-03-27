@@ -3,6 +3,7 @@ import { TrendingUp, Bell, Info, LayoutDashboard, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { NavbarAuthSection } from './NavbarAuthSection';
 
 const navLinks = [
   { to: '/', label: 'Home', icon: TrendingUp },
@@ -59,14 +60,9 @@ export function Navbar() {
             })}
           </div>
 
-          {/* CTA Button */}
+          {/* Auth Section */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              Sign In
-            </Button>
-            <Button size="sm" className="bg-gold-gradient text-primary-foreground hover:opacity-90 gold-glow">
-              Get Started
-            </Button>
+            <NavbarAuthSection />
           </div>
 
           {/* Mobile Menu Button */}
@@ -75,6 +71,7 @@ export function Navbar() {
             size="icon"
             className="md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -106,12 +103,7 @@ export function Navbar() {
                 );
               })}
               <div className="flex gap-2 mt-4 px-4">
-                <Button variant="outline" size="sm" className="flex-1">
-                  Sign In
-                </Button>
-                <Button size="sm" className="flex-1 bg-gold-gradient text-primary-foreground">
-                  Get Started
-                </Button>
+                <NavbarAuthSection onNavigate={() => setIsMobileMenuOpen(false)} />
               </div>
             </div>
           </div>

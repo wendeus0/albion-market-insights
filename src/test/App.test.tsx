@@ -2,6 +2,32 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import App from '@/App';
 
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      signOut: vi.fn(),
+    },
+  },
+}));
+
+vi.mock('@/services', () => ({
+  marketService: { setStorage: vi.fn(), getAlerts: vi.fn().mockResolvedValue([]) },
+}));
+
+vi.mock('@/services/alert.storage.supabase', () => ({
+  SupabaseAlertStorageService: vi.fn().mockImplementation(function () {
+    return { getAlerts: vi.fn().mockResolvedValue([]), saveAlert: vi.fn(), deleteAlert: vi.fn() };
+  }),
+}));
+
+vi.mock('@/services/alert.storage', () => ({
+  AlertStorageService: vi.fn().mockImplementation(function () {
+    return { getAlerts: vi.fn().mockReturnValue([]), saveAlert: vi.fn(), deleteAlert: vi.fn() };
+  }),
+}));
+
 // AC-2: simula página que suspende indefinidamente (chunk ainda não carregado)
 const neverResolves = new Promise<{ default: () => null }>(() => {});
 vi.mock('@/pages/Dashboard', () => ({

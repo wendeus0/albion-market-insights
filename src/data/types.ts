@@ -1,3 +1,15 @@
+export interface IAlertStorage {
+  getAlerts(): Alert[] | Promise<Alert[]>;
+  saveAlert(alert: Alert): void | Promise<void>;
+  deleteAlert(id: string): void | Promise<void>;
+}
+
+export interface UserProfile {
+  id: string;
+  discordWebhookUrl: string | null;
+  updatedAt: string;
+}
+
 export interface MarketItem {
   itemId: string;
   itemName: string;
@@ -30,6 +42,7 @@ export interface Alert {
   id: string;
   itemId: string;
   itemName: string;
+  quality: string;
   city: string;
   condition: 'below' | 'above' | 'change';
   threshold: number;

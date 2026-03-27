@@ -16,6 +16,10 @@ function migrateAlertData(item: unknown): unknown {
   if (alert.city === 'All Cities') {
     alert.city = 'all';
   }
+
+  if (typeof alert.quality !== 'string' || alert.quality.length === 0) {
+    alert.quality = 'Normal';
+  }
   
   return alert;
 }

@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { cities } from '@/data/constants';
+import { cities, qualities } from '@/data/constants';
 
 export const alertFormSchema = z.object({
   itemId: z.string().min(1, 'Selecione um item'),
+  quality: z.enum(qualities),
   city: z.enum(['all', ...cities] as [string, ...string[]]),
   condition: z.enum(['below', 'above', 'change']),
   threshold: z
@@ -23,6 +24,7 @@ export const alertSchema = z.object({
   id: z.string(),
   itemId: z.string(),
   itemName: z.string(),
+  quality: z.enum(qualities).default('Normal'),
   city: z.enum(['all', ...cities] as [string, ...string[]]),
   condition: z.enum(['below', 'above', 'change']),
   threshold: z.number(),

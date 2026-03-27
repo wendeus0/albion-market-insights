@@ -24,6 +24,7 @@ function makeAlert(overrides: Partial<Alert> = {}): Alert {
     id: 'alert-1',
     itemId: 'ITEM_0001',
     itemName: 'Clarent Blade',
+    quality: 'Normal',
     city: 'Caerleon',
     condition: 'below',
     threshold: 60000,
@@ -166,6 +167,13 @@ describe('checkAlerts()', () => {
 
     // When / Then
     expect(() => checkAlerts(items, alerts)).not.toThrow();
+    expect(checkAlerts(items, alerts)).toHaveLength(0);
+  });
+
+  it('não mistura variantes com quality diferente', () => {
+    const items = [makeItem({ quality: 'Excellent', sellPrice: 30000 })];
+    const alerts = [makeAlert({ quality: 'Normal', condition: 'below', threshold: 60000 })];
+
     expect(checkAlerts(items, alerts)).toHaveLength(0);
   });
 

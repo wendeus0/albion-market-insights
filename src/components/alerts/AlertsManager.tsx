@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import {
   Bell,
+  Loader2,
   Plus,
   ToggleLeft,
   ToggleRight,
@@ -13,7 +14,7 @@ import {
   BellRing,
 } from 'lucide-react';
 import type { Alert, MarketItem } from '@/data/types';
-import { cities } from '@/data/constants';
+import { cities, formatTierBadge, qualities } from '@/data/constants';
 import { useAlertsForm } from '@/hooks/useAlertsForm';
 import { useAlertsFeedback } from '@/hooks/useAlertsFeedback';
 import { useAlertsUI } from '@/hooks/useAlertsUI';
@@ -45,50 +46,125 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface AlertsManagerProps {
   availableItems: MarketItem[];
   alerts: Alert[];
-  onSaveAlert: (alert: Alert) => void;
-  onDeleteAlert: (id: string) => void;
+  onSaveAlert: (alert: Alert) => Promise<void>;
+  onDeleteAlert: (id: string) => Promise<void>;
+}
+
+function getEnchantLevel(itemId: string): number {
+  const match = itemId.match(/@([0-3])$/);
+  return match ? Number(match[1]) : 0;
+}
+
+function buildItemSearchText(item: MarketItem): string {
+  const tierBadge = formatTierBadge(item.itemId, item.tier).toLowerCase();
+  const enchantLevel = getEnchantLevel(item.itemId);
+
+  return [
+    item.itemName,
+    item.tier,
+    tierBadge,
+    item.quality,
+    enchantLevel > 0 ? `enchant ${enchantLevel}` : 'enchant 0',
+    enchantLevel > 0 ? `ench ${enchantLevel}` : 'ench 0',
+  ]
+    .join(' ')
+    .toLowerCase();
+}
+
+function matchesItemSearch(item: MarketItem, search: string): boolean {
+  const normalizedSearch = search.toLowerCase().trim();
+  if (!normalizedSearch) return true;
+
+  const tokens = normalizedSearch.split(/\s+/).filter(Boolean);
+  const haystack = buildItemSearchText(item);
+
+  return tokens.every((token) => haystack.includes(token));
 }
 
 export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
+  const [pendingAlertIds, setPendingAlertIds] = useState<Set<string>>(new Set());
 
-  const { form, alertType, createAlert, resetForm } = useAlertsForm({
-    onSaveAlert,
+  const { form, alertType, createAlert, resetForm, suggestedThreshold } = useAlertsForm({
     availableItems,
   });
 
-  const { notifyToggle, notifyDelete, notifyCreate } = useAlertsFeedback({
-    onDeleteAlert,
-  });
+  const { notifyToggle, notifyDelete, notifyCreate } = useAlertsFeedback();
 
   const { getConditionIcon, getConditionText, getCityLabel } = useAlertsUI();
+  const selectedItemValue = form.watch('itemId') && form.watch('quality')
+    ? `${form.watch('itemId')}|${form.watch('quality')}`
+    : '';
 
-  const toggleAlert = (alert: Alert) => {
-    onSaveAlert({ ...alert, isActive: !alert.isActive });
-    notifyToggle(alert);
+  const toggleAlert = async (alert: Alert) => {
+    setPendingAlertIds((current) => new Set(current).add(alert.id));
+    try {
+      await onSaveAlert({ ...alert, isActive: !alert.isActive });
+      notifyToggle(alert);
+    } catch {
+      toast.error('Unable to update alert', {
+        description: `The alert for ${alert.itemName} could not be updated.`,
+      });
+    } finally {
+      setPendingAlertIds((current) => {
+        const next = new Set(current);
+        next.delete(alert.id);
+        return next;
+      });
+    }
   };
 
-  const deleteAlert = (id: string, itemName?: string) => {
-    notifyDelete(id, itemName);
+  const deleteAlert = async (id: string, itemName?: string) => {
+    setPendingAlertIds((current) => new Set(current).add(id));
+    try {
+      await onDeleteAlert(id);
+      notifyDelete(itemName);
+    } catch {
+      toast.error('Unable to delete alert', {
+        description: itemName
+          ? `The alert for ${itemName} could not be removed.`
+          : 'The selected alert could not be removed.',
+      });
+    } finally {
+      setPendingAlertIds((current) => {
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
+    }
   };
 
-  const onSubmit = (values: Parameters<typeof createAlert>[0]) => {
+  const onSubmit = async (values: Parameters<typeof createAlert>[0]) => {
     const alert = createAlert(values);
     
     if (alert) {
-      setIsDialogOpen(false);
-      resetForm();
-      notifyCreate(alert.itemName, alert.condition, alert.threshold);
+      try {
+        await onSaveAlert(alert);
+        setIsDialogOpen(false);
+        setItemSearch('');
+        resetForm();
+        notifyCreate(alert.itemName, alert.condition, alert.threshold);
+      } catch {
+        toast.error('Unable to create alert', {
+          description: `The alert for ${alert.itemName} could not be created.`,
+        });
+      }
     }
   };
 
   const uniqueItems = Array.from(
-    new Map(availableItems.map(item => [item.itemName, item])).values()
-  ).slice(0, 20);
+    new Map(availableItems.map((item) => [`${item.itemId}|${item.quality}`, item])).values(),
+  );
+
+  const filteredItems = uniqueItems.filter((item) => matchesItemSearch(item, itemSearch));
+
+  const isAlertPending = (alertId: string) => pendingAlertIds.has(alertId);
 
   return (
     <div className="space-y-6">
@@ -103,7 +179,10 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) resetForm();
+          if (!open) {
+            resetForm();
+            setItemSearch('');
+          }
         }}>
           <DialogTrigger asChild>
             <Button className="bg-gold-gradient text-primary-foreground hover:opacity-90 gold-glow">
@@ -129,20 +208,53 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Item</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Input
+                        value={itemSearch}
+                        onChange={(event) => setItemSearch(event.target.value)}
+                        placeholder="Search by item name..."
+                        className="mb-2 bg-muted/50 border-border"
+                      />
+                          <Select
+                            value={selectedItemValue}
+                            onValueChange={(value) => {
+                              const [itemId, quality = 'Normal'] = value.split('|');
+                              field.onChange(itemId);
+                              form.setValue('quality', quality as (typeof qualities)[number], {
+                                shouldDirty: true,
+                                shouldTouch: true,
+                                shouldValidate: true,
+                              });
+                            }}
+                          >
                         <FormControl>
                           <SelectTrigger className="bg-muted/50 border-border">
                             <SelectValue placeholder="Select an item..." />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {uniqueItems.map(item => (
-                            <SelectItem key={item.itemId} value={item.itemId}>
-                              <span className="flex items-center gap-2">
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                                  {item.tier}
+                          {filteredItems.length === 0 ? (
+                            <div className="px-2 py-3 text-sm text-muted-foreground">
+                              No items found for this search.
+                            </div>
+                          ) : filteredItems.map(item => (
+                            <SelectItem key={`${item.itemId}|${item.quality}`} value={`${item.itemId}|${item.quality}`}>
+                              <span className="flex min-w-0 items-center justify-between gap-3">
+                                <span className="truncate text-left">{item.itemName}</span>
+                                <span className="flex shrink-0 items-center gap-2">
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                    {formatTierBadge(item.itemId, item.tier)}
+                                  </span>
+                                  {getEnchantLevel(item.itemId) > 0 && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300">
+                                      Ench. {getEnchantLevel(item.itemId)}
+                                    </span>
+                                  )}
+                                  {item.quality !== 'Normal' && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                      {item.quality}
+                                    </span>
+                                  )}
                                 </span>
-                                {item.itemName}
                               </span>
                             </SelectItem>
                           ))}
@@ -247,6 +359,12 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                           </span>
                         </div>
                       </FormControl>
+                      {suggestedThreshold !== null && (
+                        <p className="text-xs text-muted-foreground">
+                          Suggested threshold: {suggestedThreshold.toLocaleString()}
+                          {alertType === 'change' ? '%' : ''}
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -364,6 +482,14 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                     {getConditionText(alert)}
                   </p>
                   <div className="flex items-center gap-3 mt-1">
+                    <span className="text-xs text-muted-foreground">
+                      {alert.quality}
+                    </span>
+                    {getEnchantLevel(alert.itemId) > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Ench. {getEnchantLevel(alert.itemId)}
+                      </span>
+                    )}
                     {alert.notifications.inApp && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <BellRing className="h-3 w-3" /> In-app
@@ -379,11 +505,16 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                  {isAlertPending(alert.id) && (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => toggleAlert(alert)}
                     className="h-8 w-8"
+                    disabled={isAlertPending(alert.id)}
+                    aria-label={alert.isActive ? 'Disable alert' : 'Enable alert'}
                   >
                     {alert.isActive ? (
                       <ToggleRight className="h-5 w-5 text-success" />
@@ -396,6 +527,8 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                     size="icon"
                     onClick={() => deleteAlert(alert.id, alert.itemName)}
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={isAlertPending(alert.id)}
+                    aria-label="Delete alert"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -408,4 +541,3 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
     </div>
   );
 }
-

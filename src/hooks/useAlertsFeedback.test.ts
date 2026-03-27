@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { useAlertsFeedback } from './useAlertsFeedback.tsx';
 import type { Alert } from '@/data/types';
 
-// Mock sonner toast
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -12,17 +11,13 @@ vi.mock('sonner', () => ({
 }));
 
 describe('useAlertsFeedback', () => {
-  const mockOnDeleteAlert = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('notifyToggle', () => {
     it('should show success toast when disabling alert', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       const alert: Alert = {
         id: '1',
@@ -46,9 +41,7 @@ describe('useAlertsFeedback', () => {
     });
 
     it('should show success toast when enabling alert', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       const alert: Alert = {
         id: '1',
@@ -73,31 +66,25 @@ describe('useAlertsFeedback', () => {
   });
 
   describe('notifyDelete', () => {
-    it('should call onDeleteAlert and show toast with item name', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+    it('should show toast with item name', () => {
+      const { result } = renderHook(() => useAlertsFeedback());
 
       act(() => {
-        result.current.notifyDelete('alert-123', 'Beginner Bag');
+        result.current.notifyDelete('Beginner Bag');
       });
 
-      expect(mockOnDeleteAlert).toHaveBeenCalledWith('alert-123');
       expect(toast.success).toHaveBeenCalledWith('Alert deleted', {
         description: 'Your price alert for Beginner Bag has been removed.',
       });
     });
 
     it('should show generic toast when item name is not provided', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       act(() => {
-        result.current.notifyDelete('alert-123');
+        result.current.notifyDelete();
       });
 
-      expect(mockOnDeleteAlert).toHaveBeenCalledWith('alert-123');
       expect(toast.success).toHaveBeenCalledWith('Alert deleted', {
         description: 'Your price alert has been removed.',
       });
@@ -106,9 +93,7 @@ describe('useAlertsFeedback', () => {
 
   describe('notifyCreate', () => {
     it('should show toast for "below" condition', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       act(() => {
         result.current.notifyCreate('Beginner Bag', 'below', 500);
@@ -120,9 +105,7 @@ describe('useAlertsFeedback', () => {
     });
 
     it('should show toast for "above" condition', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       act(() => {
         result.current.notifyCreate('Expert Bag', 'above', 50000);
@@ -134,9 +117,7 @@ describe('useAlertsFeedback', () => {
     });
 
     it('should show toast with % for "change" condition', () => {
-      const { result } = renderHook(() =>
-        useAlertsFeedback({ onDeleteAlert: mockOnDeleteAlert })
-      );
+      const { result } = renderHook(() => useAlertsFeedback());
 
       act(() => {
         result.current.notifyCreate('Master Bag', 'change', 15);
@@ -148,4 +129,3 @@ describe('useAlertsFeedback', () => {
     });
   });
 });
-
