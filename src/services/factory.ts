@@ -2,10 +2,11 @@ import { AlertStorageService } from "./alert.storage";
 import { MockMarketService } from "./market.mock";
 import { ApiMarketService } from "./market.api";
 import type { MarketService } from "./market.service";
+import type { IAlertStorage } from "@/data/types";
 
 export interface MarketServiceConfig {
   useRealApi?: boolean;
-  storage?: AlertStorageService;
+  storage?: IAlertStorage;
   fallback?: MarketService;
 }
 

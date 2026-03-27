@@ -3,6 +3,16 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: { getSession: vi.fn(), onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }), signOut: vi.fn() },
+  },
+}));
+
+vi.mock('@/contexts/useAuth', () => ({
+  useAuth: vi.fn().mockReturnValue({ user: null, loading: false, signOut: vi.fn() }),
+}));
+
 // Mock useLocation
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -68,9 +78,9 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    // Botão mobile é o terceiro botão (depois de Sign In e Get Started)
-    const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(3); // Sign In, Get Started, Menu Mobile
+    expect(
+      screen.getByRole("button", { name: /open navigation menu/i }),
+    ).toBeInTheDocument();
   });
 
   it("deve abrir menu mobile ao clicar no botao", () => {
@@ -80,8 +90,9 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    const buttons = screen.getAllByRole("button");
-    const menuButton = buttons[2]; // Terceiro botão é o menu mobile
+    const menuButton = screen.getByRole("button", {
+      name: /open navigation menu/i,
+    });
 
     // Menu deve estar fechado inicialmente (apenas desktop visível)
     expect(screen.queryAllByText("Home")).toHaveLength(1);
@@ -99,8 +110,9 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    const buttons = screen.getAllByRole("button");
-    const menuButton = buttons[2];
+    const menuButton = screen.getByRole("button", {
+      name: /open navigation menu/i,
+    });
 
     // Abrir menu
     fireEvent.click(menuButton);
@@ -121,8 +133,9 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    const buttons = screen.getAllByRole("button");
-    const menuButton = buttons[2];
+    const menuButton = screen.getByRole("button", {
+      name: /open navigation menu/i,
+    });
 
     // Abrir menu
     fireEvent.click(menuButton);
@@ -144,8 +157,9 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    const buttons = screen.getAllByRole("button");
-    const menuButton = buttons[2];
+    const menuButton = screen.getByRole("button", {
+      name: /open navigation menu/i,
+    });
     fireEvent.click(menuButton);
 
     const alertsLinks = screen.queryAllByText("Alerts");
@@ -159,14 +173,17 @@ describe("Navbar", () => {
       </MemoryRouter>,
     );
 
-    const buttons = screen.getAllByRole("button");
-    const menuButton = buttons[2];
+    const menuButton = screen.getByRole("button", {
+      name: /open navigation menu/i,
+    });
     fireEvent.click(menuButton);
 
-    const signInButtons = screen.queryAllByText("Sign In");
-    expect(signInButtons).toHaveLength(2); // Desktop + Mobile
+    const signInLinks = screen.queryAllByRole("link", { name: "Sign In" });
+    expect(signInLinks).toHaveLength(2);
 
-    const getStartedButtons = screen.queryAllByText("Get Started");
-    expect(getStartedButtons).toHaveLength(2); // Desktop + Mobile
+    const getStartedLinks = screen.queryAllByRole("link", {
+      name: "Get Started",
+    });
+    expect(getStartedLinks).toHaveLength(2);
   });
 });

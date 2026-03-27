@@ -7,6 +7,7 @@ import {
 } from "./market.api.types";
 import type { AlbionPriceRecord } from "./market.api.types";
 import { AlertStorageService } from "./alert.storage";
+import type { IAlertStorage } from "@/data/types";
 import { ITEM_IDS, ITEM_NAMES } from "@/data/constants";
 import { MockMarketService } from "./market.mock";
 import { readCache, writeCache, isCacheValid } from "@/services/market.cache";
@@ -201,9 +202,13 @@ export async function withConcurrency<T>(
 
 export class ApiMarketService implements MarketService {
   constructor(
-    private storage: AlertStorageService = new AlertStorageService(),
+    private storage: IAlertStorage = new AlertStorageService(),
     private fallback: MarketService = new MockMarketService(),
   ) {}
+
+  setStorage(storage: IAlertStorage): void {
+    this.storage = storage;
+  }
 
   private cachedLastUpdate: string | null = null;
   private hasSuccessfulFetch = false;
