@@ -3,4 +3,4 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://west.albion-online-data.com https://albion-market-proxy.wendel-gdsilva.workers.dev; img-src 'self' data: https://render.albiononline.com; font-src 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://west.albion-online-data.com https://albion-market-proxy.wendel-gdsilva.workers.dev https://ubxwoictayqssadvtfkh.supabase.co; img-src 'self' data: https://render.albiononline.com; font-src 'self'; frame-ancestors 'none'
