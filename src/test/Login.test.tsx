@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -123,6 +123,34 @@ describe('Login', () => {
 
     expect(screen.getByRole('button', { name: /entrando/i })).toBeDisabled();
 
-    resolveSignIn({ data: { session: null }, error: null });
+    await act(async () => {
+      resolveSignIn({ data: { session: null }, error: null });
+    });
+  });
+
+  it('não navega após signup sem sessão e orienta confirmar email', async () => {
+    const navigate = vi.fn();
+    (useNavigate as Mock).mockReturnValue(navigate);
+    (supabase.auth.signUp as Mock).mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+    (supabase.auth.getSession as Mock).mockResolvedValue({
+      data: { session: null },
+      error: null,
+    });
+
+    const Wrapper = makeWrapper();
+    render(<Login />, { wrapper: Wrapper });
+
+    await userEvent.click(screen.getByRole('button', { name: /criar conta/i }));
+    await userEvent.type(screen.getByLabelText(/email/i), 'test@test.com');
+    await userEvent.type(screen.getByLabelText(/senha/i), 'password123');
+    await userEvent.click(screen.getByRole('button', { name: /cadastrar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/verifique seu email/i)).toBeInTheDocument();
+    });
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

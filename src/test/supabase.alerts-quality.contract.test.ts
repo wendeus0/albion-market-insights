@@ -12,9 +12,6 @@ describe('supabase alerts quality contract', () => {
 
   it('versiona migracao incremental para quality em alerts', () => {
     expect(sql).toContain('alter table public.alerts');
-    expect(sql).toContain('add column if not exists quality text;');
-    expect(sql).toContain("set quality = 'Normal'");
-    expect(sql).toContain("alter column quality set default 'Normal';");
-    expect(sql).toContain('alter column quality set not null;');
+    expect(sql).toContain("add column if not exists quality text not null default 'Normal';");
   });
 });

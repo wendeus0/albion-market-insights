@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/useAuth';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -20,6 +21,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [signupMessage, setSignupMessage] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -28,9 +30,27 @@ const Login = () => {
 
   async function onSubmit(values: LoginFormValues) {
     setServerError(null);
-    const error = isSignUp
-      ? await signUp(values.email, values.password)
-      : await signIn(values.email, values.password);
+    setSignupMessage(null);
+
+    if (isSignUp) {
+      const error = await signUp(values.email, values.password);
+
+      if (error) {
+        setServerError(error.message);
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/alerts');
+        return;
+      }
+
+      setSignupMessage('Conta criada. Verifique seu email para confirmar o cadastro antes de entrar.');
+      return;
+    }
+
+    const error = await signIn(values.email, values.password);
 
     if (error) {
       setServerError(error.message);
@@ -77,6 +97,10 @@ const Login = () => {
 
             {serverError && (
               <p className="text-sm text-destructive">{serverError}</p>
+            )}
+
+            {signupMessage && (
+              <p className="text-sm text-muted-foreground">{signupMessage}</p>
             )}
 
             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>

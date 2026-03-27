@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/useAuth";
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -11,6 +13,12 @@ vi.mock('@/lib/supabase', () => ({
 
 vi.mock('@/contexts/useAuth', () => ({
   useAuth: vi.fn().mockReturnValue({ user: null, loading: false, signOut: vi.fn() }),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+  },
 }));
 
 // Mock useLocation
@@ -26,6 +34,7 @@ const mockUseLocation = vi.mocked(useLocation);
 
 describe("Navbar", () => {
   beforeEach(() => {
+    vi.mocked(useAuth).mockReturnValue({ user: null, loading: false, signOut: vi.fn() } as never);
     mockUseLocation.mockReturnValue({ pathname: "/" } as ReturnType<
       typeof useLocation
     >);
@@ -185,5 +194,40 @@ describe("Navbar", () => {
       name: "Get Started",
     });
     expect(getStartedLinks).toHaveLength(2);
+  });
+
+  it("deve fechar menu mobile ao clicar em Sign In", () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Navbar />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open navigation menu/i }));
+    expect(screen.queryAllByRole("link", { name: "Sign In" })).toHaveLength(2);
+
+    fireEvent.click(screen.queryAllByRole("link", { name: "Sign In" })[1]);
+
+    expect(screen.queryAllByRole("link", { name: "Sign In" })).toHaveLength(1);
+  });
+
+  it("exibe feedback se logout falhar", async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 'u1', email: 'test@test.com' },
+      loading: false,
+      signOut: vi.fn().mockRejectedValue(new Error('network error')),
+    } as never);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Navbar />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /logout/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalled();
+    });
   });
 });

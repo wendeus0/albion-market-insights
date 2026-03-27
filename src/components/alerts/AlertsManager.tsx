@@ -14,7 +14,7 @@ import {
   BellRing,
 } from 'lucide-react';
 import type { Alert, MarketItem } from '@/data/types';
-import { cities, formatTierBadge } from '@/data/constants';
+import { cities, formatTierBadge, qualities } from '@/data/constants';
 import { useAlertsForm } from '@/hooks/useAlertsForm';
 import { useAlertsFeedback } from '@/hooks/useAlertsFeedback';
 import { useAlertsUI } from '@/hooks/useAlertsUI';
@@ -89,8 +89,7 @@ function matchesItemSearch(item: MarketItem, search: string): boolean {
 export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAlert }: AlertsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
-  const [pendingAlertId, setPendingAlertId] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<'toggle' | 'delete' | null>(null);
+  const [pendingAlertIds, setPendingAlertIds] = useState<Set<string>>(new Set());
 
   const { form, alertType, createAlert, resetForm, suggestedThreshold } = useAlertsForm({
     availableItems,
@@ -104,8 +103,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
     : '';
 
   const toggleAlert = async (alert: Alert) => {
-    setPendingAlertId(alert.id);
-    setPendingAction('toggle');
+    setPendingAlertIds((current) => new Set(current).add(alert.id));
     try {
       await onSaveAlert({ ...alert, isActive: !alert.isActive });
       notifyToggle(alert);
@@ -114,14 +112,16 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
         description: `The alert for ${alert.itemName} could not be updated.`,
       });
     } finally {
-      setPendingAlertId(null);
-      setPendingAction(null);
+      setPendingAlertIds((current) => {
+        const next = new Set(current);
+        next.delete(alert.id);
+        return next;
+      });
     }
   };
 
   const deleteAlert = async (id: string, itemName?: string) => {
-    setPendingAlertId(id);
-    setPendingAction('delete');
+    setPendingAlertIds((current) => new Set(current).add(id));
     try {
       await onDeleteAlert(id);
       notifyDelete(itemName);
@@ -132,8 +132,11 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
           : 'The selected alert could not be removed.',
       });
     } finally {
-      setPendingAlertId(null);
-      setPendingAction(null);
+      setPendingAlertIds((current) => {
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -160,6 +163,8 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
   );
 
   const filteredItems = uniqueItems.filter((item) => matchesItemSearch(item, itemSearch));
+
+  const isAlertPending = (alertId: string) => pendingAlertIds.has(alertId);
 
   return (
     <div className="space-y-6">
@@ -214,7 +219,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                             onValueChange={(value) => {
                               const [itemId, quality = 'Normal'] = value.split('|');
                               field.onChange(itemId);
-                              form.setValue('quality', quality, {
+                              form.setValue('quality', quality as (typeof qualities)[number], {
                                 shouldDirty: true,
                                 shouldTouch: true,
                                 shouldValidate: true,
@@ -500,7 +505,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                  {pendingAlertId === alert.id && pendingAction !== null && (
+                  {isAlertPending(alert.id) && (
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   )}
                   <Button
@@ -508,7 +513,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                     size="icon"
                     onClick={() => toggleAlert(alert)}
                     className="h-8 w-8"
-                    disabled={pendingAlertId === alert.id}
+                    disabled={isAlertPending(alert.id)}
                     aria-label={alert.isActive ? 'Disable alert' : 'Enable alert'}
                   >
                     {alert.isActive ? (
@@ -522,7 +527,7 @@ export function AlertsManager({ availableItems, alerts, onSaveAlert, onDeleteAle
                     size="icon"
                     onClick={() => deleteAlert(alert.id, alert.itemName)}
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    disabled={pendingAlertId === alert.id}
+                    disabled={isAlertPending(alert.id)}
                     aria-label="Delete alert"
                   >
                     <Trash2 className="h-4 w-4" />

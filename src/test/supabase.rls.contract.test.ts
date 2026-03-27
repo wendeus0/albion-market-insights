@@ -17,6 +17,13 @@ describe('supabase rls contract', () => {
     expect(sql).toContain('updated_at timestamptz not null');
   });
 
+  it('versiona trigger para atualizar updated_at em profiles', () => {
+    expect(sql).toContain('create or replace function public.set_updated_at()');
+    expect(sql).toContain('create trigger profiles_set_updated_at');
+    expect(sql).toContain('before update on public.profiles');
+    expect(sql).toContain('execute function public.set_updated_at();');
+  });
+
   it('versiona schema minimo de alerts', () => {
     expect(sql).toContain('create table if not exists public.alerts');
     expect(sql).toContain('user_id uuid not null references auth.users (id) on delete cascade');

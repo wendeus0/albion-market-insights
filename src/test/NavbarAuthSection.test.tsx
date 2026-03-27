@@ -19,6 +19,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 describe('NavbarAuthSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSignOut.mockResolvedValue(undefined);
     (useAuth as Mock).mockReturnValue({ user: null, loading: false, signOut: mockSignOut });
   });
 

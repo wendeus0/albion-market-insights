@@ -45,7 +45,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     expect(result.current.loading).toBe(true);
     expect(result.current.user).toBeNull();
-    act(() => resolveFn());
+    await act(async () => resolveFn());
   });
 
   it('deve resolver loading após getSession completar', async () => {
@@ -128,6 +128,15 @@ describe('AuthContext', () => {
 
     await act(async () => { await result.current.signOut(); });
     expect(supabase.auth.signOut).toHaveBeenCalled();
+  });
+
+  it('deve encerrar loading mesmo quando getSession falha', async () => {
+    (supabase.auth.getSession as Mock).mockRejectedValue(new Error('network error'));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.user).toBeNull();
   });
 
   it('useAuth fora do provider deve lançar erro descritivo', () => {

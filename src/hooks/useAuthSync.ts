@@ -43,6 +43,7 @@ export function useAuthSync(): void {
 
   useEffect(() => {
     const settable = marketService as SettableService;
+    let cancelled = false;
 
     if (user) {
       hadUser.current = true;
@@ -50,6 +51,7 @@ export function useAuthSync(): void {
       settable.setStorage(supabaseStorage);
       queryClient.removeQueries({ queryKey: ['alerts'] });
       migrateLocalStorageAlerts(supabaseStorage, user.id).then(() => {
+        if (cancelled) return;
         queryClient.invalidateQueries({ queryKey: getAlertsQueryKey(user.id) });
       });
     } else if (hadUser.current) {
@@ -57,5 +59,9 @@ export function useAuthSync(): void {
       queryClient.removeQueries({ queryKey: ['alerts'] });
       queryClient.invalidateQueries({ queryKey: getAlertsQueryKey(null) });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 }

@@ -51,7 +51,6 @@ describe('useAlertsForm', () => {
 
     expect(result.current.form.getValues()).toEqual({
       itemId: '',
-      quality: '',
       city: 'all',
       condition: 'below',
       threshold: undefined,
@@ -163,7 +162,6 @@ describe('useAlertsForm', () => {
 
     expect(result.current.form.getValues()).toEqual({
       itemId: '',
-      quality: '',
       city: 'all',
       condition: 'below',
       threshold: undefined,

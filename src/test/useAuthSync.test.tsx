@@ -48,6 +48,7 @@ vi.mock('@/services/alert.storage', () => ({
 
 import { supabase } from '@/lib/supabase';
 import { marketService } from '@/services';
+import { AlertStorageService } from '@/services/alert.storage';
 
 const mockUser = { id: 'user-123', email: 'test@test.com' };
 const mockSession = { user: mockUser, access_token: 'token' };
@@ -154,6 +155,13 @@ describe('useAuthSync', () => {
     });
 
     const { SupabaseAlertStorageService } = await import('@/services/alert.storage.supabase');
+    (AlertStorageService as Mock).mockImplementation(function () {
+      return {
+        getAlerts: vi.fn().mockReturnValue([alert]),
+        saveAlert: vi.fn(),
+        deleteAlert: vi.fn(),
+      };
+    });
     const mockSaveAlert = vi.fn().mockResolvedValue(undefined);
     (SupabaseAlertStorageService as Mock).mockImplementation(function () {
       return {

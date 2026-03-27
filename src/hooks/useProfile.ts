@@ -10,7 +10,10 @@ async function fetchProfile(userId: string): Promise<UserProfile | null> {
     .eq('id', userId)
     .single();
 
-  if (error) return null;
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw new Error(error.message);
+  }
   if (!data) return null;
 
   return {
@@ -23,13 +26,13 @@ async function fetchProfile(userId: string): Promise<UserProfile | null> {
 export function useProfile() {
   const { user } = useAuth();
 
-  const { data: profile = null, isLoading } = useQuery({
+  const { data: profile = null, isLoading, error, isError } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: () => fetchProfile(user!.id),
     enabled: !!user,
   });
 
-  return { profile, isLoading };
+  return { profile, isLoading, error, isError };
 }
 
 export function useUpdateProfile() {

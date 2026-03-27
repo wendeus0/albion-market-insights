@@ -24,6 +24,7 @@ vi.mock('@/contexts/useAuth', () => ({
 
 import { supabase } from '@/lib/supabase';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/useAuth';
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -35,17 +36,15 @@ function makeWrapper() {
 describe('useProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (useAuth as Mock).mockReturnValue({ user: mockUser, loading: false });
   });
 
   it('retorna null quando não há usuário', async () => {
-    const { useAuth } = await import('@/contexts/useAuth');
     (useAuth as Mock).mockReturnValue({ user: null, loading: false });
 
     const { result } = renderHook(() => useProfile(), { wrapper: makeWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.profile).toBeNull();
-
-    (useAuth as Mock).mockReturnValue({ user: mockUser, loading: false });
   });
 
   it('retorna perfil do usuário quando logado', async () => {
@@ -92,6 +91,41 @@ describe('useProfile', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.profile?.discordWebhookUrl).toBeNull();
+  });
+
+  it('retorna null quando o Supabase informa ausencia de linha', async () => {
+    const mockFrom = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: 'PGRST116', message: 'No rows found' },
+      }),
+    };
+    (supabase.from as Mock).mockReturnValue(mockFrom);
+
+    const { result } = renderHook(() => useProfile(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.profile).toBeNull();
+  });
+
+  it('expõe erro quando o Supabase falha por motivo diferente de ausencia de linha', async () => {
+    const mockFrom = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: '42501', message: 'RLS denied' },
+      }),
+    };
+    (supabase.from as Mock).mockReturnValue(mockFrom);
+
+    const { result } = renderHook(() => useProfile(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.profile).toBeNull();
+    expect(result.current.error?.message).toBe('RLS denied');
   });
 });
 

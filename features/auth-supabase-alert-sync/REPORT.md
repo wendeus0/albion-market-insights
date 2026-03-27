@@ -33,7 +33,7 @@ perfil e sincronizacao de alertas por usuario com Supabase.
 - `SECURITY_PASS_WITH_NOTES`
 - Achado corrigido: `src/services/alert.storage.supabase.ts` removia alerta remoto filtrando apenas por `id`; a query agora exige `id` e `user_id`
 - Hardening operacional aplicado: `src/lib/supabase.ts` agora inicializa com placeholders validos quando `VITE_SUPABASE_*` nao estiver configurada, evitando crash no bootstrap
-- Nota residual: isolamento efetivo entre usuarios ainda depende de politicas RLS/configuracao do projeto Supabase, que nao estao versionadas neste repositorio
+- Nota residual: isolamento efetivo entre usuarios depende da aplicacao das migrations e policies RLS ja versionadas neste repositorio no projeto Supabase alvo
 
 ### quality-gate
 

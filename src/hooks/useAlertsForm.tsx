@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Alert, MarketItem } from '@/data/types';
 import { alertFormSchema, type AlertFormValues } from '@/lib/schemas';
@@ -17,7 +17,7 @@ function generateAlertId(): string {
 }
 
 interface UseAlertsFormReturn {
-  form: ReturnType<typeof useForm<AlertFormValues>>;
+  form: UseFormReturn<AlertFormValues>;
   alertType: string;
   createAlert: (values: AlertFormValues) => Alert | null;
   resetForm: () => void;
@@ -68,7 +68,6 @@ export function useAlertsForm({
     resolver: zodResolver(alertFormSchema),
     defaultValues: {
       itemId: '',
-      quality: '',
       city: 'all',
       condition: 'below',
       threshold: undefined,
@@ -80,11 +79,10 @@ export function useAlertsForm({
   const selectedItemId = form.watch('itemId');
   const selectedQuality = form.watch('quality');
   const selectedCity = form.watch('city');
-  const threshold = form.watch('threshold');
   const lastAutoThreshold = useRef<number | null>(null);
 
   const suggestedThreshold = useMemo(
-    () => getSuggestedThreshold(availableItems, selectedItemId, selectedQuality, selectedCity, alertType),
+    () => getSuggestedThreshold(availableItems, selectedItemId, selectedQuality ?? '', selectedCity, alertType),
     [alertType, availableItems, selectedCity, selectedItemId, selectedQuality],
   );
 

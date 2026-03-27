@@ -66,7 +66,7 @@ Meta-skill: `implement-feature`
 
 ## Definition of Done
 
-SPEC aprovada → RED → GREEN → `quality:gate` OK (lint + typecheck + test + build) → sem console.log → `@/*` imports → code-review OK → security-review OK/pulada → REPORT READY_FOR_COMMIT → WORKFLOW_OK → commit + PR
+SPEC aprovada → RED → GREEN → `quality:gate` OK (lint + typecheck + test + coverage + build) → sem console.log → `@/*` imports → code-review OK → security-review OK/pulada → REPORT READY_FOR_COMMIT → WORKFLOW_OK → commit + PR
 
 ## CI
 
