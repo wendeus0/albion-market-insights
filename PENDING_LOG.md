@@ -392,6 +392,11 @@
 - Manter observação do comportamento Node 24 no CI antes de promoção.
 - Warnings em componentes vendor (`src/components/ui/*`) seguem como trade-off conhecido até a janela de higiene.
 - Não commitar artefatos gerados (`dist/`, `coverage/`, relatórios temporários).
+- **Follow-ups da frente auth + Supabase alert sync** (2026-03-27) 🔄 **PENDENTE**
+  - Toggle de ativar/desativar alerta não está funcionando no app autenticado; validar se o problema está na ação de update, invalidation da query ou renderização do estado retornado.
+  - Exclusão de alerta não atualiza a UI de forma instantânea; a deleção remota ocorre, mas o usuário precisa recarregar a página para refletir o estado final.
+  - Campo de item na criação de alerta permanece em lista fixa; avaliar evolução para busca por nome com filtro digitável/autocomplete.
+  - Sugestão de threshold do alerta não condiz com o preço médio praticado do item; estudar preenchimento inicial orientado por preço corrente/médio para facilitar identificação de ofertas vantajosas.
 
 ## Decisões incorporadas recentemente
 

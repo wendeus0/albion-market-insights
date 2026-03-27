@@ -36,6 +36,7 @@ export function checkAlerts(items: MarketItem[], alerts: Alert[]): FiredAlert[] 
     const item = items.find(
       i =>
         i.itemId === alert.itemId &&
+        i.quality === alert.quality &&
         (alert.city === 'all' || i.city === alert.city),
     );
     if (!item) continue;

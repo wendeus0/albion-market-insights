@@ -1,13 +1,9 @@
 import { toast } from 'sonner';
-import type { Alert, MarketItem } from '@/data/types';
-
-interface UseAlertsFeedbackOptions {
-  onDeleteAlert: (id: string) => void;
-}
+import type { Alert } from '@/data/types';
 
 interface UseAlertsFeedbackReturn {
   notifyToggle: (alert: Alert) => void;
-  notifyDelete: (id: string, itemName?: string) => void;
+  notifyDelete: (itemName?: string) => void;
   notifyCreate: (itemName: string, condition: Alert['condition'], threshold: number) => void;
 }
 
@@ -15,9 +11,7 @@ interface UseAlertsFeedbackReturn {
  * Hook para gerenciamento de feedback/toasts do AlertsManager.
  * Centraliza todas as notificações Sonner em um único lugar.
  */
-export function useAlertsFeedback({
-  onDeleteAlert,
-}: UseAlertsFeedbackOptions): UseAlertsFeedbackReturn {
+export function useAlertsFeedback(): UseAlertsFeedbackReturn {
   const notifyToggle = (alert: Alert) => {
     const status = alert.isActive ? 'disabled' : 'enabled';
     toast.success(`Alert ${status}`, {
@@ -25,8 +19,7 @@ export function useAlertsFeedback({
     });
   };
 
-  const notifyDelete = (id: string, itemName?: string) => {
-    onDeleteAlert(id);
+  const notifyDelete = (itemName?: string) => {
     toast.success('Alert deleted', {
       description: itemName 
         ? `Your price alert for ${itemName} has been removed.`
@@ -53,4 +46,3 @@ export function useAlertsFeedback({
     notifyCreate,
   };
 }
-

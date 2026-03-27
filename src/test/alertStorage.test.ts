@@ -7,6 +7,7 @@ function makeAlert(id: string): Alert {
     id,
     itemId: `ITEM_${id}`,
     itemName: `Item ${id}`,
+    quality: 'Normal',
     city: 'Caerleon',
     condition: 'below',
     threshold: 10000,
@@ -145,6 +146,7 @@ describe('AlertStorageService', () => {
           id: '1',
           itemId: 'ITEM_1',
           itemName: 'Item 1',
+          quality: 'Normal',
           city: 'Caerleon',
           condition: 'below',
           threshold: 'not-a-number',
@@ -168,6 +170,7 @@ describe('AlertStorageService', () => {
           id: '1',
           itemId: 'ITEM_1',
           itemName: 'Item 1',
+          quality: 'Normal',
           city: 'Caerleon',
           condition: 'invalid-condition',
           threshold: 10000,
@@ -191,6 +194,7 @@ describe('AlertStorageService', () => {
           id: '1',
           itemId: 'ITEM_1',
           itemName: 'Item 1',
+          quality: 'Normal',
           city: 'Caerleon',
           condition: 'below',
           threshold: 10000,
@@ -221,6 +225,27 @@ describe('AlertStorageService', () => {
 
       // Then: apenas o válido deve ser retornado
       expect(alerts).toEqual([validAlert]);
+    });
+
+    it('migra alertas legados sem quality para Normal', () => {
+      localStorage.setItem('albion_alerts', JSON.stringify([
+        {
+          id: '1',
+          itemId: 'ITEM_1',
+          itemName: 'Item 1',
+          city: 'Caerleon',
+          condition: 'below',
+          threshold: 10000,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          notifications: { inApp: true, email: false }
+        }
+      ]));
+
+      const alerts = service.getAlerts();
+
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0].quality).toBe('Normal');
     });
   });
 });
