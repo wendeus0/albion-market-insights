@@ -1,21 +1,10 @@
-import {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
+import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { supabaseAdmin } from "../supabase.js";
 import { getMessages } from "../i18n.js";
+import { registerCommandData } from "./definitions.js";
 
 export const registerCommand = {
-  data: new SlashCommandBuilder()
-    .setName("register")
-    .setDescription("Link your Discord account to Albion Market Insights")
-    .addStringOption((option) =>
-      option
-        .setName("token")
-        .setDescription("Temporary token generated on the website")
-        .setRequired(true),
-    ),
+  data: registerCommandData,
   async execute(interaction: ChatInputCommandInteraction) {
     const token = interaction.options
       .getString("token", true)

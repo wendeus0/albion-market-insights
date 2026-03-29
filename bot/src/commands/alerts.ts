@@ -1,18 +1,10 @@
-import {
-  EmbedBuilder,
-  SlashCommandBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
+import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { supabaseAdmin } from "../supabase.js";
 import { getMessages } from "../i18n.js";
+import { alertsCommandData } from "./definitions.js";
 
 export const alertsCommand = {
-  data: new SlashCommandBuilder()
-    .setName("alerts")
-    .setDescription("Manage your Albion Market Insights alerts")
-    .addSubcommand((subcommand) =>
-      subcommand.setName("list").setDescription("List active alerts"),
-    ),
+  data: alertsCommandData,
   async execute(interaction: ChatInputCommandInteraction) {
     const subcommand = interaction.options.getSubcommand();
     const t = getMessages(interaction.locale);
