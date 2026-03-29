@@ -6,6 +6,9 @@ export interface IAlertStorage {
 
 export interface UserProfile {
   id: string;
+  discordId: string | null;
+  discordUsername: string | null;
+  discordDmEnabled: boolean;
   discordWebhookUrl: string | null;
   updatedAt: string;
 }
@@ -44,7 +47,7 @@ export interface Alert {
   itemName: string;
   quality: string;
   city: string;
-  condition: 'below' | 'above' | 'change';
+  condition: "below" | "above" | "change";
   threshold: number;
   isActive: boolean;
   createdAt: string;

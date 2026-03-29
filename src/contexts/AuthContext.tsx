@@ -1,7 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import type { User, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { AuthContext } from '@/contexts/auth.context';
+import { useEffect, useState, type ReactNode } from "react";
+import type { User, AuthError } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { AuthContext } from "@/contexts/auth.context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -20,20 +20,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  async function signIn(email: string, password: string): Promise<AuthError | null> {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return error;
-  }
-
-  async function signUp(email: string, password: string): Promise<AuthError | null> {
-    const { error } = await supabase.auth.signUp({ email, password });
+  async function signInWithDiscord(): Promise<AuthError | null> {
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "discord",
+      options: {
+        redirectTo,
+        scopes: "identify email",
+      },
+    });
     return error;
   }
 
@@ -43,7 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated: user !== null, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: user !== null,
+        signInWithDiscord,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
