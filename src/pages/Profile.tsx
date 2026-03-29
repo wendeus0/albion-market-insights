@@ -48,9 +48,6 @@ const Profile = () => {
   async function onSubmit(values: ProfileFormValues) {
     try {
       await updateProfile.mutateAsync({
-        discordId: profile?.discordId ?? null,
-        discordUsername: profile?.discordUsername ?? null,
-        discordDmEnabled: profile?.discordDmEnabled ?? false,
         discordWebhookUrl: values.discordWebhookUrl ?? null,
       });
       toast.success("Perfil salvo com sucesso");
@@ -62,8 +59,12 @@ const Profile = () => {
   async function onGenerateDiscordLink() {
     try {
       const payload = await discordLink.mutateAsync();
-      await navigator.clipboard.writeText(payload.command);
-      toast.success("Comando copiado para a area de transferencia");
+      try {
+        await navigator.clipboard.writeText(payload.command);
+        toast.success("Comando copiado para a area de transferencia");
+      } catch {
+        toast.warning("Comando gerado, mas a copia automatica falhou");
+      }
     } catch {
       toast.error("Erro ao gerar o link de vinculacao");
     }
@@ -114,7 +115,11 @@ const Profile = () => {
             </Button>
             {discordLink.data && (
               <div className="space-y-2">
-                <Input readOnly value={discordLink.data.command} />
+                <Input
+                  readOnly
+                  value={discordLink.data.command}
+                  aria-label="Comando gerado para vincular o bot no Discord"
+                />
                 <p className="text-xs text-muted-foreground">
                   Expira em:{" "}
                   {new Date(discordLink.data.expiresAt).toUTCString()}

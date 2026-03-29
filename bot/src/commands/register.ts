@@ -52,7 +52,7 @@ export const registerCommand = {
       .eq("id", profile.id);
 
     if (updateError) {
-      await interaction.reply({ content: t.registerInvalid, ephemeral: true });
+      await interaction.reply({ content: t.registerError, ephemeral: true });
       return;
     }
 

@@ -6,9 +6,14 @@ const migrationPath = resolve(
   process.cwd(),
   "supabase/migrations/20260329_discord_oauth_bot.sql",
 );
+const uniqueMigrationPath = resolve(
+  process.cwd(),
+  "supabase/migrations/20260329103000_discord_oauth_bot_unique_indexes.sql",
+);
 
 describe("supabase discord contract", () => {
   const sql = readFileSync(migrationPath, "utf8");
+  const uniqueSql = readFileSync(uniqueMigrationPath, "utf8");
 
   it("versiona colunas de perfil para OAuth e link magico", () => {
     expect(sql).toContain("add column if not exists discord_id text");
@@ -29,5 +34,20 @@ describe("supabase discord contract", () => {
       "add column if not exists notified_discord boolean not null default false",
     );
     expect(sql).toContain("add column if not exists notified_at timestamptz");
+  });
+
+  it("garante unicidade para discord_id e discord_link_token", () => {
+    expect(sql).toContain(
+      "create unique index if not exists profiles_discord_id_idx",
+    );
+    expect(sql).toContain(
+      "create unique index if not exists profiles_discord_link_token_idx",
+    );
+    expect(uniqueSql).toContain(
+      "drop index if exists public.profiles_discord_id_idx",
+    );
+    expect(uniqueSql).toContain(
+      "drop index if exists public.profiles_discord_link_token_idx",
+    );
   });
 });

@@ -9,6 +9,15 @@ import { config } from "../config.js";
 import { getMessages } from "../i18n.js";
 import { supabaseAdmin } from "../supabase.js";
 
+const MAX_DELIVERY_RETRIES = 3;
+const deliveryFailures = new Map<string, number>();
+
+interface AlertProfileRow {
+  discord_id: string | null;
+  discord_dm_enabled: boolean;
+  discord_locale: string | null;
+}
+
 interface PendingAlertRow {
   id: string;
   user_id: string;
@@ -17,28 +26,54 @@ interface PendingAlertRow {
   condition: string;
   threshold: number;
   fired_at: string;
+  profiles: AlertProfileRow | AlertProfileRow[] | null;
+}
+
+async function markAlertAsNotified(alertId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("alerts")
+    .update({
+      notified_discord: true,
+      notified_at: new Date().toISOString(),
+    })
+    .eq("id", alertId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export function startAlertNotifier(client: Client) {
   return setInterval(async () => {
-    const { data: alerts } = await supabaseAdmin
+    const { data: alerts, error: alertsError } = await supabaseAdmin
       .from("alerts")
-      .select("id, user_id, item_name, city, condition, threshold, fired_at")
+      .select(
+        "id, user_id, item_name, city, condition, threshold, fired_at, profiles!inner(discord_id, discord_dm_enabled, discord_locale)",
+      )
       .not("fired_at", "is", null)
       .eq("notified_discord", false)
+      .eq("profiles.discord_dm_enabled", true)
+      .not("profiles.discord_id", "is", null)
       .limit(20);
 
-    for (const alert of (alerts ?? []) as PendingAlertRow[]) {
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("discord_id, discord_dm_enabled, discord_locale")
-        .eq("id", alert.user_id)
-        .maybeSingle();
+    if (alertsError) {
+      console.error("Failed to fetch pending Discord alerts", alertsError);
+      return;
+    }
 
-      if (!profile?.discord_id || !profile.discord_dm_enabled) continue;
+    for (const alert of (alerts ?? []) as PendingAlertRow[]) {
+      const profile = Array.isArray(alert.profiles)
+        ? alert.profiles[0]
+        : alert.profiles;
+
+      if (!profile?.discord_id) {
+        continue;
+      }
+
+      let dmSent = false;
 
       try {
-        const user = await client.users.fetch(profile.discord_id as string);
+        const user = await client.users.fetch(profile.discord_id);
         const t = getMessages(profile.discord_locale as string | null);
         const embed = new EmbedBuilder()
           .setTitle(t.alertTriggered)
@@ -70,16 +105,41 @@ export function startAlertNotifier(client: Client) {
         );
 
         await user.send({ embeds: [embed], components: [actions] });
+        dmSent = true;
+        await markAlertAsNotified(alert.id);
+        deliveryFailures.delete(alert.id);
+      } catch (error) {
+        console.error(`Failed to deliver Discord alert ${alert.id}`, error);
 
-        await supabaseAdmin
-          .from("alerts")
-          .update({
-            notified_discord: true,
-            notified_at: new Date().toISOString(),
-          })
-          .eq("id", alert.id);
-      } catch {
-        continue;
+        if (dmSent) {
+          try {
+            await markAlertAsNotified(alert.id);
+            deliveryFailures.delete(alert.id);
+          } catch (markError) {
+            console.error(
+              `Failed to mark delivered alert ${alert.id} as notified`,
+              markError,
+            );
+          }
+          continue;
+        }
+
+        const retries = (deliveryFailures.get(alert.id) ?? 0) + 1;
+        deliveryFailures.set(alert.id, retries);
+
+        if (retries < MAX_DELIVERY_RETRIES) {
+          continue;
+        }
+
+        try {
+          await markAlertAsNotified(alert.id);
+          deliveryFailures.delete(alert.id);
+        } catch (markError) {
+          console.error(
+            `Failed to close alert ${alert.id} after retries`,
+            markError,
+          );
+        }
       }
     }
   }, config.pollIntervalMs);

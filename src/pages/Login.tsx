@@ -21,10 +21,15 @@ const Login = () => {
     setIsSubmitting(true);
     setServerError(null);
 
-    const error = await signInWithDiscord();
+    try {
+      const error = await signInWithDiscord();
 
-    if (error) {
-      setServerError(error.message);
+      if (error) {
+        setServerError(error.message);
+      }
+    } catch {
+      setServerError("Nao foi possivel iniciar o login. Tente novamente.");
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -41,7 +46,7 @@ const Login = () => {
         </div>
 
         {(serverError ?? callbackError) && (
-          <p className="text-sm text-destructive">
+          <p className="text-sm text-destructive" role="alert">
             {serverError ?? callbackError}
           </p>
         )}

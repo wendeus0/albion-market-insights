@@ -64,7 +64,8 @@ Deno.serve(async (request) => {
   });
 
   if (updateError) {
-    return json({ error: updateError.message }, 500);
+    console.error("Failed to save Discord link token", updateError);
+    return json({ error: "Could not generate the Discord link token." }, 500);
   }
 
   return json({

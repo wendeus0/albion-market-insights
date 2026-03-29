@@ -52,17 +52,9 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (values: {
-      discordId: string | null;
-      discordUsername: string | null;
-      discordDmEnabled: boolean;
-      discordWebhookUrl: string | null;
-    }) => {
+    mutationFn: async (values: { discordWebhookUrl: string | null }) => {
       const { error } = await supabase.from("profiles").upsert({
         id: user!.id,
-        discord_id: values.discordId,
-        discord_username: values.discordUsername,
-        discord_dm_enabled: values.discordDmEnabled,
         discord_webhook_url: values.discordWebhookUrl,
         updated_at: new Date().toISOString(),
       });

@@ -26,7 +26,7 @@ export async function sendDiscordWebhook(
   const description =
     alert.condition === "change"
       ? `Price change: ${priceChangePercent?.toFixed(1) ?? "0.0"}%`
-      : `Current price: ${currentPrice.toLocaleString()} in ${item.city}`;
+      : `Current price: ${currentPrice.toLocaleString("en-US")} in ${item.city}`;
 
   const response = await fetch(webhookUrl, {
     method: "POST",

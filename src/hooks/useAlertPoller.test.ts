@@ -76,6 +76,8 @@ describe("useAlertPoller", () => {
       signOut: vi.fn(),
     });
     vi.mocked(checkAlerts).mockReturnValue([]);
+    vi.mocked(recordDiscordAlertTrigger).mockResolvedValue(undefined);
+    vi.mocked(sendDiscordWebhook).mockResolvedValue(undefined);
   });
 
   afterEach(() => {

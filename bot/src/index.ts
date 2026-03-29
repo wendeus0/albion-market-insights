@@ -14,4 +14,11 @@ process.on("SIGINT", () => {
   process.exit(0);
 });
 
-await loginBot(client);
+try {
+  await loginBot(client);
+} catch (error) {
+  console.error("Discord bot login failed", error);
+  if (notifier) clearInterval(notifier);
+  client.destroy();
+  process.exit(1);
+}

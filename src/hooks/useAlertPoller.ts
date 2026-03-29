@@ -104,7 +104,9 @@ export function useAlertPoller() {
       if (!user) continue;
 
       if (profile?.discordDmEnabled && profile.discordId) {
-        void recordDiscordAlertTrigger(alert.id);
+        void recordDiscordAlertTrigger(alert.id).catch(() => {
+          console.error("Falha ao registrar alerta para envio por DM.");
+        });
         continue;
       }
 
@@ -115,7 +117,9 @@ export function useAlertPoller() {
           item,
           currentPrice,
           priceChangePercent,
-        );
+        ).catch(() => {
+          console.error("Falha ao enviar notificacao via webhook do Discord.");
+        });
       }
     }
   }, [items, alerts, profile, user]);

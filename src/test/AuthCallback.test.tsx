@@ -69,4 +69,27 @@ describe("AuthCallback", () => {
       });
     });
   });
+
+  it("redireciona com erro de conclusao quando a troca de sessao falha", async () => {
+    const navigate = vi.fn();
+    (useNavigate as Mock).mockReturnValue(navigate);
+    (supabase.auth.exchangeCodeForSession as Mock).mockResolvedValue({
+      error: { message: "exchange failed" },
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/auth/callback?code=oauth-code"]}>
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallback />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith("/login", {
+        replace: true,
+        state: { error: "Nao foi possivel concluir o login. Tente novamente." },
+      });
+    });
+  });
 });

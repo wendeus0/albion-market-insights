@@ -19,12 +19,10 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 vi.mock("@/contexts/useAuth", () => ({
-  useAuth: vi
-    .fn()
-    .mockReturnValue({
-      user: { id: "user-123", email: "test@test.com" },
-      loading: false,
-    }),
+  useAuth: vi.fn().mockReturnValue({
+    user: { id: "user-123", email: "test@test.com" },
+    loading: false,
+  }),
 }));
 
 import { supabase } from "@/lib/supabase";
@@ -172,9 +170,6 @@ describe("useUpdateProfile", () => {
 
     await act(async () => {
       await result.current.mutateAsync({
-        discordDmEnabled: false,
-        discordId: null,
-        discordUsername: null,
         discordWebhookUrl: "https://discord.com/new-webhook",
       });
     });
@@ -182,9 +177,6 @@ describe("useUpdateProfile", () => {
     expect(supabase.from).toHaveBeenCalledWith("profiles");
     expect(mockFrom.upsert).toHaveBeenCalledWith({
       id: "user-123",
-      discord_id: null,
-      discord_username: null,
-      discord_dm_enabled: false,
       discord_webhook_url: "https://discord.com/new-webhook",
       updated_at: expect.any(String),
     });
@@ -203,9 +195,6 @@ describe("useUpdateProfile", () => {
     await expect(
       act(async () => {
         await result.current.mutateAsync({
-          discordDmEnabled: true,
-          discordId: "discord-user-1",
-          discordUsername: "AlbionUser",
           discordWebhookUrl: null,
         });
       }),

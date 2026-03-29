@@ -19,14 +19,21 @@ export const alertsCommand = {
 
     if (subcommand !== "list") return;
 
-    const { data: profile } = await supabaseAdmin
+    await interaction.deferReply({ ephemeral: true });
+
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("id")
       .eq("discord_id", interaction.user.id)
       .maybeSingle();
 
+    if (profileError) {
+      await interaction.editReply({ content: t.alertsError });
+      return;
+    }
+
     if (!profile) {
-      await interaction.reply({ content: t.registerInvalid, ephemeral: true });
+      await interaction.editReply({ content: t.registerRequired });
       return;
     }
 
@@ -37,8 +44,13 @@ export const alertsCommand = {
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
-    if (error || !alerts || alerts.length === 0) {
-      await interaction.reply({ content: t.alertsEmpty, ephemeral: true });
+    if (error) {
+      await interaction.editReply({ content: t.alertsError });
+      return;
+    }
+
+    if (!alerts || alerts.length === 0) {
+      await interaction.editReply({ content: t.alertsEmpty });
       return;
     }
 
@@ -51,6 +63,6 @@ export const alertsCommand = {
       });
     }
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.editReply({ embeds: [embed] });
   },
 };

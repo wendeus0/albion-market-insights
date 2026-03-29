@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 const OAUTH_CANCELLED_MESSAGE = "Login cancelado. Tente novamente.";
+const OAUTH_EXCHANGE_FAILED_MESSAGE =
+  "Nao foi possivel concluir o login. Tente novamente.";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [message, setMessage] = useState("Conectando sua conta do Discord...");
 
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +31,7 @@ const AuthCallback = () => {
       if (error) {
         navigate("/login", {
           replace: true,
-          state: { error: OAUTH_CANCELLED_MESSAGE },
+          state: { error: OAUTH_EXCHANGE_FAILED_MESSAGE },
         });
         return;
       }
@@ -40,10 +41,9 @@ const AuthCallback = () => {
 
     exchange().catch(() => {
       if (cancelled) return;
-      setMessage("Nao foi possivel concluir o login.");
       navigate("/login", {
         replace: true,
-        state: { error: OAUTH_CANCELLED_MESSAGE },
+        state: { error: OAUTH_EXCHANGE_FAILED_MESSAGE },
       });
     });
 
@@ -53,9 +53,11 @@ const AuthCallback = () => {
   }, [navigate, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </div>
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <p className="text-sm text-muted-foreground" role="status">
+        Conectando sua conta do Discord...
+      </p>
+    </main>
   );
 };
 
