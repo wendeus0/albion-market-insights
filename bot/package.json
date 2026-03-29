@@ -1,0 +1,22 @@
+{
+  "name": "albion-market-bot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "deploy:commands": "tsx scripts/deploy-commands.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
+    "discord.js": "^14.23.2",
+    "dotenv": "^17.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.3"
+  }
+}

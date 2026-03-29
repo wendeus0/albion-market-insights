@@ -1,38 +1,33 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { render, screen, waitFor, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
       onAuthStateChange: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
+      signInWithOAuth: vi.fn(),
       signOut: vi.fn(),
     },
   },
 }));
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
-  return { ...actual, useNavigate: vi.fn().mockReturnValue(vi.fn()) };
-});
+import { supabase } from "@/lib/supabase";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Login from "@/pages/Login";
 
-import { supabase } from '@/lib/supabase';
-import { AuthProvider } from '@/contexts/AuthContext';
-import Login from '@/pages/Login';
-import { useNavigate } from 'react-router-dom';
-
-function makeWrapper() {
+function makeWrapper(
+  initialEntries?: Parameters<typeof MemoryRouter>[0]["initialEntries"],
+) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return function wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={qc}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries}>
           <AuthProvider>{children}</AuthProvider>
         </MemoryRouter>
       </QueryClientProvider>
@@ -44,113 +39,107 @@ function makeSubscription() {
   return { data: { subscription: { unsubscribe: vi.fn() } } };
 }
 
-describe('Login', () => {
+describe("Login", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (supabase.auth.onAuthStateChange as Mock).mockReturnValue(makeSubscription());
-    (supabase.auth.getSession as Mock).mockResolvedValue({ data: { session: null }, error: null });
-  });
-
-  it('renderiza campos email e senha', () => {
-    const Wrapper = makeWrapper();
-    render(<Login />, { wrapper: Wrapper });
-
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
-  });
-
-  it('exibe erro em credenciais inválidas', async () => {
-    (supabase.auth.signInWithPassword as Mock).mockResolvedValue({
+    (supabase.auth.onAuthStateChange as Mock).mockReturnValue(
+      makeSubscription(),
+    );
+    (supabase.auth.getSession as Mock).mockResolvedValue({
       data: { session: null },
-      error: { message: 'Invalid credentials' },
-    });
-
-    const Wrapper = makeWrapper();
-    render(<Login />, { wrapper: Wrapper });
-
-    await userEvent.type(screen.getByLabelText(/email/i), 'test@test.com');
-    await userEvent.type(screen.getByLabelText(/senha/i), 'wrongpass');
-    await userEvent.click(screen.getByRole('button', { name: /entrar/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      error: null,
     });
   });
 
-  it('redireciona para /alerts após login bem-sucedido', async () => {
-    const navigate = vi.fn();
-    (useNavigate as Mock).mockReturnValue(navigate);
-    (supabase.auth.signInWithPassword as Mock).mockResolvedValue({
-      data: { session: { user: { id: 'u1' } } },
+  it("renderiza CTA de login com Discord", () => {
+    const Wrapper = makeWrapper();
+    render(<Login />, { wrapper: Wrapper });
+
+    expect(
+      screen.getByRole("heading", { name: /entrar/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /entrar com discord/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("inicia OAuth com Discord ao clicar no CTA", async () => {
+    (supabase.auth.signInWithOAuth as Mock).mockResolvedValue({
+      data: { provider: "discord" },
       error: null,
     });
 
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
-    await userEvent.type(screen.getByLabelText(/email/i), 'test@test.com');
-    await userEvent.type(screen.getByLabelText(/senha/i), 'password123');
-    await userEvent.click(screen.getByRole('button', { name: /entrar/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /entrar com discord/i }),
+    );
 
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith('/alerts');
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: "discord",
+        options: expect.objectContaining({
+          redirectTo: expect.stringContaining("/auth/callback"),
+          scopes: "identify email",
+        }),
+      });
     });
   });
 
-  it('alterna entre modo login e signup', async () => {
+  it("exibe erro amigavel quando OAuth falha", async () => {
+    (supabase.auth.signInWithOAuth as Mock).mockResolvedValue({
+      data: { provider: "discord" },
+      error: { message: "OAuth failed" },
+    });
+
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
-    const toggleBtn = screen.getByRole('button', { name: /criar conta/i });
-    await userEvent.click(toggleBtn);
+    await userEvent.click(
+      screen.getByRole("button", { name: /entrar com discord/i }),
+    );
 
-    expect(screen.getByRole('button', { name: /cadastrar/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/oauth failed/i)).toBeInTheDocument();
+    });
   });
 
-  it('mostra loading state durante request', async () => {
+  it("mostra erro vindo do callback quando location state estiver preenchido", async () => {
+    const Wrapper = makeWrapper([
+      {
+        pathname: "/login",
+        state: { error: "Login cancelado. Tente novamente." },
+      },
+    ]);
+    render(<Login />, { wrapper: Wrapper });
+
+    expect(
+      screen.getByText(/login cancelado\. tente novamente\./i),
+    ).toBeInTheDocument();
+  });
+
+  it("mostra loading state durante request OAuth", async () => {
     let resolveSignIn!: (v: unknown) => void;
-    (supabase.auth.signInWithPassword as Mock).mockReturnValue(
-      new Promise((r) => { resolveSignIn = r; }),
+    (supabase.auth.signInWithOAuth as Mock).mockReturnValue(
+      new Promise((r) => {
+        resolveSignIn = r;
+      }),
     );
 
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
-    await userEvent.type(screen.getByLabelText(/email/i), 'test@test.com');
-    await userEvent.type(screen.getByLabelText(/senha/i), 'password123');
-    await userEvent.click(screen.getByRole('button', { name: /entrar/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /entrar com discord/i }),
+    );
 
-    expect(screen.getByRole('button', { name: /entrando/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /conectando com discord/i }),
+    ).toBeDisabled();
 
     await act(async () => {
-      resolveSignIn({ data: { session: null }, error: null });
+      resolveSignIn({ data: { provider: "discord" }, error: null });
     });
-  });
-
-  it('não navega após signup sem sessão e orienta confirmar email', async () => {
-    const navigate = vi.fn();
-    (useNavigate as Mock).mockReturnValue(navigate);
-    (supabase.auth.signUp as Mock).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    });
-    (supabase.auth.getSession as Mock).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    });
-
-    const Wrapper = makeWrapper();
-    render(<Login />, { wrapper: Wrapper });
-
-    await userEvent.click(screen.getByRole('button', { name: /criar conta/i }));
-    await userEvent.type(screen.getByLabelText(/email/i), 'test@test.com');
-    await userEvent.type(screen.getByLabelText(/senha/i), 'password123');
-    await userEvent.click(screen.getByRole('button', { name: /cadastrar/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/verifique seu email/i)).toBeInTheDocument();
-    });
-    expect(navigate).not.toHaveBeenCalled();
   });
 });

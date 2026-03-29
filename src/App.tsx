@@ -15,6 +15,7 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Alerts = lazy(() => import("@/pages/Alerts"));
 const About = lazy(() => import("@/pages/About"));
 const Login = lazy(() => import("@/pages/Login"));
+const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
 const Profile = lazy(() => import("@/pages/Profile"));
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Suspense fallback={<div role="status" aria-label="Carregando..." />}>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Dashboard />} />

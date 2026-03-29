@@ -1,125 +1,67 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth } from '@/contexts/useAuth';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/useAuth";
 
-const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+interface LoginLocationState {
+  error?: string;
+}
 
 const Login = () => {
-  const { signIn, signUp } = useAuth();
-  const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { signInWithDiscord } = useAuth();
+  const location = useLocation();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [signupMessage, setSignupMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
-  });
+  const callbackError = useMemo(() => {
+    return (location.state as LoginLocationState | null)?.error ?? null;
+  }, [location.state]);
 
-  async function onSubmit(values: LoginFormValues) {
+  async function onDiscordLogin() {
+    setIsSubmitting(true);
     setServerError(null);
-    setSignupMessage(null);
 
-    if (isSignUp) {
-      const error = await signUp(values.email, values.password);
+    try {
+      const error = await signInWithDiscord();
 
       if (error) {
         setServerError(error.message);
-        return;
       }
-
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate('/alerts');
-        return;
-      }
-
-      setSignupMessage('Conta criada. Verifique seu email para confirmar o cadastro antes de entrar.');
-      return;
+    } catch {
+      setServerError("Nao foi possivel iniciar o login. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const error = await signIn(values.email, values.password);
-
-    if (error) {
-      setServerError(error.message);
-      return;
-    }
-    navigate('/alerts');
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-sm space-y-6 p-6">
-        <h1 className="text-2xl font-bold text-center">
-          {isSignUp ? 'Criar conta' : 'Entrar'}
-        </h1>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="seu@email.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Senha</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {serverError && (
-              <p className="text-sm text-destructive">{serverError}</p>
-            )}
-
-            {signupMessage && (
-              <p className="text-sm text-muted-foreground">{signupMessage}</p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting
-                ? isSignUp ? 'Cadastrando...' : 'Entrando...'
-                : isSignUp ? 'Cadastrar' : 'Entrar'}
-            </Button>
-          </form>
-        </Form>
-
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={() => setIsSignUp((v) => !v)}
-          >
-            {isSignUp ? 'Já tenho conta' : 'Criar conta'}
-          </Button>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md space-y-6 rounded-2xl border bg-card p-8 shadow-sm">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-bold">Entrar</h1>
+          <p className="text-sm text-muted-foreground">
+            Use sua conta do Discord para acessar alertas e vincular
+            notificacoes por DM.
+          </p>
         </div>
+
+        {(serverError ?? callbackError) && (
+          <p className="text-sm text-destructive" role="alert">
+            {serverError ?? callbackError}
+          </p>
+        )}
+
+        <Button
+          className="w-full"
+          onClick={onDiscordLogin}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Conectando com Discord..." : "Entrar com Discord"}
+        </Button>
+
+        <p className="text-xs text-center text-muted-foreground">
+          Ao continuar, o app solicita apenas `identify` e `email` no Discord.
+        </p>
       </div>
     </div>
   );

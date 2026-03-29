@@ -3,18 +3,30 @@ import { renderHook } from "@testing-library/react";
 import { useAlertPoller } from "./useAlertPoller";
 import { useMarketItems } from "./useMarketItems";
 import { useAlerts } from "./useAlerts";
+import { useProfile } from "./useProfile";
+import { useAuth } from "@/contexts/useAuth";
 import { toast } from "sonner";
 import type { MarketItem, Alert } from "@/data/types";
 
 // Mock dependencies
 vi.mock("./useMarketItems");
 vi.mock("./useAlerts");
+vi.mock("./useProfile");
+vi.mock("@/contexts/useAuth");
 vi.mock("sonner");
 vi.mock("@/services/alert.engine", () => ({
   checkAlerts: vi.fn(),
 }));
+vi.mock("@/services/alert.notifications", () => ({
+  recordDiscordAlertTrigger: vi.fn(),
+  sendDiscordWebhook: vi.fn(),
+}));
 
 import { checkAlerts } from "@/services/alert.engine";
+import {
+  recordDiscordAlertTrigger,
+  sendDiscordWebhook,
+} from "@/services/alert.notifications";
 
 describe("useAlertPoller", () => {
   let localStorageMock: Record<string, string> = {};
@@ -22,10 +34,10 @@ describe("useAlertPoller", () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.clearAllMocks();
-    
+
     // Mock localStorage
     localStorageMock = {};
-    Object.defineProperty(window, 'localStorage', {
+    Object.defineProperty(window, "localStorage", {
       value: {
         getItem: (key: string) => localStorageMock[key] || null,
         setItem: (key: string, value: string) => {
@@ -50,7 +62,22 @@ describe("useAlertPoller", () => {
       isError: false,
       error: null,
     } as ReturnType<typeof useAlerts>);
+    vi.mocked(useProfile).mockReturnValue({
+      profile: null,
+      isLoading: false,
+      error: null,
+      isError: false,
+    } as ReturnType<typeof useProfile>);
+    vi.mocked(useAuth).mockReturnValue({
+      user: null,
+      loading: false,
+      isAuthenticated: false,
+      signInWithDiscord: vi.fn(),
+      signOut: vi.fn(),
+    });
     vi.mocked(checkAlerts).mockReturnValue([]);
+    vi.mocked(recordDiscordAlertTrigger).mockResolvedValue(undefined);
+    vi.mocked(sendDiscordWebhook).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -204,7 +231,156 @@ describe("useAlertPoller", () => {
       expect.objectContaining({
         description: "Preço atual: 1,000 em Caerleon",
         duration: 8000,
-      })
+      }),
+    );
+  });
+
+  it("marca alerta para DM quando o perfil tiver Discord vinculado", () => {
+    const mockItems: MarketItem[] = [
+      {
+        itemId: "T4_BAG",
+        itemName: "Bag",
+        city: "Caerleon",
+        sellPrice: 1000,
+        buyPrice: 900,
+        spread: 100,
+        spreadPercent: 10,
+        timestamp: "2026-03-18T00:00:00Z",
+        tier: "T4",
+        quality: "Normal",
+        priceHistory: [],
+      },
+    ];
+    const mockAlerts: Alert[] = [
+      {
+        id: "1",
+        itemId: "T4_BAG",
+        itemName: "Bag",
+        city: "Caerleon",
+        condition: "below",
+        threshold: 1500,
+        isActive: true,
+        createdAt: "2026-03-18T00:00:00Z",
+        notifications: { inApp: true, email: false },
+      },
+    ];
+
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: "user-123", email: "test@test.com" } as never,
+      loading: false,
+      isAuthenticated: true,
+      signInWithDiscord: vi.fn(),
+      signOut: vi.fn(),
+    });
+    vi.mocked(useProfile).mockReturnValue({
+      profile: {
+        id: "user-123",
+        discordId: "discord-user-1",
+        discordUsername: "AlbionUser",
+        discordDmEnabled: true,
+        discordWebhookUrl: null,
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      isLoading: false,
+      error: null,
+      isError: false,
+    } as ReturnType<typeof useProfile>);
+    vi.mocked(useMarketItems).mockReturnValue({
+      data: mockItems,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as ReturnType<typeof useMarketItems>);
+    vi.mocked(useAlerts).mockReturnValue({
+      data: mockAlerts,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as ReturnType<typeof useAlerts>);
+    vi.mocked(checkAlerts).mockReturnValue([
+      { alert: mockAlerts[0], item: mockItems[0], currentPrice: 1000 },
+    ]);
+
+    renderHook(() => useAlertPoller());
+
+    expect(recordDiscordAlertTrigger).toHaveBeenCalledWith("1");
+    expect(sendDiscordWebhook).not.toHaveBeenCalled();
+  });
+
+  it("usa webhook quando o perfil nao estiver vinculado ao Discord", () => {
+    const mockItems: MarketItem[] = [
+      {
+        itemId: "T4_BAG",
+        itemName: "Bag",
+        city: "Caerleon",
+        sellPrice: 1000,
+        buyPrice: 900,
+        spread: 100,
+        spreadPercent: 10,
+        timestamp: "2026-03-18T00:00:00Z",
+        tier: "T4",
+        quality: "Normal",
+        priceHistory: [],
+      },
+    ];
+    const mockAlerts: Alert[] = [
+      {
+        id: "1",
+        itemId: "T4_BAG",
+        itemName: "Bag",
+        city: "Caerleon",
+        condition: "below",
+        threshold: 1500,
+        isActive: true,
+        createdAt: "2026-03-18T00:00:00Z",
+        notifications: { inApp: true, email: false },
+      },
+    ];
+
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: "user-123", email: "test@test.com" } as never,
+      loading: false,
+      isAuthenticated: true,
+      signInWithDiscord: vi.fn(),
+      signOut: vi.fn(),
+    });
+    vi.mocked(useProfile).mockReturnValue({
+      profile: {
+        id: "user-123",
+        discordId: null,
+        discordUsername: null,
+        discordDmEnabled: false,
+        discordWebhookUrl: "https://discord.com/api/webhooks/test",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+      isLoading: false,
+      error: null,
+      isError: false,
+    } as ReturnType<typeof useProfile>);
+    vi.mocked(useMarketItems).mockReturnValue({
+      data: mockItems,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as ReturnType<typeof useMarketItems>);
+    vi.mocked(useAlerts).mockReturnValue({
+      data: mockAlerts,
+      isLoading: false,
+      isError: false,
+      error: null,
+    } as ReturnType<typeof useAlerts>);
+    vi.mocked(checkAlerts).mockReturnValue([
+      { alert: mockAlerts[0], item: mockItems[0], currentPrice: 1000 },
+    ]);
+
+    renderHook(() => useAlertPoller());
+
+    expect(sendDiscordWebhook).toHaveBeenCalledWith(
+      "https://discord.com/api/webhooks/test",
+      mockAlerts[0],
+      mockItems[0],
+      1000,
+      undefined,
     );
   });
 
@@ -397,7 +573,7 @@ describe("useAlertPoller", () => {
 
     expect(toast.warning).toHaveBeenCalledWith(
       expect.stringContaining("acima de 1,500"),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -456,7 +632,7 @@ describe("useAlertPoller", () => {
 
     expect(toast.warning).toHaveBeenCalledWith(
       expect.stringContaining("variação de +10.0%"),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 });
