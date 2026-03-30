@@ -7,6 +7,7 @@ export function createSupabaseClient(url: string, anonKey: string) {
   return createClient(url, anonKey, {
     auth: {
       flowType: "pkce",
+      detectSessionInUrl: true,
     },
   });
 }

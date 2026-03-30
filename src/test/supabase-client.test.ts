@@ -28,4 +28,21 @@ describe("createSupabaseClient", () => {
       }),
     );
   });
+
+  it("deve configurar detectSessionInUrl: true para detectar sessao apos redirect OAuth", () => {
+    const url = "https://test.supabase.co";
+    const anonKey = "test-anon-key";
+
+    createSupabaseClient(url, anonKey);
+
+    expect(createClient).toHaveBeenCalledWith(
+      url,
+      anonKey,
+      expect.objectContaining({
+        auth: expect.objectContaining({
+          detectSessionInUrl: true,
+        }),
+      }),
+    );
+  });
 });
