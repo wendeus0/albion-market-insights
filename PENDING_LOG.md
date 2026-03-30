@@ -4,6 +4,14 @@
 
 ## Decisões incorporadas
 
+- **Fix OAuth PKCE flow** (2026-03-29) ✅ **PR #97 MERGEADO**
+  - Correção do fluxo OAuth com Discord:
+    - Adicionado `flowType: "pkce"` e `detectSessionInUrl: true` em `src/lib/supabase.ts`
+    - Early return guard em `src/pages/Login.tsx` para redirecionar usuários autenticados
+  - Edge Function `generate-discord-link` funcionando após desabilitar "Verify JWT with legacy secret"
+  - Quality gate: 486/486 testes passando
+  - Bot Discord pendente de deploy em serviço de hospedagem
+
 - **Higienização breve da base (consistência documental de stack/gates)** (2026-03-23) ✅ **CONCLUÍDO EM BRANCH `chore/higiene-breve-base`**
   - Correções de consistência aplicadas sem impacto funcional:
     - `CONTEXT.md`: versão do Vite atualizada (`5.4.x` -> `7.3.1`)
@@ -387,6 +395,12 @@
 - Lote 3 (qualidade/CI/docs) concluído nas frentes planejadas
 
 ## Pontos de atenção atuais
+
+- **Bot Discord pendente de deploy** (2026-03-29) 🔄 **PENDENTE**
+  - Fluxo OAuth e Edge Function funcionando após correções
+  - Bot local funcional, mas não foi deployado em serviço de hospedagem
+  - Necessário: deploy em Railway/Render/Fly.io ou outro servidor
+  - Após deploy: testar fluxo completo de `/register <token>` no Discord
 
 - Branch local `feat/coverage-branches-gap-ac2-ac4` já foi mergeada na `main`; próxima sessão deve retornar para `main` e sincronizar antes de abrir nova frente.
 - Manter observação do comportamento Node 24 no CI antes de promoção.
