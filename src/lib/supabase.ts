@@ -1,10 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const FALLBACK_SUPABASE_URL = 'https://placeholder.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY = 'placeholder-anon-key';
+const FALLBACK_SUPABASE_URL = "https://placeholder.supabase.co";
+const FALLBACK_SUPABASE_ANON_KEY = "placeholder-anon-key";
 
 export function createSupabaseClient(url: string, anonKey: string) {
-  return createClient(url, anonKey);
+  return createClient(url, anonKey, {
+    auth: {
+      flowType: "pkce",
+    },
+  });
 }
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

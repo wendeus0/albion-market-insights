@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/useAuth";
 
@@ -8,10 +8,17 @@ interface LoginLocationState {
 }
 
 const Login = () => {
-  const { signInWithDiscord } = useAuth();
+  const { signInWithDiscord, user, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/alerts", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   const callbackError = useMemo(() => {
     return (location.state as LoginLocationState | null)?.error ?? null;
@@ -32,6 +39,20 @@ const Login = () => {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <p className="text-sm text-muted-foreground" role="status">
+          Carregando...
+        </p>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null;
   }
 
   return (
