@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
@@ -19,6 +19,10 @@ vi.mock("@/lib/supabase", () => ({
 import { supabase } from "@/lib/supabase";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "@/pages/Login";
+
+function AlertsPlaceholder() {
+  return <div>Alerts Page</div>;
+}
 
 function makeWrapper(
   initialEntries?: Parameters<typeof MemoryRouter>[0]["initialEntries"],
@@ -51,13 +55,16 @@ describe("Login", () => {
     });
   });
 
-  it("renderiza CTA de login com Discord", () => {
+  it("renderiza CTA de login com Discord", async () => {
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
-    expect(
-      screen.getByRole("heading", { name: /entrar/i }),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /entrar/i }),
+      ).toBeInTheDocument(),
+    );
+
     expect(
       screen.getByRole("button", { name: /entrar com discord/i }),
     ).toBeInTheDocument();
@@ -71,6 +78,12 @@ describe("Login", () => {
 
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /entrar com discord/i }),
+      ).toBeInTheDocument(),
+    );
 
     await userEvent.click(
       screen.getByRole("button", { name: /entrar com discord/i }),
@@ -96,6 +109,12 @@ describe("Login", () => {
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /entrar com discord/i }),
+      ).toBeInTheDocument(),
+    );
+
     await userEvent.click(
       screen.getByRole("button", { name: /entrar com discord/i }),
     );
@@ -114,6 +133,12 @@ describe("Login", () => {
     ]);
     render(<Login />, { wrapper: Wrapper });
 
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /entrar com discord/i }),
+      ).toBeInTheDocument(),
+    );
+
     expect(
       screen.getByText(/login cancelado\. tente novamente\./i),
     ).toBeInTheDocument();
@@ -130,6 +155,12 @@ describe("Login", () => {
     const Wrapper = makeWrapper();
     render(<Login />, { wrapper: Wrapper });
 
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /entrar com discord/i }),
+      ).toBeInTheDocument(),
+    );
+
     await userEvent.click(
       screen.getByRole("button", { name: /entrar com discord/i }),
     );
@@ -140,6 +171,39 @@ describe("Login", () => {
 
     await act(async () => {
       resolveSignIn({ data: { provider: "discord" }, error: null });
+    });
+  });
+
+  it("redireciona usuario ja autenticado para /alerts", async () => {
+    const mockUser = { id: "user-123", email: "test@test.com" };
+    const mockSession = { user: mockUser, access_token: "token" };
+    (supabase.auth.getSession as Mock).mockResolvedValue({
+      data: { session: mockSession },
+      error: null,
+    });
+
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    function wrapper({ children }: { children: ReactNode }) {
+      return (
+        <QueryClientProvider client={qc}>
+          <MemoryRouter initialEntries={["/login"]}>
+            <AuthProvider>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/alerts" element={<AlertsPlaceholder />} />
+              </Routes>
+            </AuthProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+    }
+
+    render(<Login />, { wrapper });
+
+    await waitFor(() => {
+      expect(screen.getByText("Alerts Page")).toBeInTheDocument();
     });
   });
 });
