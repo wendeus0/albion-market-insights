@@ -51,6 +51,10 @@ const Login = () => {
     );
   }
 
+  if (user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6 rounded-2xl border bg-card p-8 shadow-sm">

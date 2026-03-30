@@ -191,7 +191,7 @@ describe("Login", () => {
           <MemoryRouter initialEntries={["/login"]}>
             <AuthProvider>
               <Routes>
-                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={children} />
                 <Route path="/alerts" element={<AlertsPlaceholder />} />
               </Routes>
             </AuthProvider>
@@ -205,5 +205,42 @@ describe("Login", () => {
     await waitFor(() => {
       expect(screen.getByText("Alerts Page")).toBeInTheDocument();
     });
+  });
+
+  it("nao renderiza formulario para usuario autenticado (early return)", async () => {
+    const mockUser = { id: "user-123", email: "test@test.com" };
+    const mockSession = { user: mockUser, access_token: "token" };
+    (supabase.auth.getSession as Mock).mockResolvedValue({
+      data: { session: mockSession },
+      error: null,
+    });
+
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    function wrapper({ children }: { children: ReactNode }) {
+      return (
+        <QueryClientProvider client={qc}>
+          <MemoryRouter initialEntries={["/login"]}>
+            <AuthProvider>
+              <Routes>
+                <Route path="/login" element={children} />
+                <Route path="/alerts" element={<AlertsPlaceholder />} />
+              </Routes>
+            </AuthProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      );
+    }
+
+    render(<Login />, { wrapper });
+
+    await waitFor(() => {
+      expect(screen.getByText("Alerts Page")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByRole("button", { name: /entrar com discord/i }),
+    ).not.toBeInTheDocument();
   });
 });
