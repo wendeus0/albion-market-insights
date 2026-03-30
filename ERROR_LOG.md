@@ -411,3 +411,26 @@
 - **Causa**: `USE_PROXY` é constante de módulo avaliada no import; com env `true`, URL do fetch muda para formato proxy (`/api/market/prices?items=...`); mocks que checavam `/stats/prices/` deixaram de bater
 - **Ação tomada**: Adicionado `vi.stubEnv("VITE_USE_PROXY", "false")` no topo de 4 arquivos de teste (dedup, batch, retry, history-quality)
 - **Status**: RESOLVIDO — 399/399 passando
+
+---
+
+### [2026-03-29] fix-oauth-pkce-flow — correção de fluxo OAuth Discord
+
+- **Erro 1**: Login OAuth com Discord redirecionava para `/login` com erro "Login cancelado" após autenticação bem-sucedida
+- **Causa**: Cliente Supabase usava implicit flow (padrão) mas o callback esperava PKCE flow; `flowType: "pkce"` e `detectSessionInUrl: true` não estavam configurados
+- **Ação tomada**:
+  - Adicionado `flowType: "pkce"` em `src/lib/supabase.ts`
+  - Adicionado `detectSessionInUrl: true` em `src/lib/supabase.ts`
+  - Adicionado early return guard em `src/pages/Login.tsx` para redirecionar usuários autenticados
+  - PR #97 criado e mergeado
+- **Status**: RESOLVIDO
+
+- **Erro 2**: Edge Function `generate-discord-link` retornava `401 Unauthorized`
+- **Causa**: Configuração "Verify JWT with legacy secret" estava ON no Supabase Dashboard, bloqueando requisições antes do código executar
+- **Ação tomada**: Desabilitado "Verify JWT with legacy secret" nas configurações da Edge Function no Supabase Dashboard
+- **Status**: RESOLVIDO
+
+- **Erro 3**: Bot Discord não responde ao comando `/register`
+- **Causa**: Bot não foi deployado na nuvem; roda apenas localmente
+- **Ação tomada**: Nenhuma (pendente deploy do bot pelo usuário)
+- **Status**: PENDENTE (requer deploy do bot em serviço de hospedagem)
