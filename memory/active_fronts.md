@@ -6,6 +6,11 @@ type: project
 
 ## Active fronts
 
+- **PR #97 MERGEADO**: fix oauth pkce flow (2026-03-29) ✅
+  - OAuth com Discord: `flowType: "pkce"` + `detectSessionInUrl: true` no Supabase client
+  - Early return guard no Login para usuários autenticados
+  - Edge Function "Verify JWT with legacy secret" desabilitado no Supabase Dashboard
+- **PR #98 MERGEADO**: session logs OAuth fix (2026-03-30) ✅
 - **PRs #81 e #82 MERGEADOS**: configuração de env vars para Cloudflare Pages concluída (2026-03-23)
   - `.env` commitado com `VITE_USE_PROXY=true`, `VITE_PROXY_URL`, `VITE_USE_REAL_API=true`
   - ADR-014 criado documentando a estratégia

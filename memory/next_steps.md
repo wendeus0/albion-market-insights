@@ -6,7 +6,7 @@ type: project
 
 ## Next recommended steps
 
-1. **Abrir SPEC da próxima frente**: iniciar novo ciclo `implement-feature` com escopo definido pelo usuário
+1. **Deploy Discord Bot**: bot local funcional mas não deployado — escolher Railway/Render/Fly.io
+2. **Testar `/register <token>`**: após deploy, validar fluxo completo no Discord
+3. **Definir próxima feature**: OAuth e bot funcionando, pronto para nova frente
 4. **Manter observação Node 24**: continuar janela de estabilidade antes de promover para default
-5. **Reavaliar issue #59 (flakiness)**: decidir se investigação adicional entra no próximo ciclo
-6. **Frentes C/D do Contrato de Autonomia**: permanecem bloqueadas pelas issues #65 e #66
