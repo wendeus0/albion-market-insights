@@ -81,7 +81,7 @@ function makeUnlinkedProfile(overrides?: Partial<ReturnType<typeof useProfile>>)
 
 describe("Profile — discord-web-linking RED", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockedUseAuth.mockReturnValue({
       user: {
         id: "user-123",
@@ -156,15 +156,23 @@ describe("Profile — discord-web-linking RED", () => {
 
   it("should show friendly sync feedback and preserve webhook fallback when web linking reflection fails", () => {
     // RED: falha até discord-web-linking ser implementada
+    const mutateAsync = vi.fn();
+
     mockedUseProfile.mockReturnValue(
       makeUnlinkedProfile({
         error: new Error("sync failed"),
         isError: true,
       }) as never,
     );
+    mockedUseSyncDiscordProfile.mockReturnValue({
+      mutateAsync,
+      isPending: false,
+      isError: true,
+    } as never);
 
     render(<Profile />);
 
+    expect(mutateAsync).not.toHaveBeenCalled();
     expect(
       screen.getByText(/não foi possível concluir a vinculação agora/i),
     ).toBeInTheDocument();
