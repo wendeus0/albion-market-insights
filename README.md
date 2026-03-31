@@ -10,8 +10,8 @@ Ferramenta de análise de mercado para **Albion Online**, focada em visualizaç�
 - **Arbitragem entre Cidades**: Identificação automática de oportunidades de lucro comprando em uma cidade e vendendo em outra.
 - **Gerenciador de Alertas**: Configure alertas personalizados para ser notificado quando itens atingirem preços alvo.
 - **Suporte a Encantamentos**: Filtragem e análise detalhada por nível de encantamento (Tier/Enchantment).
-- **Dados Reais**: Integração com a API do *Albion Online Data Project* (opcional).
-- **Performance**: Otimizações como *code splitting*, *caching* local e *backoff* exponencial para requisições.
+- **Dados Reais**: Integração com a API do _Albion Online Data Project_ (opcional).
+- **Performance**: Otimizações como _code splitting_, _caching_ local e _backoff_ exponencial para requisições.
 
 ## 🛠️ Tech Stack
 
@@ -23,23 +23,27 @@ Ferramenta de análise de mercado para **Albion Online**, focada em visualizaç�
 ## 📦 Instalação e Execução
 
 ### Pré-requisitos
-- Node.js (v20+) — runtime default atual do projeto
+
+- Node.js (v24+) — runtime default atual do projeto
 - npm (v10.8.2+)
 
 Observação de runtime:
-- Node 24 está em lane paralela de observação no CI
-- Promoção para default ocorrerá após janela mínima de estabilidade contínua
+
+- Node 24 é o runtime default operacional
+- Node 20 mantido como lane de fallback temporária no CI
 - Runbook de promoção/rollback: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`
 
 ### Passos
 
 1. Clone o repositório:
+
    ```bash
    git clone https://github.com/wendeus0/albion-market-insights.git
    cd albion-market-insights
    ```
 
 2. Instale as dependências:
+
    ```bash
    npm install
    ```
