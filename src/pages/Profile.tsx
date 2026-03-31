@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/useAuth";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
-import { useDiscordLink } from "@/hooks/useDiscordLink";
+import { getDiscordSessionIdentity } from "@/lib/discordAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,9 +30,17 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const Profile = () => {
   const { user } = useAuth();
-  const { profile, isLoading } = useProfile();
+  const { profile, isLoading, error, isError } = useProfile();
   const updateProfile = useUpdateProfile();
-  const discordLink = useDiscordLink();
+
+  const discordIdentity = getDiscordSessionIdentity(user);
+  const isDiscordProvider = discordIdentity.isDiscordProvider;
+  const hasDiscordMetadata = Boolean(discordIdentity.discordId);
+  const hasLinkedDiscord = Boolean(profile?.discordId);
+  const isReplacementPending =
+    Boolean(profile?.discordId) &&
+    Boolean(discordIdentity.discordId) &&
+    profile?.discordId !== discordIdentity.discordId;
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -53,20 +61,6 @@ const Profile = () => {
       toast.success("Perfil salvo com sucesso");
     } catch {
       toast.error("Erro ao salvar perfil");
-    }
-  }
-
-  async function onGenerateDiscordLink() {
-    try {
-      const payload = await discordLink.mutateAsync();
-      try {
-        await navigator.clipboard.writeText(payload.command);
-        toast.success("Comando copiado para a area de transferencia");
-      } catch {
-        toast.warning("Comando gerado, mas a copia automatica falhou");
-      }
-    } catch {
-      toast.error("Erro ao gerar o link de vinculacao");
     }
   }
 
@@ -97,36 +91,76 @@ const Profile = () => {
           </p>
         </div>
 
-        {!profile?.discordId && (
+        {hasLinkedDiscord && !isReplacementPending && (
           <>
             <p className="text-sm text-muted-foreground">
-              Gere um token temporario, abra o Discord e execute o comando no
-              bot `AlbionMarketBot`.
+              Vinculado pelo login com Discord.
             </p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onGenerateDiscordLink}
-              disabled={discordLink.isPending}
-            >
-              {discordLink.isPending
-                ? "Gerando comando..."
-                : "Vincular Discord"}
-            </Button>
-            {discordLink.data && (
-              <div className="space-y-2">
-                <Input
-                  readOnly
-                  value={discordLink.data.command}
-                  aria-label="Comando gerado para vincular o bot no Discord"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Expira em:{" "}
-                  {new Date(discordLink.data.expiresAt).toUTCString()}
-                </p>
-              </div>
-            )}
+            <p className="text-sm text-muted-foreground">
+              Notificações por DM estão habilitadas.
+            </p>
           </>
+        )}
+
+        {isReplacementPending && (
+          <>
+            <p className="font-medium">Troca pendente</p>
+            <p className="text-sm text-muted-foreground">
+              A conta atual será trocada somente após sua confirmação.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              O vínculo atual @{profile?.discordUsername} será trocado.
+            </p>
+            <Button type="button" variant="outline">
+              Confirmar troca
+            </Button>
+          </>
+        )}
+
+        {!hasLinkedDiscord && !isReplacementPending && !isDiscordProvider && (
+          <p className="text-sm text-muted-foreground">
+            Faça login com Discord para concluir a vinculação.
+          </p>
+        )}
+
+        {!hasLinkedDiscord &&
+          !isReplacementPending &&
+          isDiscordProvider &&
+          !hasDiscordMetadata && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                A vinculação não pôde ser concluída automaticamente.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Vinculação pendente.
+              </p>
+              <p className="text-sm text-muted-foreground">DM não habilitada.</p>
+            </>
+          )}
+
+        {!hasLinkedDiscord &&
+          !isReplacementPending &&
+          isDiscordProvider &&
+          hasDiscordMetadata && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                A vinculação acontece pelo login no app.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {isError
+                  ? "Não foi possível concluir a vinculação agora."
+                  : "DM não habilitada até a sincronização ser refletida com sucesso."}
+              </p>
+              {isError && (
+                <p className="text-sm text-muted-foreground">
+                  O webhook continua disponível como fallback.
+                </p>
+              )}
+            </>
+          )}
+
+        {error && !isDiscordProvider && (
+          <p className="text-sm text-muted-foreground">{error.message}</p>
         )}
       </div>
 
