@@ -26,7 +26,11 @@ vi.mock("@/contexts/useAuth", () => ({
 }));
 
 import { supabase } from "@/lib/supabase";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import {
+  useProfile,
+  useSyncDiscordProfile,
+  useUpdateProfile,
+} from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/useAuth";
 
 function makeWrapper() {
@@ -150,6 +154,62 @@ describe("useProfile", () => {
 
     expect(result.current.profile).toBeNull();
     expect(result.current.error?.message).toBe("RLS denied");
+  });
+});
+
+describe("useSyncDiscordProfile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("faz upsert na tabela profiles ao sincronizar conta Discord", async () => {
+    const mockFrom = {
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+    };
+    (supabase.from as Mock).mockReturnValue(mockFrom);
+
+    const { result } = renderHook(() => useSyncDiscordProfile(), {
+      wrapper: makeWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        discordId: "discord-user-1",
+        username: "AlbionUser",
+        discordWebhookUrl: "https://discord.com/new-webhook",
+      });
+    });
+
+    expect(supabase.from).toHaveBeenCalledWith("profiles");
+    expect(mockFrom.upsert).toHaveBeenCalledWith({
+      id: "user-123",
+      discord_id: "discord-user-1",
+      discord_username: "AlbionUser",
+      discord_dm_enabled: true,
+      discord_webhook_url: "https://discord.com/new-webhook",
+      updated_at: expect.any(String),
+    });
+  });
+
+  it("propaga erro do Supabase ao sincronizar conta Discord", async () => {
+    const mockFrom = {
+      upsert: vi.fn().mockResolvedValue({ error: { message: "Sync error" } }),
+    };
+    (supabase.from as Mock).mockReturnValue(mockFrom);
+
+    const { result } = renderHook(() => useSyncDiscordProfile(), {
+      wrapper: makeWrapper(),
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.mutateAsync({
+          discordId: "discord-user-1",
+          username: "AlbionUser",
+          discordWebhookUrl: null,
+        });
+      }),
+    ).rejects.toThrow("Sync error");
   });
 });
 

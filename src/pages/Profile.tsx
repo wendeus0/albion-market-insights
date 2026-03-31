@@ -3,7 +3,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/useAuth";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import {
+  useProfile,
+  useSyncDiscordProfile,
+  useUpdateProfile,
+} from "@/hooks/useProfile";
 import { getDiscordSessionIdentity } from "@/lib/discordAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +36,12 @@ const Profile = () => {
   const { user } = useAuth();
   const { profile, isLoading, error, isError } = useProfile();
   const updateProfile = useUpdateProfile();
+  const syncDiscordProfile = useSyncDiscordProfile();
+  const {
+    mutateAsync: syncDiscordProfileAsync,
+    isPending: isSyncPending,
+    isError: hasSyncError,
+  } = syncDiscordProfile;
 
   const discordIdentity = getDiscordSessionIdentity(user);
   const isDiscordProvider = discordIdentity.isDiscordProvider;
@@ -53,6 +63,35 @@ const Profile = () => {
     }
   }, [profile, form]);
 
+  useEffect(() => {
+    if (
+      !profile ||
+      !isDiscordProvider ||
+      !hasDiscordMetadata ||
+      hasLinkedDiscord ||
+      isReplacementPending ||
+      isSyncPending
+    ) {
+      return;
+    }
+
+    void syncDiscordProfileAsync({
+      discordId: discordIdentity.discordId!,
+      username: discordIdentity.username,
+      discordWebhookUrl: profile.discordWebhookUrl,
+    });
+  }, [
+    discordIdentity.discordId,
+    discordIdentity.username,
+    hasDiscordMetadata,
+    hasLinkedDiscord,
+    isDiscordProvider,
+    isReplacementPending,
+    profile,
+    isSyncPending,
+    syncDiscordProfileAsync,
+  ]);
+
   async function onSubmit(values: ProfileFormValues) {
     try {
       await updateProfile.mutateAsync({
@@ -61,6 +100,24 @@ const Profile = () => {
       toast.success("Perfil salvo com sucesso");
     } catch {
       toast.error("Erro ao salvar perfil");
+    }
+  }
+
+  async function onConfirmReplacement() {
+    if (!profile || !discordIdentity.discordId) {
+      toast.error("Não foi possível confirmar a troca agora");
+      return;
+    }
+
+    try {
+      await syncDiscordProfileAsync({
+        discordId: discordIdentity.discordId,
+        username: discordIdentity.username,
+        discordWebhookUrl: profile.discordWebhookUrl,
+      });
+      toast.success("Conta Discord atualizada com sucesso");
+    } catch {
+      toast.error("Não foi possível confirmar a troca agora");
     }
   }
 
@@ -111,8 +168,15 @@ const Profile = () => {
             <p className="text-sm text-muted-foreground">
               O vínculo atual @{profile?.discordUsername} será trocado.
             </p>
-            <Button type="button" variant="outline">
-              Confirmar troca
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void onConfirmReplacement()}
+              disabled={isSyncPending}
+            >
+              {isSyncPending
+                ? "Confirmando..."
+                : "Confirmar troca"}
             </Button>
           </>
         )}
@@ -147,11 +211,11 @@ const Profile = () => {
                 A vinculação acontece pelo login no app.
               </p>
               <p className="text-sm text-muted-foreground">
-                {isError
+                {isError || hasSyncError
                   ? "Não foi possível concluir a vinculação agora."
                   : "DM não habilitada até a sincronização ser refletida com sucesso."}
               </p>
-              {isError && (
+              {(isError || hasSyncError) && (
                 <p className="text-sm text-muted-foreground">
                   O webhook continua disponível como fallback.
                 </p>

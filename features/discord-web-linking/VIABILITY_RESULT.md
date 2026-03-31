@@ -5,7 +5,7 @@
 
 ## Método da checagem
 
-A checagem foi feita consultando os dados reais já persistidos no projeto Supabase `ubxwoictayqssadvtfkh`, com foco em:
+A checagem foi feita consultando os dados reais já persistidos no projeto Supabase deste ambiente, com foco em:
 
 - `auth.users.raw_app_meta_data`
 - `auth.users.raw_user_meta_data`
@@ -25,8 +25,8 @@ No registro real de usuário autenticado por Discord, o projeto armazena:
 
 No mesmo usuário, foram encontrados campos consistentes em `raw_user_meta_data` e `auth.identities.identity_data`:
 
-- `provider_id = "718633605345050734"`
-- `sub = "718633605345050734"`
+- `provider_id = "<discord-id-redacted>"`
+- `sub = "<discord-id-redacted>"`
 - `provider = "discord"`
 
 Esses campos são candidatos fortes para identidade primária do vínculo.
@@ -35,9 +35,9 @@ Esses campos são candidatos fortes para identidade primária do vínculo.
 
 Também existem campos úteis para exibição no perfil:
 
-- `full_name = "wendeus__"`
-- `name = "wendeus__#0"`
-- `custom_claims.global_name = "Wendeus"`
+- `full_name = "<discord-full-name-redacted>"`
+- `name = "<discord-username-redacted>"`
+- `custom_claims.global_name = "<discord-global-name-redacted>"`
 - `avatar_url` / `picture`
 
 Esses campos são adequados para exibição, mas **não** devem ser a chave primária do vínculo.
