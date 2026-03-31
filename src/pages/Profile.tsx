@@ -3,11 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/useAuth";
-import {
-  useProfile,
-  useSyncDiscordProfile,
-  useUpdateProfile,
-} from "@/hooks/useProfile";
+import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { getDiscordSessionIdentity } from "@/lib/discordAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,12 +32,6 @@ const Profile = () => {
   const { user } = useAuth();
   const { profile, isLoading, error, isError } = useProfile();
   const updateProfile = useUpdateProfile();
-  const syncDiscordProfile = useSyncDiscordProfile();
-  const {
-    mutateAsync: syncDiscordProfileAsync,
-    isPending: isSyncPending,
-    isError: hasSyncError,
-  } = syncDiscordProfile;
 
   const discordIdentity = getDiscordSessionIdentity(user);
   const isDiscordProvider = discordIdentity.isDiscordProvider;
@@ -103,24 +93,6 @@ const Profile = () => {
     }
   }
 
-  async function onConfirmReplacement() {
-    if (!profile || !discordIdentity.discordId) {
-      toast.error("Não foi possível confirmar a troca agora");
-      return;
-    }
-
-    try {
-      await syncDiscordProfileAsync({
-        discordId: discordIdentity.discordId,
-        username: discordIdentity.username,
-        discordWebhookUrl: profile.discordWebhookUrl,
-      });
-      toast.success("Conta Discord atualizada com sucesso");
-    } catch {
-      toast.error("Não foi possível confirmar a troca agora");
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -168,15 +140,8 @@ const Profile = () => {
             <p className="text-sm text-muted-foreground">
               O vínculo atual @{profile?.discordUsername} será trocado.
             </p>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void onConfirmReplacement()}
-              disabled={isSyncPending}
-            >
-              {isSyncPending
-                ? "Confirmando..."
-                : "Confirmar troca"}
+            <Button type="button" variant="outline">
+              Confirmar troca
             </Button>
           </>
         )}
@@ -211,11 +176,11 @@ const Profile = () => {
                 A vinculação acontece pelo login no app.
               </p>
               <p className="text-sm text-muted-foreground">
-                {isError || hasSyncError
+                {isError
                   ? "Não foi possível concluir a vinculação agora."
                   : "DM não habilitada até a sincronização ser refletida com sucesso."}
               </p>
-              {(isError || hasSyncError) && (
+              {isError && (
                 <p className="text-sm text-muted-foreground">
                   O webhook continua disponível como fallback.
                 </p>

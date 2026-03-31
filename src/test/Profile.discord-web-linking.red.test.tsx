@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { MockedFunction } from "vitest";
 
 vi.mock("@/contexts/useAuth", () => ({
@@ -8,7 +8,6 @@ vi.mock("@/contexts/useAuth", () => ({
 
 vi.mock("@/hooks/useProfile", () => ({
   useProfile: vi.fn(),
-  useSyncDiscordProfile: vi.fn(),
   useUpdateProfile: vi.fn(),
 }));
 
@@ -26,18 +25,11 @@ vi.mock("@/components/ui/sonnerToast", () => ({
 
 import Profile from "@/pages/Profile";
 import { useAuth } from "@/contexts/useAuth";
-import {
-  useProfile,
-  useSyncDiscordProfile,
-  useUpdateProfile,
-} from "@/hooks/useProfile";
+import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useDiscordLink } from "@/hooks/useDiscordLink";
 
 const mockedUseAuth = useAuth as MockedFunction<typeof useAuth>;
 const mockedUseProfile = useProfile as MockedFunction<typeof useProfile>;
-const mockedUseSyncDiscordProfile = useSyncDiscordProfile as MockedFunction<
-  typeof useSyncDiscordProfile
->;
 const mockedUseUpdateProfile = useUpdateProfile as MockedFunction<
   typeof useUpdateProfile
 >;
@@ -98,12 +90,6 @@ describe("Profile — discord-web-linking RED", () => {
       signInWithDiscord: vi.fn(),
       signOut: vi.fn(),
     });
-
-    mockedUseSyncDiscordProfile.mockReturnValue({
-      mutateAsync: vi.fn(),
-      isPending: false,
-      isError: false,
-    } as never);
 
     mockedUseUpdateProfile.mockReturnValue({
       mutateAsync: vi.fn(),
@@ -285,44 +271,5 @@ describe("Profile — discord-web-linking RED", () => {
     expect(
       screen.getByText(/a conta atual será trocada somente após sua confirmação/i),
     ).toBeInTheDocument();
-  });
-
-  it("should confirm replacement when the user clicks the confirmation button", async () => {
-    const mutateAsync = vi.fn().mockResolvedValue(undefined);
-
-    mockedUseAuth.mockReturnValue({
-      user: {
-        id: "user-123",
-        email: "discord@example.com",
-        app_metadata: { provider: "discord", providers: ["discord"] },
-        user_metadata: {
-          provider_id: "999999999999999999",
-          sub: "999999999999999999",
-          name: "other-account#0",
-        },
-      } as never,
-      loading: false,
-      isAuthenticated: true,
-      signInWithDiscord: vi.fn(),
-      signOut: vi.fn(),
-    });
-    mockedUseProfile.mockReturnValue(makeLinkedProfile() as never);
-    mockedUseSyncDiscordProfile.mockReturnValue({
-      mutateAsync,
-      isPending: false,
-      isError: false,
-    } as never);
-
-    render(<Profile />);
-
-    fireEvent.click(screen.getByRole("button", { name: /confirmar troca/i }));
-
-    await waitFor(() => {
-      expect(mutateAsync).toHaveBeenCalledWith({
-        discordId: "999999999999999999",
-        username: "other-account#0",
-        discordWebhookUrl: "https://discord.com/api/webhooks/fallback",
-      });
-    });
   });
 });

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/useAuth";
+import { getDiscordSessionIdentity } from "@/lib/discordAuth";
 import type { UserProfile } from "@/data/types";
 
 async function fetchProfile(userId: string): Promise<UserProfile | null> {
@@ -30,29 +31,30 @@ async function fetchProfile(userId: string): Promise<UserProfile | null> {
   };
 }
 
-interface SyncDiscordProfileInput {
-  userId: string;
-  discordId: string;
-  username: string | null;
-  discordWebhookUrl: string | null;
-}
-
-async function syncDiscordProfile({
-  userId,
-  discordId,
-  username,
-  discordWebhookUrl,
-}: SyncDiscordProfileInput): Promise<void> {
+async function syncDiscordProfile(
+  userId: string,
+  profile: UserProfile,
+  discordId: string,
+  username: string | null,
+): Promise<UserProfile> {
   const { error } = await supabase.from("profiles").upsert({
     id: userId,
     discord_id: discordId,
     discord_username: username,
     discord_dm_enabled: true,
-    discord_webhook_url: discordWebhookUrl,
+    discord_webhook_url: profile.discordWebhookUrl,
     updated_at: new Date().toISOString(),
   });
 
   if (error) throw new Error(error.message);
+
+  return {
+    ...profile,
+    discordId,
+    discordUsername: username,
+    discordDmEnabled: true,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 export function useProfile() {
@@ -65,7 +67,27 @@ export function useProfile() {
     isError,
   } = useQuery({
     queryKey: ["profile", user?.id],
-    queryFn: () => fetchProfile(user!.id),
+    queryFn: async () => {
+      const currentProfile = await fetchProfile(user!.id);
+
+      if (!currentProfile) return null;
+
+      const identity = getDiscordSessionIdentity(user);
+      const discordId = identity.discordId;
+      const shouldSyncDiscordProfile =
+        identity.isDiscordProvider && !currentProfile.discordId && !!discordId;
+
+      if (!shouldSyncDiscordProfile || !discordId) {
+        return currentProfile;
+      }
+
+      return syncDiscordProfile(
+        user!.id,
+        currentProfile,
+        discordId,
+        identity.username,
+      );
+    },
     enabled: !!user,
   });
 
