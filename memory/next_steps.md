@@ -8,5 +8,5 @@ type: project
 
 1. **Deploy Discord Bot**: bot local funcional mas não deployado — escolher Railway/Render/Fly.io
 2. **Testar `/register <token>`**: após deploy, validar fluxo completo no Discord
-3. **Promover Node 24 para default**: 10+ dias estável, avaliar promoção
+3. **Monitorar Node 24 pós-promoção**: acompanhar CI e, se estável, remover a lane Node 20 temporária
 4. **Definir próxima feature**: todas as frentes de alertas concluídas

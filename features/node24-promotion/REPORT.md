@@ -30,14 +30,11 @@ npm run build       ✓ PASS
 
 ### Security Review
 
-**SKIPPED** — alterações em infraestrutura de CI sem impacto em:
+**SECURITY_PASS** — revisão executada por envolver alteração em CI/CD.
 
-- Secrets/auth
-- Input validation
-- APIs públicas
-- Docker/containers
-
-Risco de superfície de ataque: nenhum. Mudanças são em versões de runtime e documentação.
+- Workflow afetado: `.github/workflows/quality-gate.yml`
+- Sem mudanças em secrets, permissões do GitHub Actions, gatilhos, inputs externos ou ações de terceiros não pinadas
+- Risco remanescente é operacional (compatibilidade de runtime), mitigado pela lane temporária de fallback em Node 20
 
 ### Code Review
 
@@ -64,4 +61,5 @@ Cumpridos critérios do runbook:
 - ✅ Janela de estabilidade (10+ dias) confirmada
 - ✅ Quality gate verde em Node 24
 - ✅ Documentação atualizada
+- ✅ Security review executada para alteração em CI/CD
 - ✅ Rollback validado (lane Node 20 mantida como fallback)

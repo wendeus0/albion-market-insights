@@ -96,7 +96,7 @@ e2e/                        # specs E2E Playwright
 
 - `engines.node`: `>=24.0.0`.
 - Estratégia atual: Node 24 promovido para default após janela de estabilidade confirmada.
-- Rollback rápido previsto: reduzir matrix para Node 24 apenas em caso de regressão.
+- Rollback rápido previsto: reduzir matrix para Node 20 apenas em caso de regressão.
 - Runbook oficial de promoção/rollback: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`.
 
 ---
@@ -109,7 +109,7 @@ e2e/                        # specs E2E Playwright
 | Persistência de alertas | localStorage                         | Simplicidade para frontend-only         |
 | Cache de mercado        | localStorage com TTL                 | Menor latência e menor pressão na API   |
 | Qualidade CI            | quality gate + smoke E2E             | Cobertura de regressões de integração   |
-| Runtime                 | Node 20 default + Node 24 observação | Migração segura e progressiva           |
+| Runtime                 | Node 24 default + Node 20 fallback   | Promoção concluída com rollback rápido  |
 
 ---
 
