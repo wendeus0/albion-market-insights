@@ -43,10 +43,17 @@ async function markAlertAsNotified(alertId: string): Promise<void> {
   }
 }
 
-async function fetchPendingAlerts(): Promise<PendingAlertRow[]> {
+async function fetchPendingAlerts(
+  userIds: string[],
+): Promise<PendingAlertRow[]> {
+  if (userIds.length === 0) {
+    return [];
+  }
+
   const { data, error } = await supabaseAdmin
     .from("alerts")
     .select("id, user_id, item_name, city, condition, threshold, fired_at")
+    .in("user_id", userIds)
     .not("fired_at", "is", null)
     .eq("notified_discord", false)
     .limit(20);
@@ -58,17 +65,10 @@ async function fetchPendingAlerts(): Promise<PendingAlertRow[]> {
   return (data ?? []) as PendingAlertRow[];
 }
 
-async function fetchDiscordProfiles(
-  userIds: string[],
-): Promise<Map<string, AlertProfileRow>> {
-  if (userIds.length === 0) {
-    return new Map();
-  }
-
+async function fetchDiscordProfiles(): Promise<Map<string, AlertProfileRow>> {
   const { data, error } = await supabaseAdmin
     .from("profiles")
     .select("id, discord_id, discord_dm_enabled, discord_locale")
-    .in("id", userIds)
     .eq("discord_dm_enabled", true)
     .not("discord_id", "is", null);
 
@@ -83,22 +83,22 @@ async function fetchDiscordProfiles(
 
 export function startAlertNotifier(client: Client) {
   return setInterval(async () => {
-    let alerts: PendingAlertRow[];
-
-    try {
-      alerts = await fetchPendingAlerts();
-    } catch (error) {
-      console.error("Failed to fetch pending Discord alerts", error);
-      return;
-    }
-
-    const userIds = [...new Set(alerts.map((alert) => alert.user_id))];
     let profilesByUserId: Map<string, AlertProfileRow>;
 
     try {
-      profilesByUserId = await fetchDiscordProfiles(userIds);
+      profilesByUserId = await fetchDiscordProfiles();
     } catch (error) {
       console.error("Failed to fetch Discord profiles", error);
+      return;
+    }
+
+    const userIds = [...profilesByUserId.keys()];
+    let alerts: PendingAlertRow[];
+
+    try {
+      alerts = await fetchPendingAlerts(userIds);
+    } catch (error) {
+      console.error("Failed to fetch pending Discord alerts", error);
       return;
     }
 
