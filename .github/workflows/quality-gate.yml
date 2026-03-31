@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node_version: [20, 24]
+        node_version: [24, 20]
 
     steps:
       - name: Checkout repository
@@ -51,7 +51,7 @@ jobs:
         run: npm run test:e2e:smoke
 
       - name: Enforce coverage threshold (gradual)
-        if: matrix.node_version == 20
+        if: matrix.node_version == 24
         run: |
           SUMMARY_FILE="coverage/coverage-summary.json"
           FINAL_FILE="coverage/coverage-final.json"
@@ -102,4 +102,3 @@ jobs:
         run: |
           echo "Node 24 validation lane enabled."
           echo "Rollback imediato: editar matrix para [20] e reexecutar pipeline."
-

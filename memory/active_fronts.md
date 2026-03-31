@@ -6,13 +6,12 @@ type: project
 
 ## Active fronts
 
-- **fix/alerts-optimized-update** (2026-03-31) 🔄 **EM ANDAMENTO**
-  - Toggle e delete instantâneo em alerts autenticados
-  - Causa raiz: race condition em `invalidateQueries` após mutation
-  - Fix: `refetchType: 'none'` preserva optimistic update sem refetch imediato
-  - Testes: 3 novos cenários AC-1 em `useAlerts.test.tsx`
-  - Quality gate: 502/502 passando, 93.73% coverage
-  - Pendência: code-review → quality-gate → report-writer → git-flow-manager
+- **fix-alerts-authenticated-ux** (2026-03-31) ✅ **CONCLUÍDA — PR #102 MERGEADA**
+  - AC-1 (toggle/delete instantâneo): Fix race condition com `refetchType: 'none'`
+  - AC-2 (delete UI): Já resolvido pelo mesmo fix
+  - AC-3 (item search): Já implementado em `AlertsManager.tsx`
+  - AC-4 (threshold suggestion): Já implementado em `useAlertsForm.tsx`
+  - 502/502 testes passando, 93.73% coverage
 - **PR #97 MERGEADO**: fix oauth pkce flow (2026-03-29) ✅
   - OAuth com Discord: `flowType: "pkce"` + `detectSessionInUrl: true` no Supabase client
   - Early return guard no Login para usuários autenticados
@@ -25,13 +24,17 @@ type: project
 - **PR #79 MERGEADO**: frente `api-proxy-worker` concluída (2026-03-22)
 - SPRINT 2026-03-23 FECHADO: 399/399 testes passando, deploy configurado
 - Observação contínua:
-  - Node 24 CI lane (aguardando janela de 1-2 semanas para promoção)
+  - Node 24 promovido para default (2026-03-31)
+  - Node 20 mantido como lane de fallback temporária
   - Issue #59 (flakiness) — não bloqueia baseline
 
 ## Open decisions
 
 - **Dashboard Cloudflare Pages**: `VITE_USE_REAL_API=true` configurado no dashboard + redeploy executado (2026-03-23) — dados reais em produção ✅
-- **Promoção Node 24 para default**: job paralelo verde e mergeado; aguardando janela de estabilidade (1-2 semanas) antes de tornar default
+- **Promoção Node 24 para default**: CONCLUÍDO (2026-03-31)
+  - Node 24 promovido para runtime default operacional
+  - Node 20 mantido como lane de fallback temporária no CI
+  - PR de promoção mergeado após quality gate verde
 - Runbook de promoção/rollback publicado: `docs/architecture/NODE24_PROMOTION_RUNBOOK.md`
 - **Deadline Node 24**: 2026-06-02 configurado no dependabot.yml
 - **Trade-off shadcn/ui warnings**: manter warnings de vendor como exceção permanente ou investir em estratégia de isolamento/update
