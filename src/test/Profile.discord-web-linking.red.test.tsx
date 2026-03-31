@@ -81,7 +81,7 @@ function makeUnlinkedProfile(overrides?: Partial<ReturnType<typeof useProfile>>)
 
 describe("Profile — discord-web-linking RED", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockedUseAuth.mockReturnValue({
       user: {
         id: "user-123",
