@@ -13,6 +13,7 @@ const MAX_DELIVERY_RETRIES = 3;
 const deliveryFailures = new Map<string, number>();
 
 interface AlertProfileRow {
+  id: string;
   discord_id: string | null;
   discord_dm_enabled: boolean;
   discord_locale: string | null;
@@ -26,7 +27,6 @@ interface PendingAlertRow {
   condition: string;
   threshold: number;
   fired_at: string;
-  profiles: AlertProfileRow | AlertProfileRow[] | null;
 }
 
 async function markAlertAsNotified(alertId: string): Promise<void> {
@@ -43,28 +43,67 @@ async function markAlertAsNotified(alertId: string): Promise<void> {
   }
 }
 
+async function fetchPendingAlerts(): Promise<PendingAlertRow[]> {
+  const { data, error } = await supabaseAdmin
+    .from("alerts")
+    .select("id, user_id, item_name, city, condition, threshold, fired_at")
+    .not("fired_at", "is", null)
+    .eq("notified_discord", false)
+    .limit(20);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PendingAlertRow[];
+}
+
+async function fetchDiscordProfiles(
+  userIds: string[],
+): Promise<Map<string, AlertProfileRow>> {
+  if (userIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("id, discord_id, discord_dm_enabled, discord_locale")
+    .in("id", userIds)
+    .eq("discord_dm_enabled", true)
+    .not("discord_id", "is", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(
+    ((data ?? []) as AlertProfileRow[]).map((profile) => [profile.id, profile]),
+  );
+}
+
 export function startAlertNotifier(client: Client) {
   return setInterval(async () => {
-    const { data: alerts, error: alertsError } = await supabaseAdmin
-      .from("alerts")
-      .select(
-        "id, user_id, item_name, city, condition, threshold, fired_at, profiles!inner(discord_id, discord_dm_enabled, discord_locale)",
-      )
-      .not("fired_at", "is", null)
-      .eq("notified_discord", false)
-      .eq("profiles.discord_dm_enabled", true)
-      .not("profiles.discord_id", "is", null)
-      .limit(20);
+    let alerts: PendingAlertRow[];
 
-    if (alertsError) {
-      console.error("Failed to fetch pending Discord alerts", alertsError);
+    try {
+      alerts = await fetchPendingAlerts();
+    } catch (error) {
+      console.error("Failed to fetch pending Discord alerts", error);
       return;
     }
 
-    for (const alert of (alerts ?? []) as PendingAlertRow[]) {
-      const profile = Array.isArray(alert.profiles)
-        ? alert.profiles[0]
-        : alert.profiles;
+    const userIds = [...new Set(alerts.map((alert) => alert.user_id))];
+    let profilesByUserId: Map<string, AlertProfileRow>;
+
+    try {
+      profilesByUserId = await fetchDiscordProfiles(userIds);
+    } catch (error) {
+      console.error("Failed to fetch Discord profiles", error);
+      return;
+    }
+
+    for (const alert of alerts) {
+      const profile = profilesByUserId.get(alert.user_id);
 
       if (!profile?.discord_id) {
         continue;
@@ -74,7 +113,7 @@ export function startAlertNotifier(client: Client) {
 
       try {
         const user = await client.users.fetch(profile.discord_id);
-        const t = getMessages(profile.discord_locale as string | null);
+        const t = getMessages(profile.discord_locale);
         const embed = new EmbedBuilder()
           .setTitle(t.alertTriggered)
           .setColor(0xff922b)
