@@ -6,6 +6,13 @@ type: project
 
 ## Active fronts
 
+- **fix/alerts-optimized-update** (2026-03-31) 🔄 **EM ANDAMENTO**
+  - Toggle e delete instantâneo em alerts autenticados
+  - Causa raiz: race condition em `invalidateQueries` após mutation
+  - Fix: `refetchType: 'none'` preserva optimistic update sem refetch imediato
+  - Testes: 3 novos cenários AC-1 em `useAlerts.test.tsx`
+  - Quality gate: 502/502 passando, 93.73% coverage
+  - Pendência: code-review → quality-gate → report-writer → git-flow-manager
 - **PR #97 MERGEADO**: fix oauth pkce flow (2026-03-29) ✅
   - OAuth com Discord: `flowType: "pkce"` + `detectSessionInUrl: true` no Supabase client
   - Early return guard no Login para usuários autenticados

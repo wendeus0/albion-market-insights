@@ -406,11 +406,17 @@
 - Manter observação do comportamento Node 24 no CI antes de promoção.
 - Warnings em componentes vendor (`src/components/ui/*`) seguem como trade-off conhecido até a janela de higiene.
 - Não commitar artefatos gerados (`dist/`, `coverage/`, relatórios temporários).
-- **Follow-ups da frente auth + Supabase alert sync** (2026-03-27) 🔄 **PENDENTE**
-  - Toggle de ativar/desativar alerta não está funcionando no app autenticado; validar se o problema está na ação de update, invalidation da query ou renderização do estado retornado.
-  - Exclusão de alerta não atualiza a UI de forma instantânea; a deleção remota ocorre, mas o usuário precisa recarregar a página para refletir o estado final.
-  - Campo de item na criação de alerta permanece em lista fixa; avaliar evolução para busca por nome com filtro digitável/autocomplete.
-  - Sugestão de threshold do alerta não condiz com o preço médio praticado do item; estudar preenchimento inicial orientado por preço corrente/médio para facilitar identificação de ofertas vantajosas.
+- **Follow-ups da frente auth + Supabase alert sync** (2026-03-27)
+  - ✅ **RESOLVIDO — Toggle e Delete instantâneo** (2026-03-31)
+    - Causa raiz: race condition em `invalidateQueries` — refetch em background retornava dados stale antes da propagação do DB, sobrescrevendo o optimistic update.
+    - Fix: `refetchType: 'none'` em `invalidateQueries` preserva o optimistic update sem disparar refetch imediato.
+    - Arquivos alterados: `src/hooks/useAlerts.ts:47-49`, `src/hooks/useAlerts.ts:76-78`
+    - Testes: 3 novos cenários de AC-1 em `useAlerts.test.tsx` (toggle, cache após refetch stale, preservação sem refetch)
+    - Quality gate: 502/502 testes passando, 93.73% statements coverage
+  - 🔄 **PENDENTE — Item field autocomplete** (AC-3)
+    - Campo de item na criação de alerta permanece em lista fixa; avaliar evolução para busca por nome com filtro digitável/autocomplete.
+  - 🔄 **PENDENTE — Threshold suggestion** (AC-4)
+    - Sugestão de threshold do alerta não condiz com o preço médio praticado do item; estudar preenchimento inicial orientado por preço corrente/médio.
 
 ## Decisões incorporadas recentemente
 

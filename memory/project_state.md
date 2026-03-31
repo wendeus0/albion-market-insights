@@ -7,9 +7,9 @@ type: project
 ## Current project state
 
 **Plataforma:** Dashboard web React + TypeScript para análise de preços do mercado do Albion Online
-**Status:** Sprint 2026-03-23 encerrado — deploy no Cloudflare Pages configurado, Worker proxy ativo
-**Branch ativa:** `main` (limpa após merge dos PRs #81 e #82)
-**Snapshot local:** worktree limpa, sem mudanças pendentes
+**Status:** Fix toggle/delete UX em alerts autenticados — aguardando quality gate
+**Branch ativa:** `fix/alerts-optimized-update` (pendência de merge)
+**Snapshot local:** mudanças pendentes (useAlerts.ts + testes)
 
 **Marcos alcançados:**
 

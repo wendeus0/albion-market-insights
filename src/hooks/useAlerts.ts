@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { marketService } from '@/services';
-import type { Alert } from '@/data/types';
-import { useAuth } from '@/contexts/useAuth';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { marketService } from "@/services";
+import type { Alert } from "@/data/types";
+import { useAuth } from "@/contexts/useAuth";
 
 function upsertAlert(alerts: Alert[], alert: Alert): Alert[] {
   const index = alerts.findIndex((item) => item.id === alert.id);
@@ -11,7 +11,7 @@ function upsertAlert(alerts: Alert[], alert: Alert): Alert[] {
 }
 
 export function getAlertsQueryKey(userId?: string | null) {
-  return ['alerts', userId ?? 'anonymous'] as const;
+  return ["alerts", userId ?? "anonymous"] as const;
 }
 
 export function useAlerts() {
@@ -35,7 +35,10 @@ export function useSaveAlert() {
       await queryClient.cancelQueries({ queryKey });
 
       const previousAlerts = queryClient.getQueryData<Alert[]>(queryKey) ?? [];
-      queryClient.setQueryData<Alert[]>(queryKey, upsertAlert(previousAlerts, alert));
+      queryClient.setQueryData<Alert[]>(
+        queryKey,
+        upsertAlert(previousAlerts, alert),
+      );
 
       return { previousAlerts };
     },
@@ -45,7 +48,7 @@ export function useSaveAlert() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey, refetchType: "none" });
     },
   });
 }
@@ -74,7 +77,7 @@ export function useDeleteAlert() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey, refetchType: "none" });
     },
   });
 }
