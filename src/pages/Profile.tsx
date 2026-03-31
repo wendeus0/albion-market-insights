@@ -70,7 +70,8 @@ const Profile = () => {
       !hasDiscordMetadata ||
       hasLinkedDiscord ||
       isReplacementPending ||
-      isSyncPending
+      isSyncPending ||
+      hasSyncError
     ) {
       return;
     }
@@ -89,6 +90,7 @@ const Profile = () => {
     isReplacementPending,
     profile,
     isSyncPending,
+    hasSyncError,
     syncDiscordProfileAsync,
   ]);
 
